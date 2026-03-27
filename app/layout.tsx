@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next'
 import { Inter, Geist_Mono } from 'next/font/google'
 import { Analytics } from '@vercel/analytics/next'
+import { CartProvider } from '@/lib/cart/cart-provider'
 import './globals.css'
 
 const inter = Inter({ 
@@ -58,7 +59,9 @@ export default function RootLayout({
   return (
     <html lang="fr" className={`${inter.variable} ${geistMono.variable}`}>
       <body className="font-sans antialiased min-h-screen bg-background text-foreground">
-        {children}
+        <CartProvider>
+          {children}
+        </CartProvider>
         <Analytics />
       </body>
     </html>

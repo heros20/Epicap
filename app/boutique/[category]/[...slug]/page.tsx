@@ -42,6 +42,7 @@ import {
 import { getProductBySlug, getRelatedProducts, products } from "@/lib/data/products"
 import { categories } from "@/lib/data/navigation"
 import { cn } from "@/lib/utils"
+import { useCart } from "@/lib/cart/use-cart"
 
 interface PageProps {
   params: Promise<{ 
@@ -72,6 +73,34 @@ export default function ProductPage({ params }: PageProps) {
   const category = categories.find(c => c.slug === resolvedParams.category)
   const subcategory = category?.subcategories.find(s => s.slug === product.subcategorySlug)
   const relatedProducts = getRelatedProducts(product.id)
+
+  return (
+    <ProductPageContent 
+      product={product} 
+      category={category}
+      subcategory={subcategory}
+      relatedProducts={relatedProducts}
+    />
+  )
+}
+
+function ProductPageContent({ product, category, subcategory, relatedProducts }: {
+  product: ReturnType<typeof getProductBySlug>,
+  category: any,
+  subcategory: any,
+  relatedProducts: any[]
+}) {
+  const { addItem } = useCart()
+  const [quantity, setQuantity] = React.useState(1)
+  const [isAdded, setIsAdded] = React.useState(false)
+
+  const handleAddToCart = () => {
+    if (product) {
+      addItem(product.id, product.name, product.price, quantity, product.sku)
+      setIsAdded(true)
+      setTimeout(() => setIsAdded(false), 2000)
+    }
+  }
 
   return (
     <div className="flex flex-col min-h-screen">
@@ -199,7 +228,13 @@ export default function ProductPage({ params }: PageProps) {
                 </div>
 
                 {/* Add to Cart */}
-                <AddToCartSection product={product} />
+                <AddToCartSection 
+                  product={product}
+                  quantity={quantity}
+                  setQuantity={setQuantity}
+                  onAddToCart={handleAddToCart}
+                  isAdded={isAdded}
+                />
 
                 {/* Reassurance */}
                 <div className="grid grid-cols-2 gap-4 mt-8 pt-8 border-t">
@@ -437,9 +472,19 @@ function ProductGallery({ product }: { product: ReturnType<typeof getProductBySl
   )
 }
 
-function AddToCartSection({ product }: { product: ReturnType<typeof getProductBySlug> }) {
-  const [quantity, setQuantity] = React.useState(1)
-
+function AddToCartSection({ 
+  product, 
+  quantity,
+  setQuantity,
+  onAddToCart,
+  isAdded
+}: { 
+  product: ReturnType<typeof getProductBySlug>,
+  quantity: number,
+  setQuantity: (q: number | ((prev: number) => number)) => void,
+  onAddToCart: () => void,
+  isAdded: boolean
+}) {
   if (!product) return null
 
   return (
@@ -468,9 +513,14 @@ function AddToCartSection({ product }: { product: ReturnType<typeof getProductBy
 
       {/* Buttons */}
       <div className="flex gap-3">
-        <Button size="lg" className="flex-1">
+        <Button 
+          size="lg" 
+          className="flex-1"
+          onClick={onAddToCart}
+          disabled={product.stockQuantity === 0}
+        >
           <ShoppingCart className="size-4 mr-2" />
-          Ajouter au panier
+          {isAdded ? '✓ Ajouté au panier' : 'Ajouter au panier'}
         </Button>
         <Button size="lg" variant="outline" asChild>
           <Link href="/devis">Devis</Link>

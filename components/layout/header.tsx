@@ -33,10 +33,12 @@ import {
   NavigationMenuTrigger,
 } from "@/components/ui/navigation-menu"
 import { categories, services, agencies } from "@/lib/data/navigation"
+import { useCart } from "@/lib/cart/use-cart"
 
 export function Header() {
   const [isScrolled, setIsScrolled] = React.useState(false)
-  const [cartCount] = React.useState(0)
+  const { items } = useCart()
+  const cartCount = items.length
 
   React.useEffect(() => {
     const handleScroll = () => {
