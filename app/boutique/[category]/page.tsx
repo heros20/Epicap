@@ -24,8 +24,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import {
+  getCatalogBrands,
+  getCatalogProducts,
+  getCatalogProductsByCategory,
+  searchCatalogProducts,
+} from "@/lib/catalog/data"
 import { categories } from "@/lib/data/navigation"
-import { getProductsByCategory, products, searchProducts } from "@/lib/data/products"
 
 interface PageProps {
   params: Promise<{ category: string }>
@@ -74,7 +79,9 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
     ? category.subcategories.find((subcategory) => subcategory.slug === resolvedSearchParams.subcategory)
     : undefined
 
-  let categoryProducts = getProductsByCategory(categorySlug)
+  const allProducts = await getCatalogProducts()
+  const availableBrands = await getCatalogBrands()
+  let categoryProducts = await getCatalogProductsByCategory(categorySlug)
   const query = resolvedSearchParams.query?.trim()
 
   if (selectedSubcategory) {
@@ -84,7 +91,7 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
   }
 
   if (query) {
-    const matchingIds = new Set(searchProducts(query).map((product) => product.id))
+    const matchingIds = new Set((await searchCatalogProducts(query)).map((product) => product.id))
     categoryProducts = categoryProducts.filter((product) => matchingIds.has(product.id))
   }
 
@@ -134,7 +141,7 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
       )
   }
 
-  const maxPrice = Math.max(...products.map((product) => product.price), 5000)
+  const maxPrice = Math.max(...allProducts.map((product) => product.price), 5000)
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -231,6 +238,7 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
                 <ProductFilters
                   currentCategory={categorySlug}
                   currentSubcategory={selectedSubcategory?.slug}
+                  availableBrands={availableBrands}
                   priceRange={[
                     Number(resolvedSearchParams.minPrice) || 0,
                     Number(resolvedSearchParams.maxPrice) || maxPrice,
@@ -251,6 +259,7 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
                         <ProductFilters
                           currentCategory={categorySlug}
                           currentSubcategory={selectedSubcategory?.slug}
+                          availableBrands={availableBrands}
                           priceRange={[
                             Number(resolvedSearchParams.minPrice) || 0,
                             Number(resolvedSearchParams.maxPrice) || maxPrice,

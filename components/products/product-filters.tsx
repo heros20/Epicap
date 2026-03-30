@@ -24,11 +24,11 @@ import {
 } from "@/components/ui/accordion"
 import { Badge } from "@/components/ui/badge"
 import { categories } from "@/lib/data/navigation"
-import { brands } from "@/lib/data/products"
 
 interface ProductFiltersProps {
   currentCategory?: string
   currentSubcategory?: string
+  availableBrands?: string[]
   priceRange?: [number, number]
   maxPrice?: number
   className?: string
@@ -37,6 +37,7 @@ interface ProductFiltersProps {
 export function ProductFilters({
   currentCategory,
   currentSubcategory,
+  availableBrands = [],
   priceRange = [0, 5000],
   maxPrice = 5000,
   className,
@@ -183,8 +184,8 @@ export function ProductFilters({
             <span className="text-sm font-medium">Marques</span>
           </AccordionTrigger>
           <AccordionContent>
-            <div className="space-y-3 pt-2">
-              {brands.map((brand) => (
+              <div className="space-y-3 pt-2">
+              {availableBrands.map((brand) => (
                 <div key={brand} className="flex items-center gap-2">
                   <Checkbox
                     id={`brand-${brand}`}

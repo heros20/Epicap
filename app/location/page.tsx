@@ -8,8 +8,8 @@ import { ProductCard } from "@/components/products/product-card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
+import { getCatalogProductBySlug, getRentableCatalogProducts } from "@/lib/catalog/data"
 import { companyInfo, serviceDetails } from "@/lib/data/company"
-import { products } from "@/lib/data/products"
 
 export const metadata: Metadata = {
   title: "Location de matériel",
@@ -23,10 +23,8 @@ interface PageProps {
 
 export default async function LocationPage({ searchParams }: PageProps) {
   const params = await searchParams
-  const requestedProduct = params.product
-    ? products.find((product) => product.slug === params.product)
-    : undefined
-  const rentableProducts = products.filter((product) => product.isRentable).slice(0, 4)
+  const requestedProduct = params.product ? await getCatalogProductBySlug(params.product) : undefined
+  const rentableProducts = await getRentableCatalogProducts(4)
 
   return (
     <div className="flex min-h-screen flex-col">

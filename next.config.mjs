@@ -3,6 +3,11 @@ const nextConfig = {
   typescript: {
     ignoreBuildErrors: true,
   },
+  experimental: {
+    serverActions: {
+      bodySizeLimit: "50mb",
+    },
+  },
   images: {
     unoptimized: true,
     remotePatterns: [
@@ -13,6 +18,10 @@ const nextConfig = {
       {
         protocol: "https",
         hostname: "www.epicap.com",
+      },
+      {
+        protocol: "https",
+        hostname: "whqilnwlubqnigzaqeqe.supabase.co",
       },
     ],
   },

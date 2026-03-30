@@ -7,6 +7,7 @@ export interface ProductDocument {
   sizeLabel: string
   fileName: string
   fileType: string
+  path?: string
 }
 
 export interface Product {

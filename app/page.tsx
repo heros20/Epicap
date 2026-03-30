@@ -26,12 +26,12 @@ import {
   manufacturerHighlights,
   serviceDetails,
 } from "@/lib/data/company"
+import { getFeaturedCatalogProducts } from "@/lib/catalog/data"
 import { agencies, categories } from "@/lib/data/navigation"
-import { getFeaturedProducts } from "@/lib/data/products"
 
-const featuredProducts = getFeaturedProducts().slice(0, 6)
+export default async function HomePage() {
+  const featuredProducts = await getFeaturedCatalogProducts(6)
 
-export default function HomePage() {
   return (
     <div className="flex min-h-screen flex-col">
       <Header />

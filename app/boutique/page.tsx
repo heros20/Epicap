@@ -21,8 +21,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select"
+import {
+  getCatalogBrands,
+  getCatalogProducts,
+  searchCatalogProducts,
+} from "@/lib/catalog/data"
 import { categories } from "@/lib/data/navigation"
-import { products, searchProducts } from "@/lib/data/products"
 
 export const metadata: Metadata = {
   title: "Catalogue | Gammes Epicap",
@@ -45,7 +49,9 @@ interface PageProps {
 export default async function BoutiquePage({ searchParams }: PageProps) {
   const params = await searchParams
   const query = params.query?.trim()
-  let filteredProducts = query ? searchProducts(query) : [...products]
+  const allProducts = await getCatalogProducts()
+  const availableBrands = await getCatalogBrands()
+  let filteredProducts = query ? await searchCatalogProducts(query) : [...allProducts]
 
   if (params.brands) {
     const selectedBrands = params.brands.split(",")
@@ -89,7 +95,7 @@ export default async function BoutiquePage({ searchParams }: PageProps) {
       )
   }
 
-  const maxPrice = Math.max(...products.map((product) => product.price))
+  const maxPrice = Math.max(...allProducts.map((product) => product.price), 5000)
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -144,6 +150,7 @@ export default async function BoutiquePage({ searchParams }: PageProps) {
             <div className="flex gap-8">
               <Suspense fallback={<div className="hidden w-64 flex-shrink-0 lg:block" />}>
                 <ProductFilters
+                  availableBrands={availableBrands}
                   priceRange={[Number(params.minPrice) || 0, Number(params.maxPrice) || maxPrice]}
                   maxPrice={maxPrice}
                 />
@@ -159,6 +166,7 @@ export default async function BoutiquePage({ searchParams }: PageProps) {
                     <div className="lg:hidden">
                       <Suspense fallback={null}>
                         <ProductFilters
+                          availableBrands={availableBrands}
                           priceRange={[
                             Number(params.minPrice) || 0,
                             Number(params.maxPrice) || maxPrice,

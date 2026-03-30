@@ -14,6 +14,7 @@ import {
   Wrench,
 } from "lucide-react"
 
+import { HeaderAuthControls } from "@/components/auth/header-auth-controls"
 import { BrandLogo } from "@/components/layout/brand-logo"
 import { HeaderSearchBox } from "@/components/layout/header-search-box"
 import { Badge } from "@/components/ui/badge"
@@ -134,6 +135,8 @@ export function Header() {
               <Button asChild className="hidden rounded-full px-5 shadow-sm lg:flex">
                 <Link href="/devis">Demander un devis</Link>
               </Button>
+
+              <HeaderAuthControls />
 
               <Sheet>
                 <SheetTrigger asChild>
@@ -343,6 +346,7 @@ function MobileNav() {
       </div>
 
       <div className="space-y-2 border-t border-border/70 bg-muted/35 p-4">
+        <HeaderAuthControls mobile />
         <Button asChild className="w-full rounded-full">
           <Link href="/devis">Demander un devis</Link>
         </Button>

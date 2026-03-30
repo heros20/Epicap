@@ -8,8 +8,8 @@ import { ProductCard } from "@/components/products/product-card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
+import { getCatalogProductsByCategory } from "@/lib/catalog/data"
 import { companyInfo, serviceDetails } from "@/lib/data/company"
-import { products } from "@/lib/data/products"
 
 export const metadata: Metadata = {
   title: "FIT TEST",
@@ -17,10 +17,8 @@ export const metadata: Metadata = {
     "Test d'ajustement FIT TEST Epicap avec technologie à pression négative contrôlée pour valider l'étanchéité des masques.",
 }
 
-export default function FitTestPage() {
-  const relatedProducts = products
-    .filter((product) => product.categorySlug === "equipements-de-protection-respiratoire")
-    .slice(0, 4)
+export default async function FitTestPage() {
+  const relatedProducts = (await getCatalogProductsByCategory("equipements-de-protection-respiratoire")).slice(0, 4)
 
   return (
     <div className="flex min-h-screen flex-col">

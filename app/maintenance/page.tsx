@@ -8,9 +8,9 @@ import { ProductCard } from "@/components/products/product-card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
+import { getCatalogProductsByCategory } from "@/lib/catalog/data"
 import { companyInfo, serviceDetails } from "@/lib/data/company"
 import { agencies } from "@/lib/data/navigation"
-import { products } from "@/lib/data/products"
 
 export const metadata: Metadata = {
   title: "Maintenance des systèmes respiratoires",
@@ -18,12 +18,8 @@ export const metadata: Metadata = {
     "Maintenance Epicap des systèmes respiratoires 3M, SCOTT et KASCO via le réseau national d'agences.",
 }
 
-export default function MaintenancePage() {
-  const serviceProducts = products
-    .filter((product) =>
-      ["equipements-de-protection-respiratoire"].includes(product.categorySlug),
-    )
-    .slice(0, 4)
+export default async function MaintenancePage() {
+  const serviceProducts = (await getCatalogProductsByCategory("equipements-de-protection-respiratoire")).slice(0, 4)
 
   return (
     <div className="flex min-h-screen flex-col">

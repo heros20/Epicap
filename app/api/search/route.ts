@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server"
 
+import { getCatalogProducts } from "@/lib/catalog/data"
 import { categories, services } from "@/lib/data/navigation"
-import { products } from "@/lib/data/products"
 
 type SuggestionType = "product" | "category" | "subcategory" | "service"
 
@@ -79,6 +79,8 @@ export async function GET(request: Request) {
   if (normalizedQuery.length < 2) {
     return NextResponse.json({ suggestions: [] })
   }
+
+  const products = await getCatalogProducts()
 
   const productSuggestions: RankedSearchSuggestion[] = products
     .flatMap((product) => {

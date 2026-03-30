@@ -2,6 +2,8 @@ import type { Metadata, Viewport } from "next"
 import { Analytics } from "@vercel/analytics/next"
 import { Geist_Mono, Manrope, Space_Grotesk } from "next/font/google"
 
+import { AuthProvider } from "@/components/auth/auth-provider"
+import { getCurrentAuthState } from "@/lib/auth/server"
 import { CartProvider } from "@/lib/cart/cart-provider"
 import "./globals.css"
 
@@ -80,18 +82,22 @@ export const viewport: Viewport = {
   themeColor: "#ff851c",
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode
 }>) {
+  const { user, profile } = await getCurrentAuthState()
+
   return (
     <html
       lang="fr"
       className={`${manrope.variable} ${spaceGrotesk.variable} ${geistMono.variable}`}
     >
       <body className="min-h-screen bg-background font-sans text-foreground antialiased">
-        <CartProvider>{children}</CartProvider>
+        <AuthProvider initialUser={user} initialProfile={profile}>
+          <CartProvider>{children}</CartProvider>
+        </AuthProvider>
         <Analytics />
       </body>
     </html>
