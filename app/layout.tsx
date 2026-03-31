@@ -92,6 +92,7 @@ export default async function RootLayout({
   return (
     <html
       lang="fr"
+      data-scroll-behavior="smooth"
       className={`${manrope.variable} ${spaceGrotesk.variable} ${geistMono.variable}`}
     >
       <body className="min-h-screen bg-background font-sans text-foreground antialiased">

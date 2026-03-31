@@ -12,9 +12,9 @@ function pickFirstValue(value: string | string[] | undefined) {
 }
 
 const REASONS: Record<string, string> = {
-  role: "Votre rôle actuel ne permet pas d’accéder à cette section.",
+  role: "Votre rôle actuel ne permet pas d'accéder à cette section.",
   inactive: "Votre compte a été désactivé. Un super admin doit le réactiver.",
-  "missing-profile": "La session existe, mais le profil applicatif n’a pas été trouvé.",
+  "missing-profile": "La session existe, mais le profil applicatif n'a pas été trouvé.",
 }
 
 export default async function ForbiddenPage({
@@ -25,7 +25,7 @@ export default async function ForbiddenPage({
   const params = await searchParams
   const reason = pickFirstValue(params.reason) ?? "role"
   const message =
-    REASONS[reason] ?? "L’accès à cette ressource est actuellement refusé."
+    REASONS[reason] ?? "L'accès à cette ressource est actuellement refusé."
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -48,7 +48,7 @@ export default async function ForbiddenPage({
                 <Button asChild size="lg">
                   <Link href="/dashboard">
                     <LayoutDashboard className="mr-2 size-4" />
-                    Retour au dashboard
+                    Retour au tableau de bord
                   </Link>
                 </Button>
                 <Button asChild variant="outline" size="lg">

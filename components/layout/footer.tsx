@@ -34,11 +34,11 @@ export function Footer() {
         <div className="container mx-auto px-4 py-12">
           <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-[1.3fr_1fr_1fr_1fr] lg:gap-12">
             <div>
-              <Link href="/" className="mb-5 inline-block">
-                <BrandLogo
-                  className="h-12 w-[180px] lg:h-14 lg:w-[210px]"
-                  imageClassName="brightness-0 invert"
-                />
+              <Link
+                href="/"
+                className="mb-5 inline-flex rounded-2xl border border-white/12 bg-white px-4 py-3 shadow-[0_18px_44px_-28px_rgba(0,0,0,0.55)]"
+              >
+                <BrandLogo className="h-12 w-[180px] lg:h-14 lg:w-[210px]" />
               </Link>
               <p className="mb-4 max-w-sm text-sm leading-relaxed text-background/72">
                 {companyInfo.summary} Siège social à {companyInfo.headOffice.city} et réseau
@@ -123,6 +123,22 @@ export function Footer() {
                     À propos
                   </Link>
                 </li>
+                <li>
+                  <Link
+                    href="/mentions-legales"
+                    className="text-sm text-background/72 transition-colors hover:text-primary"
+                  >
+                    Mentions légales
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/conditions-generales-de-vente"
+                    className="text-sm text-background/72 transition-colors hover:text-primary"
+                  >
+                    Conditions générales de vente
+                  </Link>
+                </li>
               </ul>
             </div>
 
@@ -168,6 +184,12 @@ export function Footer() {
               </Link>
               <Link href="/agences" className="transition-colors hover:text-primary">
                 Agences
+              </Link>
+              <Link href="/mentions-legales" className="transition-colors hover:text-primary">
+                Mentions légales
+              </Link>
+              <Link href="/conditions-generales-de-vente" className="transition-colors hover:text-primary">
+                CGV
               </Link>
             </div>
             <div className="text-xs text-background/60">

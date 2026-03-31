@@ -26,11 +26,82 @@ import {
   manufacturerHighlights,
   serviceDetails,
 } from "@/lib/data/company"
-import { getFeaturedCatalogProducts } from "@/lib/catalog/data"
+import { getCatalogProducts, getFeaturedCatalogProducts } from "@/lib/catalog/data"
 import { agencies, categories } from "@/lib/data/navigation"
 
+const categoryImageKeywords: Record<string, string[]> = {
+  "equipements-de-protection-respiratoire": ["phantom", "masque", "respiratoire", "ventilation"],
+  "equipements-de-protection-individuelle": ["combinaison", "botte", "gants", "epi"],
+  decontamination: ["pediluve", "decontamination", "sas", "gel protect"],
+  "extracteurs-d-air-epiair": ["extracteur", "epiair"],
+  "aspirateurs-ponceuses-rectifieuses-de-sol": ["aspirateur", "ponceuse", "rectifieuse"],
+  "mesures-controles-communication": ["controleur", "bulkair", "mesure", "alarme"],
+  confinement: ["film", "colle", "ruban", "confinement"],
+  emballages: ["liner", "sac", "big bag", "film"],
+  "brumisation-impregnation-decapage-outillages": ["brumisateur", "decapage", "impregnation"],
+  "materiel-et-consommables-pour-le-deplombage": ["plomb", "deplombage"],
+  "location-et-maintenance-equipements-anti-amiante": ["epiroll", "location", "controleur"],
+}
+
+const categoryImageProductOverrides: Record<string, string[]> = {
+  "extracteurs-d-air-epiair": [
+    "extracteur-d-air-a-filtration-the-epiair-t10-10000-m3h",
+    "extracteur-dair-a-filtration-the-epi-air-50-pour-le-desamiantage",
+    "extracteur-dair-a-filtration-the-650m3-desamiantage",
+  ],
+  confinement: [
+    "film-polyethylene-80-thr-240m-transparent-epicap",
+    "film-polyethylene-80-thr-240m-blanc-epicap",
+  ],
+}
+
+function getRepresentativeCategoryImage(
+  categorySlug: string,
+  products: Awaited<ReturnType<typeof getCatalogProducts>>,
+) {
+  const categoryProducts = products.filter((product) => product.categorySlug === categorySlug)
+  const keywords = categoryImageKeywords[categorySlug] ?? []
+  const preferredSlugs = categoryImageProductOverrides[categorySlug] ?? []
+  const preferredProduct = preferredSlugs
+    .map((slug) => categoryProducts.find((product) => product.slug === slug && product.image))
+    .find(Boolean)
+
+  const matchingProduct =
+    preferredProduct ??
+    categoryProducts.find((product) => {
+      const haystack = [
+        product.name,
+        product.shortDescription,
+        product.description,
+        product.subcategorySlug ?? "",
+      ]
+        .join(" ")
+        .toLowerCase()
+
+      return keywords.some((keyword) => haystack.includes(keyword))
+    }) ??
+    categoryProducts.find((product) => Boolean(product.image)) ??
+    null
+
+  if (!matchingProduct?.image) {
+    return null
+  }
+
+  return {
+    src: matchingProduct.image,
+    alt: `${matchingProduct.name} - illustration ${categorySlug}`,
+  }
+}
+
 export default async function HomePage() {
+  const catalogProducts = await getCatalogProducts()
   const featuredProducts = await getFeaturedCatalogProducts(6)
+  const categoryImages = new Map(
+    categories.map((category) => [
+      category.slug,
+      getRepresentativeCategoryImage(category.slug, catalogProducts),
+    ]),
+  )
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -94,12 +165,13 @@ export default async function HomePage() {
               <div className="space-y-5">
                 <div className="relative overflow-hidden rounded-[2rem] border border-background/10 bg-background/5 p-5 shadow-[0_44px_110px_-58px_rgba(0,0,0,0.78)] backdrop-blur-sm">
                   <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,133,28,0.16),transparent_38%)]" />
-                  <div className="relative aspect-[5/4] overflow-hidden rounded-[1.5rem] border border-background/10">
+                  <div className="overflow-hidden rounded-[1.5rem] border border-background/10">
                     <Image
                       src="/images/hero-equipment.jpg"
                       alt="Matériel Epicap pour chantier de désamiantage"
-                      fill
-                      className="object-cover"
+                      width={1200}
+                      height={960}
+                      className="h-auto w-full object-cover"
                       priority
                     />
                   </div>
@@ -150,34 +222,60 @@ export default async function HomePage() {
             </div>
 
             <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-              {categories.map((category) => (
-                <Link
-                  key={category.slug}
-                  href={`/boutique/${category.slug}`}
-                  className="group rounded-[1.5rem] border border-border/70 bg-card p-6 shadow-[0_18px_45px_-34px_rgba(15,16,18,0.12)] transition-all duration-300 hover:-translate-y-1 hover:border-primary/35 hover:shadow-[0_26px_62px_-34px_rgba(255,133,28,0.26)]"
-                >
-                  <div className="mb-4 flex items-center justify-between">
-                    <Badge variant="secondary" className="border border-border/70 bg-muted/70">
-                      {category.shortName}
-                    </Badge>
-                    <ArrowRight className="size-4 text-muted-foreground transition-transform group-hover:translate-x-1 group-hover:text-primary" />
-                  </div>
-                  <h3 className="mb-3 text-xl font-semibold">{category.name}</h3>
-                  <p className="text-sm leading-relaxed text-muted-foreground">
-                    {category.description}
-                  </p>
-                  <div className="mt-5 flex flex-wrap gap-2">
-                    {category.subcategories.slice(0, 3).map((subcategory) => (
-                      <span
-                        key={subcategory.slug}
-                        className="rounded-full border border-border/70 bg-background px-3 py-1 text-xs text-muted-foreground"
-                      >
-                        {subcategory.name}
-                      </span>
-                    ))}
-                  </div>
-                </Link>
-              ))}
+              {categories.map((category) => {
+                const categoryImage = categoryImages.get(category.slug)
+
+                return (
+                  <Link
+                    key={category.slug}
+                    href={`/boutique/${category.slug}`}
+                    className="group overflow-hidden rounded-[1.5rem] border border-border/70 bg-card shadow-[0_18px_45px_-34px_rgba(15,16,18,0.12)] transition-all duration-300 hover:-translate-y-1 hover:border-primary/35 hover:shadow-[0_26px_62px_-34px_rgba(255,133,28,0.26)]"
+                  >
+                    <div className="relative">
+                      {categoryImage ? (
+                        <div className="relative aspect-[16/9] overflow-hidden bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.92),rgba(238,241,245,0.96))]">
+                          <Image
+                            src={categoryImage.src}
+                            alt={categoryImage.alt}
+                            fill
+                            className="object-contain p-4 transition duration-500 group-hover:scale-[1.03]"
+                          />
+                          <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.02),rgba(12,13,16,0.12))]" />
+                        </div>
+                      ) : (
+                        <div className="h-32 bg-[linear-gradient(135deg,rgba(255,133,28,0.15),rgba(15,16,18,0.06))]" />
+                      )}
+
+                      <div className="absolute left-4 top-4">
+                        <Badge variant="secondary" className="border border-white/15 bg-white/86 shadow-sm">
+                          {category.shortName}
+                        </Badge>
+                      </div>
+
+                      <div className="absolute right-4 top-4 flex size-9 items-center justify-center rounded-full border border-white/16 bg-white/82 shadow-sm">
+                        <ArrowRight className="size-4 text-foreground transition-transform group-hover:translate-x-0.5" />
+                      </div>
+                    </div>
+
+                    <div className="p-6">
+                      <h3 className="mb-3 text-xl font-semibold">{category.name}</h3>
+                      <p className="text-sm leading-relaxed text-muted-foreground">
+                        {category.description}
+                      </p>
+                      <div className="mt-5 flex flex-wrap gap-2">
+                        {category.subcategories.slice(0, 3).map((subcategory) => (
+                          <span
+                            key={subcategory.slug}
+                            className="rounded-full border border-border/70 bg-background px-3 py-1 text-xs text-muted-foreground"
+                          >
+                            {subcategory.name}
+                          </span>
+                        ))}
+                      </div>
+                    </div>
+                  </Link>
+                )
+              })}
             </div>
           </div>
         </section>

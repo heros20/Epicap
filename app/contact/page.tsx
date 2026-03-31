@@ -44,7 +44,7 @@ export default function ContactPage() {
                   <h2 className="text-xl font-semibold">Téléphone</h2>
                   <a href={`tel:${companyInfo.phone.replace(/\s+/g, "")}`}>{companyInfo.phone}</a>
                   <p className="text-sm text-muted-foreground">
-                    Siège Epicap - orientation vers la bonne agence selon votre besoin.
+                    Siège Epicap : orientation vers la bonne agence selon votre besoin.
                   </p>
                 </CardContent>
               </Card>
@@ -52,7 +52,7 @@ export default function ContactPage() {
               <Card className="p-0">
                 <CardContent className="space-y-3 p-6">
                   <Mail className="size-5 text-primary" />
-                  <h2 className="text-xl font-semibold">Email</h2>
+                  <h2 className="text-xl font-semibold">E-mail</h2>
                   <a href={`mailto:${companyInfo.email}`}>{companyInfo.email}</a>
                   <p className="text-sm text-muted-foreground">
                     Pour les devis, demandes de catalogues et questions techniques.

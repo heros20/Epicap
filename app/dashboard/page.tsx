@@ -3,20 +3,22 @@ import type { ReactNode } from "react"
 import {
   AlertTriangle,
   ArrowRight,
-  Building2,
   FileText,
   ReceiptText,
   ShieldCheck,
   ShoppingBag,
-  Users,
   UserRound,
 } from "lucide-react"
 
+import { AdminDashboardHome } from "@/components/dashboard/admin-dashboard-home"
 import { DashboardStatCard } from "@/components/dashboard/dashboard-stat-card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { getDashboardOverview } from "@/lib/auth/dashboard"
+import {
+  getAdminDashboardAnalytics,
+  getDashboardOverview,
+} from "@/lib/auth/dashboard"
 import { requireProfile } from "@/lib/auth/server"
 import {
   ORDER_STATUS_LABELS,
@@ -36,15 +38,18 @@ const dateFormatter = new Intl.DateTimeFormat("fr-FR", {
 
 export default async function DashboardHomePage() {
   const { user, profile } = await requireProfile("/dashboard")
-  const overview = await getDashboardOverview(profile, user.id)
   const adminMode = isAdminRole(profile.role)
 
-  const headline = adminMode
-    ? "Pilotage comptes, devis et commandes"
-    : "Suivi de votre relation Epicap"
-  const supportingText = adminMode
-    ? "Vision centrale des comptes, des rattachements societes et des flux commerciaux en attente de traitement."
-    : "Espace client pour suivre vos demandes, verifier votre profil et avancer plus vite sur vos futurs achats ou devis."
+  if (adminMode) {
+    const analytics = await getAdminDashboardAnalytics()
+    return <AdminDashboardHome analytics={analytics} profile={profile} />
+  }
+
+  const overview = await getDashboardOverview(profile, user.id)
+
+  const headline = "Suivi de votre relation Epicap"
+  const supportingText =
+    "Espace client pour suivre vos demandes, verifier votre profil et avancer plus vite sur vos futurs achats ou devis."
 
   const alerts: Array<{
     tone: "warning" | "ok"
@@ -64,9 +69,7 @@ export default async function DashboardHomePage() {
     alerts.push({
       tone: "warning",
       title: `${overview.pendingOrderCount} commande(s) a suivre`,
-      detail: adminMode
-        ? "Des commandes sont encore en attente, confirmees ou en preparation."
-        : "Votre espace contient des commandes encore en cours de traitement.",
+      detail: "Votre espace contient des commandes encore en cours de traitement.",
     })
   }
 
@@ -74,17 +77,7 @@ export default async function DashboardHomePage() {
     alerts.push({
       tone: "warning",
       title: `${overview.activeQuoteCount} devis actif(s)`,
-      detail: adminMode
-        ? "Le pipeline commercial reste ouvert sur des devis a relancer ou qualifier."
-        : "Des devis sont encore ouverts et meritent un suivi commercial.",
-    })
-  }
-
-  if (adminMode && overview.companyCount === 0) {
-    alerts.push({
-      tone: "warning",
-      title: "Aucune societe structuree",
-      detail: "Le dashboard est pret, mais les comptes ne sont pas encore rattaches a des entreprises formalisees.",
+      detail: "Des devis sont encore ouverts et meritent un suivi commercial.",
     })
   }
 
@@ -98,79 +91,48 @@ export default async function DashboardHomePage() {
 
   const statCards = [
     {
-      label: adminMode ? "Commandes plateforme" : "Mes commandes",
+      label: "Mes commandes",
       value: String(overview.orderCount),
-      helper: adminMode
-        ? "Volume total visible avec la portee admin."
-        : "Historique relie a votre compte Epicap.",
+      helper: "Historique relie a votre compte Epicap.",
       accent: "primary" as const,
     },
     {
-      label: adminMode ? "Devis actifs" : "Mes devis",
-      value: String(adminMode ? overview.activeQuoteCount : overview.quoteCount),
-      helper: adminMode
-        ? "Devis encore ouverts au traitement commercial."
-        : "Demandes envoyees ou en attente de retour.",
+      label: "Mes devis",
+      value: String(overview.quoteCount),
+      helper: "Demandes envoyees ou en attente de retour.",
       accent: overview.activeQuoteCount > 0 ? ("warning" as const) : ("default" as const),
     },
     {
-      label: adminMode ? "Societes" : "Rattachement",
-      value: adminMode
-        ? String(overview.companyCount)
-        : profile.company?.name ?? profile.company_name ?? "Aucun",
-      helper: adminMode
-        ? "Portefeuille B2B structure dans Supabase."
-        : "Societe actuellement associee au compte.",
+      label: "Rattachement",
+      value: profile.company?.name ?? profile.company_name ?? "Aucun",
+      helper: "Societe actuellement associee au compte.",
       accent: "default" as const,
     },
     {
-      label: adminMode ? "Comptes admin" : "Commandes en cours",
-      value: adminMode ? String(overview.adminCount) : String(overview.pendingOrderCount),
-      helper: adminMode
-        ? `${overview.memberCount} membre(s) standards visibles.`
-        : "Flux encore en attente ou en preparation.",
-      accent:
-        !adminMode && overview.pendingOrderCount > 0
-          ? ("warning" as const)
-          : ("default" as const),
+      label: "Commandes en cours",
+      value: String(overview.pendingOrderCount),
+      helper: "Flux encore en attente ou en preparation.",
+      accent: overview.pendingOrderCount > 0 ? ("warning" as const) : ("default" as const),
     },
   ]
 
-  const heroMetrics = adminMode
-    ? [
-        {
-          label: "Comptes membres",
-          value: String(overview.memberCount),
-          helper: "Profils client standard visibles",
-        },
-        {
-          label: "Devis a piloter",
-          value: String(overview.activeQuoteCount),
-          helper: "Pipeline commercial ouvert",
-        },
-        {
-          label: "Societes actives",
-          value: String(overview.companyCount),
-          helper: "Base B2B rattachee",
-        },
-      ]
-    : [
-        {
-          label: "Profil",
-          value: ROLE_LABELS[profile.role],
-          helper: "Niveau d'acces actuel",
-        },
-        {
-          label: "Devis",
-          value: String(overview.quoteCount),
-          helper: "Demandes disponibles",
-        },
-        {
-          label: "Rattachement",
-          value: profile.company?.name ?? profile.company_name ?? "A renseigner",
-          helper: "Contexte societaire",
-        },
-      ]
+  const heroMetrics = [
+    {
+      label: "Profil",
+      value: ROLE_LABELS[profile.role],
+      helper: "Niveau d'acces actuel",
+    },
+    {
+      label: "Devis",
+      value: String(overview.quoteCount),
+      helper: "Demandes disponibles",
+    },
+    {
+      label: "Rattachement",
+      value: profile.company?.name ?? profile.company_name ?? "A renseigner",
+      helper: "Contexte societaire",
+    },
+  ]
 
   const quickActions = [
     {
@@ -194,31 +156,6 @@ export default async function DashboardHomePage() {
       priority: overview.activeQuoteCount > 0,
       icon: <FileText className="size-4" />,
     },
-    ...(adminMode
-      ? [
-          {
-            href: "/dashboard/catalogue",
-            title: "Piloter le catalogue",
-            description: "Produits, images, PDF et publication du site.",
-            priority: true,
-            icon: <ShoppingBag className="size-4" />,
-          },
-          {
-            href: "/dashboard/equipe",
-            title: "Superviser l'equipe",
-            description: "Roles, activations et gouvernance des comptes.",
-            priority: true,
-            icon: <Users className="size-4" />,
-          },
-          {
-            href: "/dashboard/clients",
-            title: "Structurer les clients",
-            description: "Societes, rattachements et portefeuille B2B.",
-            priority: overview.companyCount === 0,
-            icon: <Building2 className="size-4" />,
-          },
-        ]
-      : []),
   ]
 
   return (
@@ -260,9 +197,7 @@ export default async function DashboardHomePage() {
                 size="lg"
                 className="border-background/16 bg-background/6 text-background hover:bg-background/12 hover:text-background"
               >
-                <Link href={adminMode ? "/dashboard/equipe" : "/dashboard/devis"}>
-                  {adminMode ? "Gerer les comptes" : "Voir mes devis"}
-                </Link>
+                <Link href="/dashboard/devis">Voir mes devis</Link>
               </Button>
             </div>
           </CardContent>
@@ -317,7 +252,7 @@ export default async function DashboardHomePage() {
               <div>
                 <CardTitle>Acces rapides</CardTitle>
                 <p className="mt-1 text-sm text-muted-foreground">
-                  Raccourcis de travail inspires d&apos;un vrai cockpit admin.
+                  Raccourcis pour avancer plus vite dans votre espace Epicap.
                 </p>
               </div>
             </div>
@@ -344,7 +279,7 @@ export default async function DashboardHomePage() {
             <StateRow label="Role" value={ROLE_LABELS[profile.role]} />
             <StateRow
               label="Portee"
-              value={adminMode ? "Vue globale admin" : "Vue personnelle"}
+              value="Vue personnelle"
             />
             <StateRow
               label="Societe"
@@ -358,12 +293,9 @@ export default async function DashboardHomePage() {
               label="Statut"
               value={profile.is_active ? "Actif" : "Desactive"}
             />
-            {adminMode ? (
-                <div className="rounded-[1.2rem] border border-primary/20 bg-primary/8 p-4 text-sm leading-6 text-muted-foreground">
-                  Le dashboard admin reprend l&apos;esprit d&apos;un tableau de bord terrain, mais
-                  pilote ici les comptes, les societes et les flux B2B Epicap.
-                </div>
-            ) : null}
+            <div className="rounded-[1.2rem] border border-primary/20 bg-primary/8 p-4 text-sm leading-6 text-muted-foreground">
+              Cet espace client centralise votre profil, vos commandes et vos demandes ouvertes.
+            </div>
           </CardContent>
         </Card>
       </section>

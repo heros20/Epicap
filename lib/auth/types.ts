@@ -41,26 +41,26 @@ export const ROLE_LABELS: Record<AppRole, string> = {
 
 export const ORDER_STATUS_LABELS: Record<OrderStatus, string> = {
   pending: "En attente",
-  confirmed: "Confirmee",
-  processing: "En preparation",
-  shipped: "Expediee",
-  delivered: "Livree",
-  cancelled: "Annulee",
-  refunded: "Remboursee",
+  confirmed: "Confirmée",
+  processing: "En préparation",
+  shipped: "Expédiée",
+  delivered: "Livrée",
+  cancelled: "Annulée",
+  refunded: "Remboursée",
 }
 
 export const QUOTE_STATUS_LABELS: Record<QuoteStatus, string> = {
   draft: "Brouillon",
-  sent: "Envoye",
-  viewed: "Consulte",
-  accepted: "Accepte",
-  rejected: "Refuse",
-  expired: "Expire",
+  sent: "Envoyé",
+  viewed: "Consulté",
+  accepted: "Accepté",
+  rejected: "Refusé",
+  expired: "Expiré",
   converted: "Converti",
 }
 
 export const DASHBOARD_NAV_GROUP_LABELS: Record<DashboardNavGroup, string> = {
-  priorites: "Priorites",
+  priorites: "Priorités",
   compte: "Mon compte",
   pilotage: "Pilotage",
 }
@@ -69,14 +69,14 @@ export const DASHBOARD_NAV_ITEMS = [
   {
     href: "/dashboard",
     label: "Vue d'ensemble",
-    description: "KPI, activite et acces rapides.",
+    description: "KPI, activité et accès rapides.",
     group: "priorites" as DashboardNavGroup,
     roles: ["member", "admin", "super_admin"] as AppRole[],
   },
   {
     href: "/dashboard/profil",
     label: "Profil",
-    description: "Coordonnees, societe et preferences.",
+    description: "Coordonnées, société et préférences.",
     group: "compte" as DashboardNavGroup,
     roles: ["member", "admin", "super_admin"] as AppRole[],
   },
@@ -97,21 +97,21 @@ export const DASHBOARD_NAV_ITEMS = [
   {
     href: "/dashboard/catalogue",
     label: "Catalogue",
-    description: "Produits, visuels, PJ et publication.",
+    description: "Produits, visuels, pièces jointes et publication.",
     group: "pilotage" as DashboardNavGroup,
     roles: ["admin", "super_admin"] as AppRole[],
   },
   {
     href: "/dashboard/equipe",
-    label: "Equipe",
-    description: "Gestion des membres et des roles.",
+    label: "Équipe",
+    description: "Gestion des membres et des rôles.",
     group: "pilotage" as DashboardNavGroup,
     roles: ["admin", "super_admin"] as AppRole[],
   },
   {
     href: "/dashboard/clients",
     label: "Clients",
-    description: "Societes, rattachements et visibilite B2B.",
+    description: "Sociétés, rattachements et visibilité B2B.",
     group: "pilotage" as DashboardNavGroup,
     roles: ["admin", "super_admin"] as AppRole[],
   },

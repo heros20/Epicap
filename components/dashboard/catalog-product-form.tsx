@@ -1,6 +1,7 @@
 import Image from "next/image"
 import Link from "next/link"
 import type { ReactNode } from "react"
+import { CircleDollarSign, PackageCheck, Truck } from "lucide-react"
 
 import { saveCatalogProductAction } from "@/lib/catalog/actions"
 import {
@@ -27,11 +28,48 @@ export function CatalogProductForm({
   const specsText = product?.specs.map((spec) => `${spec.name}: ${spec.value}`).join("\n") ?? ""
 
   return (
-    <form action={saveCatalogProductAction} encType="multipart/form-data" className="space-y-6">
+    <form action={saveCatalogProductAction} className="space-y-6">
       {product ? <input type="hidden" name="productId" value={product.id} /> : null}
 
       {error ? <MessageBox tone="error" message={error} /> : null}
       {success ? <MessageBox tone="success" message={success} /> : null}
+
+      <Card className="border-border/70 bg-card/92">
+        <CardHeader className="border-b border-border/70">
+          <CardTitle>Positionnement commercial</CardTitle>
+        </CardHeader>
+        <CardContent className="grid gap-4 p-6 md:grid-cols-3">
+          <OverviewTile
+            icon={<CircleDollarSign className="size-4 text-orange-700" />}
+            title="Mode"
+            value={product?.isRentable ? "Vente + location" : "Vente"}
+            helper={
+              product?.isRentable
+                ? "La fiche affiche un prix achat et un tarif journalier."
+                : "La fiche est configuree en offre vente uniquement."
+            }
+            tone="sale"
+          />
+          <OverviewTile
+            icon={<PackageCheck className="size-4 text-primary" />}
+            title="Publication"
+            value={product?.isActive ?? true ? "Publie" : "Brouillon"}
+            helper={
+              product?.inStock ?? true
+                ? "Le produit est marque comme disponible."
+                : "Le produit reste visible mais non disponible."
+            }
+            tone="neutral"
+          />
+          <OverviewTile
+            icon={<Truck className="size-4 text-emerald-700" />}
+            title="Medias"
+            value={`${product?.images.length ?? 0} image(s)`}
+            helper={`${product?.documents.length ?? 0} document(s) rattache(s) a la fiche.`}
+            tone="rental"
+          />
+        </CardContent>
+      </Card>
 
       <Card className="border-border/70 bg-card/92">
         <CardHeader className="border-b border-border/70">
@@ -111,84 +149,69 @@ export function CatalogProductForm({
 
       <Card className="border-border/70 bg-card/92">
         <CardHeader className="border-b border-border/70">
-          <CardTitle>Tarifs, stock et publication</CardTitle>
+          <CardTitle>Offre commerciale et publication</CardTitle>
         </CardHeader>
-        <CardContent className="grid gap-5 p-6 lg:grid-cols-2 xl:grid-cols-4">
-          <Field label="Prix HT" htmlFor="price">
-            <Input
-              id="price"
-              name="price"
-              type="number"
-              min="0"
-              step="0.01"
-              defaultValue={product?.price ?? 0}
-              required
-            />
-          </Field>
-          <Field label="Prix compare" htmlFor="compareAtPrice">
-            <Input
-              id="compareAtPrice"
-              name="compareAtPrice"
-              type="number"
-              min="0"
-              step="0.01"
-              defaultValue={product?.compareAtPrice ?? ""}
-            />
-          </Field>
-          <Field label="Stock" htmlFor="stockQuantity">
-            <Input
-              id="stockQuantity"
-              name="stockQuantity"
-              type="number"
-              min="0"
-              step="1"
-              defaultValue={product?.stockQuantity ?? 0}
-              required
-            />
-          </Field>
-          <Field label="Badge" htmlFor="badge">
-            <Input id="badge" name="badge" defaultValue={product?.badge ?? ""} />
-          </Field>
-          <Field label="Location / jour" htmlFor="rentalPriceDaily">
-            <Input
-              id="rentalPriceDaily"
-              name="rentalPriceDaily"
-              type="number"
-              min="0"
-              step="0.01"
-              defaultValue={product?.rentalPriceDaily ?? ""}
-            />
-          </Field>
-          <div className="space-y-3 xl:col-span-3">
-            <label className="flex items-center gap-3 rounded-[1.1rem] border border-border/70 bg-muted/25 px-4 py-3 text-sm">
-              <input
-                type="checkbox"
-                name="inStock"
-                defaultChecked={product?.inStock ?? true}
-                className="size-4"
-              />
-              Produit marque comme disponible
-            </label>
-            <div className="grid gap-3 md:grid-cols-3">
-              <label className="flex items-center gap-3 rounded-[1.1rem] border border-border/70 bg-muted/25 px-4 py-3 text-sm">
-                <input
-                  type="checkbox"
-                  name="isActive"
-                  defaultChecked={product?.isActive ?? true}
-                  className="size-4"
-                />
-                Publie sur le site
-              </label>
-              <label className="flex items-center gap-3 rounded-[1.1rem] border border-border/70 bg-muted/25 px-4 py-3 text-sm">
-                <input
-                  type="checkbox"
-                  name="isFeatured"
-                  defaultChecked={product?.isFeatured ?? false}
-                  className="size-4"
-                />
-                Mise en avant
-              </label>
-              <label className="flex items-center gap-3 rounded-[1.1rem] border border-border/70 bg-muted/25 px-4 py-3 text-sm">
+        <CardContent className="space-y-5 p-6">
+          <div className="grid gap-5 xl:grid-cols-[1.05fr_0.95fr]">
+            <div className="rounded-[1.35rem] border border-orange-300/25 bg-orange-50/60 p-5">
+              <div className="mb-5">
+                <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-orange-700">
+                  Canal vente
+                </p>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  Prix achat, stock et badge marketing visibles sur la fiche publique.
+                </p>
+              </div>
+              <div className="grid gap-5 sm:grid-cols-2">
+                <Field label="Prix HT" htmlFor="price">
+                  <Input
+                    id="price"
+                    name="price"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    defaultValue={product?.price ?? 0}
+                    required
+                  />
+                </Field>
+                <Field label="Prix compare" htmlFor="compareAtPrice">
+                  <Input
+                    id="compareAtPrice"
+                    name="compareAtPrice"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    defaultValue={product?.compareAtPrice ?? ""}
+                  />
+                </Field>
+                <Field label="Stock" htmlFor="stockQuantity">
+                  <Input
+                    id="stockQuantity"
+                    name="stockQuantity"
+                    type="number"
+                    min="0"
+                    step="1"
+                    defaultValue={product?.stockQuantity ?? 0}
+                    required
+                  />
+                </Field>
+                <Field label="Badge" htmlFor="badge">
+                  <Input id="badge" name="badge" defaultValue={product?.badge ?? ""} />
+                </Field>
+              </div>
+            </div>
+
+            <div className="rounded-[1.35rem] border border-emerald-300/25 bg-emerald-50/60 p-5">
+              <div className="mb-5">
+                <p className="text-[11px] font-bold uppercase tracking-[0.22em] text-emerald-700">
+                  Canal location
+                </p>
+                <p className="mt-2 text-sm text-muted-foreground">
+                  Activez la location pour faire remonter la fiche dans le catalogue et sur la
+                  page dediee.
+                </p>
+              </div>
+              <label className="flex items-center gap-3 rounded-[1.1rem] border border-emerald-300/25 bg-white/70 px-4 py-3 text-sm">
                 <input
                   type="checkbox"
                   name="isRentable"
@@ -197,7 +220,44 @@ export function CatalogProductForm({
                 />
                 Disponible en location
               </label>
+              <div className="mt-4">
+                <Field
+                  label="Location / jour"
+                  htmlFor="rentalPriceDaily"
+                  description="Ce tarif est requis si la location est active."
+                >
+                  <Input
+                    id="rentalPriceDaily"
+                    name="rentalPriceDaily"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    defaultValue={product?.rentalPriceDaily ?? ""}
+                  />
+                </Field>
+              </div>
             </div>
+          </div>
+
+          <div className="grid gap-3 md:grid-cols-3">
+            <ToggleTile
+              name="inStock"
+              defaultChecked={product?.inStock ?? true}
+              label="Produit disponible"
+              description="État de disponibilité pour la vente."
+            />
+            <ToggleTile
+              name="isActive"
+              defaultChecked={product?.isActive ?? true}
+              label="Publie sur le site"
+              description="Visible dans le catalogue public."
+            />
+            <ToggleTile
+              name="isFeatured"
+              defaultChecked={product?.isFeatured ?? false}
+              label="Mise en avant"
+              description="Eligible aux selections prioritaires."
+            />
           </div>
         </CardContent>
       </Card>
@@ -351,6 +411,60 @@ function Field({
       <div className="mt-2">{children}</div>
       {description ? <p className="mt-2 text-sm text-muted-foreground">{description}</p> : null}
     </div>
+  )
+}
+
+function OverviewTile({
+  icon,
+  title,
+  value,
+  helper,
+  tone,
+}: {
+  icon: ReactNode
+  title: string
+  value: string
+  helper: string
+  tone: "sale" | "rental" | "neutral"
+}) {
+  const wrapperClass =
+    tone === "sale"
+      ? "border-orange-300/25 bg-orange-50/60"
+      : tone === "rental"
+        ? "border-emerald-300/25 bg-emerald-50/60"
+        : "border-border/70 bg-muted/20"
+
+  return (
+    <div className={`rounded-[1.25rem] border p-4 ${wrapperClass}`}>
+      <div className="flex items-center gap-2 text-[11px] font-bold uppercase tracking-[0.2em] text-muted-foreground">
+        {icon}
+        <span>{title}</span>
+      </div>
+      <p className="mt-3 text-xl font-semibold">{value}</p>
+      <p className="mt-2 text-sm leading-6 text-muted-foreground">{helper}</p>
+    </div>
+  )
+}
+
+function ToggleTile({
+  name,
+  defaultChecked,
+  label,
+  description,
+}: {
+  name: string
+  defaultChecked: boolean
+  label: string
+  description: string
+}) {
+  return (
+    <label className="rounded-[1.15rem] border border-border/70 bg-muted/25 px-4 py-4">
+      <span className="flex items-center gap-3">
+        <input type="checkbox" name={name} defaultChecked={defaultChecked} className="size-4" />
+        <span className="text-sm font-medium">{label}</span>
+      </span>
+      <span className="mt-3 block text-sm leading-6 text-muted-foreground">{description}</span>
+    </label>
   )
 }
 

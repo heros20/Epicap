@@ -73,7 +73,7 @@ export const agencies: Agency[] = [
     slug: "escaudain",
     city: "Escaudain",
     region: "Nord",
-    address: "Parc d'activités des Six Marianne, rue des Entrepreneurs",
+    address: "ZI des Six Mariannes, rue des Entrepreneurs",
     postalCode: "59124",
     phone: "03 27 48 82 82",
     email: "info@epicap.com",
@@ -111,7 +111,7 @@ export const agencies: Agency[] = [
     email: "agence-idf@epicap.com",
     hours: "Lun-Jeu 08:00-12:00 / 13:00-17:00, Ven 08:00-12:00 / 13:00-16:00",
     contacts: [
-      { name: "Elodie Vasseur", role: "Responsable d'agence", phone: "06 55 50 99 88" },
+      { name: "Élodie Vasseur", role: "Responsable d'agence", phone: "06 55 50 99 88" },
       { name: "Robin Pierre", role: "Commercial", phone: "06 65 50 99 88" },
       { name: "Jessica Crepillon", role: "Assistante" },
     ],
@@ -142,7 +142,7 @@ export const agencies: Agency[] = [
     email: "normandie@epicap.com",
     hours: "Lun-Jeu 08:00-12:00 / 13:00-17:00, Ven 08:00-12:00 / 13:00-16:00",
     contacts: [
-      { name: "Gregory Ledoux", role: "Responsable commercial + agence", phone: "06 99 57 03 19" },
+      { name: "Grégory Ledoux", role: "Responsable commercial + agence", phone: "06 99 57 03 19" },
     ],
   },
   {
@@ -150,7 +150,7 @@ export const agencies: Agency[] = [
     slug: "sud-est",
     city: "Cavaillon",
     region: "Provence-Alpes-Côte d'Azur",
-    address: "419 route du moulin de Losque",
+    address: "419 route du Moulin de Losque",
     postalCode: "84300",
     phone: "04 88 60 51 08",
     email: "accueil.sudest@epicap.com",
@@ -178,13 +178,13 @@ export const agencies: Agency[] = [
     slug: "sud-ouest",
     city: "Bassens",
     region: "Nouvelle-Aquitaine",
-    address: "ZI des Guerlandes, Bâtiment 7 B3",
+    address: "ZI des Guerlandes, bâtiment 7 B3",
     postalCode: "33530",
     phone: "05 54 07 35 71",
     email: "sudouest@epicap.com",
     hours: "Lun-Jeu 08:00-12:00 / 13:00-17:00, Ven 08:00-12:00 / 13:00-16:00",
     contacts: [
-      { name: "Gerald Gras", role: "Responsable d'agence + commercial", phone: "06 58 31 30 12" },
+      { name: "Gérald Gras", role: "Responsable d'agence + commercial", phone: "06 58 31 30 12" },
     ],
   },
 ]

@@ -7,7 +7,7 @@ export const companyInfo = {
   brandName: "Epicap",
   tagline: "Matériel de désamiantage, vente, maintenance et location",
   heroTitle:
-    "Équipements de protection individuelle et collective contre l'amiante et autres polluants",
+    "Équipements de protection individuelle et collective contre l'amiante et les autres polluants",
   summary:
     "Epicap SAS est le spécialiste de la fourniture, de la location et de la maintenance de matériel et d'équipements de protection contre l'amiante et les autres polluants.",
   experience: "Plus de 15 ans d'expérience terrain",

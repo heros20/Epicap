@@ -141,7 +141,7 @@ export function HeaderAuthControls({ mobile = false }: { mobile?: boolean }) {
         <DropdownMenuSeparator />
         <DropdownMenuItem onClick={() => router.push("/dashboard")}>
           <LayoutDashboard className="size-4" />
-          Dashboard
+          Tableau de bord
         </DropdownMenuItem>
         <DropdownMenuItem onClick={() => router.push("/dashboard/profil")}>
           <UserRound className="size-4" />
