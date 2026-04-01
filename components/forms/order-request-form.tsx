@@ -14,10 +14,8 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { safeTrack } from "@/lib/analytics/events"
 import { getPricingSnapshot } from "@/lib/commerce/pricing"
-import {
-  initialRequestActionState,
-  submitOrderRequestAction,
-} from "@/lib/commerce/request-actions"
+import { initialRequestActionState } from "@/lib/commerce/request-action-state"
+import { submitOrderRequestAction } from "@/lib/commerce/request-actions"
 import { useCart } from "@/lib/cart/use-cart"
 
 export function OrderRequestForm() {

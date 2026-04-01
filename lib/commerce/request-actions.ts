@@ -5,6 +5,7 @@ import { z } from "zod"
 
 import { getCurrentAuthState } from "@/lib/auth/server"
 import { getCatalogProductBySlug, getCatalogProducts } from "@/lib/catalog/data"
+import type { RequestActionState } from "@/lib/commerce/request-action-state"
 import { getPricingSnapshot } from "@/lib/commerce/pricing"
 import type { Product } from "@/lib/data/products"
 
@@ -18,23 +19,6 @@ type RequestRpcClient = {
     fn: string,
     args?: Record<string, unknown>,
   ) => Promise<{ data: RequestRpcResult[] | null; error: { message?: string } | null }>
-}
-
-export interface RequestActionState {
-  status: "idle" | "success" | "error"
-  message?: string
-  reference?: string
-  subtotal?: number
-  discountAmount?: number
-  shippingAmount?: number
-  taxAmount?: number
-  total?: number
-  logisticsMode?: "estimated" | "manual"
-  hasQuoteOnlyItems?: boolean
-}
-
-export const initialRequestActionState: RequestActionState = {
-  status: "idle",
 }
 
 interface ResolvedRequestLine {

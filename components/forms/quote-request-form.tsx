@@ -13,10 +13,8 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { safeTrack } from "@/lib/analytics/events"
-import {
-  initialRequestActionState,
-  submitQuoteRequestAction,
-} from "@/lib/commerce/request-actions"
+import { initialRequestActionState } from "@/lib/commerce/request-action-state"
+import { submitQuoteRequestAction } from "@/lib/commerce/request-actions"
 import { useCart } from "@/lib/cart/use-cart"
 import type { Product } from "@/lib/data/products"
 
