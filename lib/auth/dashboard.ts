@@ -31,6 +31,38 @@ interface QuoteLineAnalyticsRow {
   total_price: number
 }
 
+export interface DashboardOrderItem {
+  id: string
+  name: string
+  sku: string
+  description: string | null
+  quantity: number
+  unit_price: number
+  total_price: number
+  is_rental: boolean
+  rental_days: number | null
+}
+
+export interface DashboardQuoteItem {
+  id: string
+  name: string
+  sku: string
+  description: string | null
+  quantity: number
+  unit_price: number
+  total_price: number
+  is_rental: boolean
+  rental_days: number | null
+}
+
+export interface DashboardOrderRecord extends Order {
+  order_items?: DashboardOrderItem[] | null
+}
+
+export interface DashboardQuoteRecord extends Quote {
+  quote_items?: DashboardQuoteItem[] | null
+}
+
 interface AdminOrderAnalyticsRow
   extends Pick<
     Order,
@@ -239,7 +271,7 @@ export async function getOrdersForDashboard(profile: ProfileWithCompany, userId:
   const query = supabase
     .from("orders")
     .select(
-      "id, order_number, user_id, company_id, company_name, contact_name, contact_email, status, payment_status, payment_method, subtotal, tax_amount, shipping_amount, discount_amount, total, currency, billing_address, shipping_address, shipping_method, tracking_number, notes, internal_notes, metadata, created_at, updated_at",
+      "id, order_number, user_id, company_id, company_name, contact_name, contact_email, status, payment_status, payment_method, subtotal, tax_amount, shipping_amount, discount_amount, total, currency, billing_address, shipping_address, shipping_method, tracking_number, notes, internal_notes, metadata, created_at, updated_at, order_items(id, name, sku, description, quantity, unit_price, total_price, is_rental, rental_days)",
     )
     .order("created_at", { ascending: false })
     .limit(30)
@@ -249,7 +281,7 @@ export async function getOrdersForDashboard(profile: ProfileWithCompany, userId:
   }
 
   const { data } = await query
-  return data ?? []
+  return (data ?? []) as DashboardOrderRecord[]
 }
 
 export async function getQuotesForDashboard(profile: ProfileWithCompany, userId: string) {
@@ -257,7 +289,7 @@ export async function getQuotesForDashboard(profile: ProfileWithCompany, userId:
   const query = supabase
     .from("quotes")
     .select(
-      "id, quote_number, user_id, company_id, company_name, contact_name, contact_email, status, subtotal, tax_amount, discount_amount, total, currency, valid_until, notes, internal_notes, metadata, created_at, updated_at",
+      "id, quote_number, user_id, company_id, company_name, contact_name, contact_email, status, subtotal, tax_amount, discount_amount, total, currency, valid_until, notes, internal_notes, metadata, created_at, updated_at, quote_items(id, name, sku, description, quantity, unit_price, total_price, is_rental, rental_days)",
     )
     .order("created_at", { ascending: false })
     .limit(30)
@@ -267,7 +299,7 @@ export async function getQuotesForDashboard(profile: ProfileWithCompany, userId:
   }
 
   const { data } = await query
-  return data ?? []
+  return (data ?? []) as DashboardQuoteRecord[]
 }
 
 export async function getTeamProfiles() {
