@@ -1,6 +1,8 @@
 "use client"
 
 import * as React from "react"
+
+import { safeTrack } from "@/lib/analytics/events"
 import type { Product } from "@/lib/data/products"
 
 export interface CartItem {
@@ -24,6 +26,10 @@ const CartContext = React.createContext<CartContextType | undefined>(undefined)
 
 const SHIPPING_THRESHOLD = 500 // Free shipping above 500€
 const SHIPPING_COST = 15 // Flat shipping cost
+
+function getMaxAllowedQuantity(product: Pick<Product, "stockQuantity">) {
+  return product.stockQuantity >= 999 ? 999 : Math.max(product.stockQuantity, 1)
+}
 
 export function CartProvider({ children }: { children: React.ReactNode }) {
   const [items, setItems] = React.useState<CartItem[]>([])
@@ -50,37 +56,73 @@ export function CartProvider({ children }: { children: React.ReactNode }) {
   }, [items, isLoaded])
 
   const addItem = React.useCallback((product: Product, quantity = 1) => {
+    const maxAllowedQuantity = getMaxAllowedQuantity(product)
+    const nextQuantity = Math.max(1, Math.min(quantity, maxAllowedQuantity))
+
     setItems((prevItems) => {
       const existingItem = prevItems.find((item) => item.product.id === product.id)
-      
+
       if (existingItem) {
         return prevItems.map((item) =>
           item.product.id === product.id
-            ? { ...item, quantity: Math.min(item.quantity + quantity, product.stockQuantity) }
+            ? {
+                ...item,
+                quantity: Math.min(item.quantity + nextQuantity, maxAllowedQuantity),
+              }
             : item
         )
       }
-      
-      return [...prevItems, { product, quantity: Math.min(quantity, product.stockQuantity) }]
+
+      return [...prevItems, { product, quantity: nextQuantity }]
+    })
+
+    safeTrack("Add To Cart", {
+      product_id: product.id,
+      product_name: product.name,
+      product_category: product.categorySlug,
+      product_brand: product.brand,
+      unit_price: product.price,
+      quantity: nextQuantity,
     })
   }, [])
 
   const removeItem = React.useCallback((productId: number) => {
-    setItems((prevItems) => prevItems.filter((item) => item.product.id !== productId))
+    setItems((prevItems) => {
+      const removedItem = prevItems.find((item) => item.product.id === productId)
+
+      if (removedItem) {
+        safeTrack("Remove From Cart", {
+          product_id: removedItem.product.id,
+          product_name: removedItem.product.name,
+          quantity: removedItem.quantity,
+        })
+      }
+
+      return prevItems.filter((item) => item.product.id !== productId)
+    })
   }, [])
 
   const updateQuantity = React.useCallback((productId: number, quantity: number) => {
     setItems((prevItems) =>
       prevItems.map((item) =>
         item.product.id === productId
-          ? { ...item, quantity: Math.max(1, Math.min(quantity, item.product.stockQuantity)) }
+          ? {
+              ...item,
+              quantity: Math.max(1, Math.min(quantity, getMaxAllowedQuantity(item.product))),
+            }
           : item
       )
     )
+
+    safeTrack("Cart Quantity Updated", {
+      product_id: productId,
+      quantity: Math.max(quantity, 1),
+    })
   }, [])
 
   const clearCart = React.useCallback(() => {
     setItems([])
+    safeTrack("Cart Cleared")
   }, [])
 
   const itemCount = React.useMemo(

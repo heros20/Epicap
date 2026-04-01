@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 
 import { getCatalogProducts } from "@/lib/catalog/data"
+import { normalizeSearchText } from "@/lib/catalog/search"
 import { categories, services } from "@/lib/data/navigation"
 
 type SuggestionType = "product" | "category" | "subcategory" | "service"
@@ -19,16 +20,8 @@ interface RankedSearchSuggestion extends SearchSuggestion {
 
 const MAX_SUGGESTIONS = 8
 
-function normalize(value: string) {
-  return value
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .toLowerCase()
-    .trim()
-}
-
 function getMatchScore(query: string, candidate: string, weight: number) {
-  const normalizedCandidate = normalize(candidate)
+  const normalizedCandidate = normalizeSearchText(candidate)
   if (!normalizedCandidate) {
     return 0
   }
@@ -74,7 +67,7 @@ function dedupeSuggestions(suggestions: RankedSearchSuggestion[]) {
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url)
   const query = searchParams.get("q")?.trim() ?? ""
-  const normalizedQuery = normalize(query)
+  const normalizedQuery = normalizeSearchText(query)
 
   if (normalizedQuery.length < 2) {
     return NextResponse.json({ suggestions: [] })

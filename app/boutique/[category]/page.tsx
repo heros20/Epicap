@@ -8,6 +8,7 @@ import { Footer } from "@/components/layout/footer"
 import { Header } from "@/components/layout/header"
 import { ProductCard } from "@/components/products/product-card"
 import { ProductFilters } from "@/components/products/product-filters"
+import { SortSelect } from "@/components/products/sort-select"
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -18,18 +19,12 @@ import {
 } from "@/components/ui/breadcrumb"
 import { Card, CardContent } from "@/components/ui/card"
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
-import {
   getCatalogBrands,
   getCatalogProducts,
   getCatalogProductsByCategory,
   searchCatalogProducts,
 } from "@/lib/catalog/data"
+import { sortCatalogProducts } from "@/lib/catalog/sort"
 import { categories } from "@/lib/data/navigation"
 
 interface PageProps {
@@ -120,26 +115,7 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
     )
   }
 
-  switch (resolvedSearchParams.sort) {
-    case "price-asc":
-      categoryProducts.sort((a, b) => a.price - b.price)
-      break
-    case "price-desc":
-      categoryProducts.sort((a, b) => b.price - a.price)
-      break
-    case "name":
-      categoryProducts.sort((a, b) => a.name.localeCompare(b.name))
-      break
-    case "newest":
-      categoryProducts = categoryProducts.filter((product) => product.isNew).concat(
-        categoryProducts.filter((product) => !product.isNew),
-      )
-      break
-    default:
-      categoryProducts = categoryProducts.filter((product) => product.isFeatured).concat(
-        categoryProducts.filter((product) => !product.isFeatured),
-      )
-  }
+  categoryProducts = sortCatalogProducts(categoryProducts, resolvedSearchParams.sort)
 
   const maxPrice = Math.max(...allProducts.map((product) => product.price), 5000)
 
@@ -269,18 +245,7 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
                       </Suspense>
                     </div>
 
-                    <Select defaultValue={resolvedSearchParams.sort || "featured"}>
-                      <SelectTrigger className="w-[180px]">
-                        <SelectValue placeholder="Trier par" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="featured">Mis en avant</SelectItem>
-                        <SelectItem value="newest">Nouveautés</SelectItem>
-                        <SelectItem value="price-asc">Prix croissant</SelectItem>
-                        <SelectItem value="price-desc">Prix décroissant</SelectItem>
-                        <SelectItem value="name">Nom A-Z</SelectItem>
-                      </SelectContent>
-                    </Select>
+                    <SortSelect currentSort={resolvedSearchParams.sort} />
                   </div>
                 </div>
 

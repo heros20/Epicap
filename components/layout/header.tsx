@@ -34,6 +34,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet"
+import { safeTrack } from "@/lib/analytics/events"
 import { useCart } from "@/lib/cart/use-cart"
 import { companyInfo } from "@/lib/data/company"
 import { categories, services } from "@/lib/data/navigation"
@@ -89,6 +90,7 @@ export function Header() {
             <div className="ml-auto flex items-center gap-4">
               <a
                 href={`tel:${companyInfo.phone.replace(/\s+/g, "")}`}
+                onClick={() => safeTrack("Phone Clicked", { source_page: "header-topbar" })}
                 className="flex items-center gap-1.5 font-medium transition-colors hover:text-primary"
               >
                 <Phone className="size-3.5" />
@@ -133,7 +135,12 @@ export function Header() {
               </Link>
 
               <Button asChild className="hidden rounded-full px-5 shadow-sm lg:flex">
-                <Link href="/devis">Demander un devis</Link>
+                <Link
+                  href="/devis?source=header"
+                  onClick={() => safeTrack("Quote CTA Clicked", { source_page: "header" })}
+                >
+                  Demander un devis
+                </Link>
               </Button>
 
               <HeaderAuthControls />
@@ -348,10 +355,18 @@ function MobileNav() {
       <div className="space-y-2 border-t border-border/70 bg-muted/35 p-4">
         <HeaderAuthControls mobile />
         <Button asChild className="w-full rounded-full">
-          <Link href="/devis">Demander un devis</Link>
+          <Link
+            href="/devis?source=mobile-header"
+            onClick={() => safeTrack("Quote CTA Clicked", { source_page: "mobile-header" })}
+          >
+            Demander un devis
+          </Link>
         </Button>
         <Button variant="outline" asChild className="w-full rounded-full">
-          <a href={`tel:${companyInfo.phone.replace(/\s+/g, "")}`}>
+          <a
+            href={`tel:${companyInfo.phone.replace(/\s+/g, "")}`}
+            onClick={() => safeTrack("Phone Clicked", { source_page: "mobile-header" })}
+          >
             <Phone className="mr-2 size-4" />
             {companyInfo.phone}
           </a>

@@ -6,6 +6,7 @@ import { Footer } from "@/components/layout/footer"
 import { Header } from "@/components/layout/header"
 import { ProductCard } from "@/components/products/product-card"
 import { ProductFilters } from "@/components/products/product-filters"
+import { SortSelect } from "@/components/products/sort-select"
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -15,17 +16,11 @@ import {
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select"
-import {
   getCatalogBrands,
   getCatalogProducts,
   searchCatalogProducts,
 } from "@/lib/catalog/data"
+import { sortCatalogProducts } from "@/lib/catalog/sort"
 import { categories } from "@/lib/data/navigation"
 
 export const metadata: Metadata = {
@@ -74,26 +69,7 @@ export default async function BoutiquePage({ searchParams }: PageProps) {
     filteredProducts = filteredProducts.filter((product) => product.price <= Number(params.maxPrice))
   }
 
-  switch (params.sort) {
-    case "price-asc":
-      filteredProducts.sort((a, b) => a.price - b.price)
-      break
-    case "price-desc":
-      filteredProducts.sort((a, b) => b.price - a.price)
-      break
-    case "name":
-      filteredProducts.sort((a, b) => a.name.localeCompare(b.name))
-      break
-    case "newest":
-      filteredProducts = filteredProducts.filter((product) => product.isNew).concat(
-        filteredProducts.filter((product) => !product.isNew),
-      )
-      break
-    default:
-      filteredProducts = filteredProducts.filter((product) => product.isFeatured).concat(
-        filteredProducts.filter((product) => !product.isFeatured),
-      )
-  }
+  filteredProducts = sortCatalogProducts(filteredProducts, params.sort)
 
   const maxPrice = Math.max(...allProducts.map((product) => product.price), 5000)
 
@@ -222,22 +198,5 @@ export default async function BoutiquePage({ searchParams }: PageProps) {
 
       <Footer />
     </div>
-  )
-}
-
-function SortSelect({ currentSort }: { currentSort?: string }) {
-  return (
-    <Select defaultValue={currentSort || "featured"}>
-      <SelectTrigger className="w-[180px]">
-        <SelectValue placeholder="Trier par" />
-      </SelectTrigger>
-      <SelectContent>
-        <SelectItem value="featured">Mis en avant</SelectItem>
-        <SelectItem value="newest">Nouveautés</SelectItem>
-        <SelectItem value="price-asc">Prix croissant</SelectItem>
-        <SelectItem value="price-desc">Prix décroissant</SelectItem>
-        <SelectItem value="name">Nom A-Z</SelectItem>
-      </SelectContent>
-    </Select>
   )
 }

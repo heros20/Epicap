@@ -93,7 +93,7 @@ export default async function FitTestPage() {
 
                   <div className="flex flex-col gap-3 sm:flex-row lg:flex-col">
                     <Button asChild>
-                      <Link href="/devis">
+                      <Link href="/devis?service=fit-test&source=fit-test">
                         Planifier un FIT TEST
                         <ArrowRight className="ml-2 size-4" />
                       </Link>

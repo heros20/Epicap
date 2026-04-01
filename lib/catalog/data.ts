@@ -4,6 +4,8 @@ import {
   buildCatalogProductHref,
   getCatalogCategoryMeta,
 } from "@/lib/catalog/shared"
+import { normalizeBrandLabel } from "@/lib/catalog/normalize"
+import { matchesSearchText } from "@/lib/catalog/search"
 import {
   products as generatedProducts,
   type Product,
@@ -74,6 +76,7 @@ const fallbackCatalog: CatalogEntry[] = generatedProducts.map((product) => {
     ...product,
     slug,
     sku,
+    brand: normalizeBrandLabel(product.brand),
     documents: product.documents.map((document) => ({ ...document })),
     images: [...product.images],
     specs: product.specs.map((spec) => ({ ...spec })),
@@ -176,7 +179,7 @@ function normalizeProductRow(row: ProductRow): CatalogEntry {
     categoryName,
     subcategorySlug: row.subcategory_slug ?? undefined,
     subcategoryName,
-    brand: row.brand,
+    brand: normalizeBrandLabel(row.brand),
     image: row.image ?? images[0] ?? "",
     images,
     inStock: row.in_stock,
@@ -218,7 +221,7 @@ export async function getCatalogProducts(): Promise<Product[]> {
 
 export async function getCatalogBrands() {
   const products = await getCatalogEntriesCached()
-  return [...new Set(products.map((product) => product.brand))].sort((left, right) =>
+  return [...new Set(products.map((product) => normalizeBrandLabel(product.brand)))].sort((left, right) =>
     left.localeCompare(right, "fr"),
   )
 }
@@ -274,20 +277,20 @@ export async function getRelatedCatalogProducts(product: Pick<Product, "id" | "c
 }
 
 export async function searchCatalogProducts(query: string) {
-  const lowerQuery = query.toLowerCase()
   const products = await getCatalogEntriesCached()
 
   return products.filter(
     (product) =>
-      product.name.toLowerCase().includes(lowerQuery) ||
-      product.shortDescription.toLowerCase().includes(lowerQuery) ||
-      product.description.toLowerCase().includes(lowerQuery) ||
-      product.sku.toLowerCase().includes(lowerQuery) ||
-      product.brand.toLowerCase().includes(lowerQuery) ||
+      matchesSearchText(
+        query,
+        product.name,
+        product.shortDescription,
+        product.description,
+        product.sku,
+        product.brand,
+      ) ||
       product.documents.some(
-        (document) =>
-          document.name.toLowerCase().includes(lowerQuery) ||
-          document.description.toLowerCase().includes(lowerQuery),
+        (document) => matchesSearchText(query, document.name, document.description),
       ),
   )
 }

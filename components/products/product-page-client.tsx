@@ -34,6 +34,7 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { safeTrack } from "@/lib/analytics/events"
 import { companyInfo } from "@/lib/data/company"
 import { useCart } from "@/lib/cart/use-cart"
 import type { Category } from "@/lib/data/navigation"
@@ -57,10 +58,35 @@ export function ProductPageClient({
   const [quantity, setQuantity] = React.useState(1)
   const [isAdded, setIsAdded] = React.useState(false)
   const hasDocuments = product.documents.length > 0
+  const quoteRequestHref = `/devis?product=${product.slug}&source=product`
+  const rentalRequestHref = `/devis?product=${product.slug}&service=location&source=product`
+
+  React.useEffect(() => {
+    safeTrack("Product Viewed", {
+      product_id: product.id,
+      product_name: product.name,
+      product_category: product.categorySlug,
+      product_brand: product.brand,
+      product_price: product.price,
+      is_rentable: Boolean(product.isRentable),
+    })
+  }, [
+    product.brand,
+    product.categorySlug,
+    product.id,
+    product.isRentable,
+    product.name,
+    product.price,
+  ])
 
   const handleAddToCart = () => {
     addItem(product, quantity)
     setIsAdded(true)
+    safeTrack("Product Add To Cart Clicked", {
+      product_id: product.id,
+      product_name: product.name,
+      quantity,
+    })
     window.setTimeout(() => setIsAdded(false), 2000)
   }
 
@@ -193,6 +219,8 @@ export function ProductPageClient({
                   setQuantity={setQuantity}
                   onAddToCart={handleAddToCart}
                   isAdded={isAdded}
+                  quoteRequestHref={quoteRequestHref}
+                  rentalRequestHref={rentalRequestHref}
                 />
 
                 <div className="mt-8 grid grid-cols-2 gap-4 border-t pt-8">
@@ -372,7 +400,18 @@ export function ProductPageClient({
             </p>
             <div className="flex flex-col justify-center gap-4 sm:flex-row">
               <Button size="lg" variant="secondary" asChild>
-                <Link href="/devis">Demander un devis</Link>
+                <Link
+                  href={quoteRequestHref}
+                  onClick={() =>
+                    safeTrack("Quote CTA Clicked", {
+                      source_page: "product-footer",
+                      product_id: product.id,
+                      product_name: product.name,
+                    })
+                  }
+                >
+                  Demander un devis
+                </Link>
               </Button>
               <Button
                 size="lg"
@@ -380,7 +419,15 @@ export function ProductPageClient({
                 asChild
                 className="border-primary-foreground/20 text-primary-foreground hover:bg-primary-foreground/10 hover:text-primary-foreground"
               >
-                <a href={`tel:${companyInfo.phone.replace(/\s+/g, "")}`}>
+                <a
+                  href={`tel:${companyInfo.phone.replace(/\s+/g, "")}`}
+                  onClick={() =>
+                    safeTrack("Phone Clicked", {
+                      source_page: "product-footer",
+                      product_id: product.id,
+                    })
+                  }
+                >
                   <Phone className="mr-2 size-4" />
                   {companyInfo.phone}
                 </a>
@@ -510,12 +557,16 @@ function AddToCartSection({
   setQuantity,
   onAddToCart,
   isAdded,
+  quoteRequestHref,
+  rentalRequestHref,
 }: {
   product: Product
   quantity: number
   setQuantity: (quantity: number | ((currentValue: number) => number)) => void
   onAddToCart: () => void
   isAdded: boolean
+  quoteRequestHref: string
+  rentalRequestHref: string
 }) {
   const maxSelectableQuantity = product.stockQuantity >= 999 ? 20 : product.stockQuantity
 
@@ -550,7 +601,18 @@ function AddToCartSection({
           {isAdded ? "Ajoute au panier" : "Ajouter au panier"}
         </Button>
         <Button size="lg" variant="outline" asChild>
-          <Link href="/devis">Devis</Link>
+          <Link
+            href={quoteRequestHref}
+            onClick={() =>
+              safeTrack("Quote CTA Clicked", {
+                source_page: "product-main",
+                product_id: product.id,
+                product_name: product.name,
+              })
+            }
+          >
+            Devis
+          </Link>
         </Button>
       </div>
 
@@ -567,7 +629,18 @@ function AddToCartSection({
                 </p>
               </div>
               <Button variant="outline" size="sm" asChild>
-                <Link href={`/location?product=${product.slug}`}>Louer</Link>
+                <Link
+                  href={rentalRequestHref}
+                  onClick={() =>
+                    safeTrack("Rental CTA Clicked", {
+                      source_page: "product-rental-card",
+                      product_id: product.id,
+                      product_name: product.name,
+                    })
+                  }
+                >
+                  Louer
+                </Link>
               </Button>
             </div>
           </CardContent>

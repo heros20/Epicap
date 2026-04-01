@@ -16,6 +16,7 @@ import {
 import { Footer } from "@/components/layout/footer"
 import { Header } from "@/components/layout/header"
 import { ProductCard } from "@/components/products/product-card"
+import { JsonLd } from "@/components/seo/json-ld"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
@@ -102,12 +103,32 @@ export default async function HomePage() {
       getRepresentativeCategoryImage(category.slug, catalogProducts),
     ]),
   )
+  const localBusinessStructuredData = {
+    "@context": "https://schema.org",
+    "@type": "LocalBusiness",
+    name: companyInfo.legalName,
+    alternateName: companyInfo.brandName,
+    description: companyInfo.summary,
+    telephone: companyInfo.phone,
+    email: companyInfo.email,
+    address: {
+      "@type": "PostalAddress",
+      streetAddress: companyInfo.headOffice.address,
+      postalCode: companyInfo.headOffice.postalCode,
+      addressLocality: companyInfo.headOffice.city,
+      addressCountry: "FR",
+    },
+    areaServed: agencies.map((agency) => agency.region),
+    url: "https://epicap.com",
+  }
 
   return (
-    <div className="flex min-h-screen flex-col">
-      <Header />
+    <>
+      <JsonLd data={localBusinessStructuredData} />
+      <div className="flex min-h-screen flex-col">
+        <Header />
 
-      <main className="flex-1">
+        <main className="flex-1">
         <section className="relative overflow-hidden bg-[radial-gradient(circle_at_top_right,rgba(255,133,28,0.24),transparent_24%),linear-gradient(135deg,#0f1012_0%,#17191d_52%,#090a0b_100%)] text-background">
           <div className="absolute inset-0 opacity-[0.08]">
             <div
@@ -472,7 +493,7 @@ export default async function HomePage() {
             </p>
             <div className="flex flex-col justify-center gap-4 sm:flex-row">
               <Button size="lg" variant="secondary" asChild>
-                <Link href="/devis">
+                <Link href="/devis?source=home">
                   Demander un devis
                   <ArrowRight className="ml-2 size-4" />
                 </Link>
@@ -491,10 +512,11 @@ export default async function HomePage() {
             </div>
           </div>
         </section>
-      </main>
+        </main>
 
-      <Footer />
-    </div>
+        <Footer />
+      </div>
+    </>
   )
 }
 

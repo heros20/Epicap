@@ -1,5 +1,6 @@
 "use client"
 
+import * as React from "react"
 import type { ReactNode } from "react"
 import Image from "next/image"
 import Link from "next/link"
@@ -15,6 +16,7 @@ import {
   Truck,
 } from "lucide-react"
 
+import { useAuth } from "@/components/auth/auth-provider"
 import { Footer } from "@/components/layout/footer"
 import { Header } from "@/components/layout/header"
 import { Badge } from "@/components/ui/badge"
@@ -30,11 +32,11 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Progress } from "@/components/ui/progress"
 import { Separator } from "@/components/ui/separator"
+import { safeTrack } from "@/lib/analytics/events"
 import { useCart } from "@/lib/cart/use-cart"
+import { getPricingSnapshot } from "@/lib/commerce/pricing"
 import { companyInfo } from "@/lib/data/company"
 import type { CartItem } from "@/lib/cart/cart-context"
-
-const FREE_SHIPPING_THRESHOLD = 500
 
 const priceFormatter = new Intl.NumberFormat("fr-FR", {
   style: "currency",
@@ -50,11 +52,29 @@ function formatPriceOrQuote(value: number) {
 }
 
 export default function CartPage() {
-  const { items, removeItem, updateQuantity, clearCart, itemCount, subtotal, shipping } = useCart()
-  const tax = subtotal * 0.2
-  const total = subtotal + shipping + tax
-  const freeShippingProgress = Math.min((subtotal / FREE_SHIPPING_THRESHOLD) * 100, 100)
-  const remainingForFreeShipping = Math.max(FREE_SHIPPING_THRESHOLD - subtotal, 0)
+  const { profile } = useAuth()
+  const { items, removeItem, updateQuantity, clearCart, itemCount } = useCart()
+  const companyDiscountRate = Number(profile?.company?.discount_percentage ?? 0)
+  const pricing = React.useMemo(
+    () =>
+      getPricingSnapshot(
+        items.map((item) => ({
+          product: item.product,
+          quantity: item.quantity,
+        })),
+        companyDiscountRate,
+      ),
+    [companyDiscountRate, items],
+  )
+
+  React.useEffect(() => {
+    safeTrack("Cart Viewed", {
+      cart_items: items.length,
+      logistics_mode: pricing.logisticsMode,
+      quote_only_items: pricing.hasQuoteOnlyItems,
+      company_discount_rate: companyDiscountRate || undefined,
+    })
+  }, [companyDiscountRate, items.length, pricing.hasQuoteOnlyItems, pricing.logisticsMode])
 
   if (items.length === 0) {
     return (
@@ -86,18 +106,18 @@ export default function CartPage() {
                 </Badge>
                 <h1 className="mb-4 text-4xl font-bold tracking-tight">Votre panier est vide</h1>
                 <p className="mx-auto mb-8 max-w-2xl text-base leading-7 text-muted-foreground">
-                  Ajoutez des références du catalogue vente ou préparez directement une demande de
-                  devis pour vos besoins de désamiantage, confinement et protection respiratoire.
+                  Ajoutez des references du catalogue vente ou preparez directement une demande de
+                  devis pour vos besoins chantier.
                 </p>
                 <div className="flex flex-col justify-center gap-3 sm:flex-row">
                   <Button asChild size="lg">
                     <Link href="/boutique">
-                      Accéder au catalogue
+                      Acceder au catalogue
                       <ArrowRight className="ml-2 size-4" />
                     </Link>
                   </Button>
                   <Button asChild size="lg" variant="outline">
-                    <Link href="/devis">Demander un devis</Link>
+                    <Link href="/devis?source=cart-empty">Demander un devis</Link>
                   </Button>
                 </div>
               </div>
@@ -106,12 +126,12 @@ export default function CartPage() {
                 <ServiceHighlight
                   icon={<Truck className="size-5 text-primary" />}
                   title="Logistique chantier"
-                  description="Livraison standard ou retrait en agence selon la référence et la zone."
+                  description="Livraison standard ou retrait agence selon la famille produit."
                 />
                 <ServiceHighlight
                   icon={<ShieldCheck className="size-5 text-primary" />}
-                  title="Sélection pro"
-                  description="Références Epicap dédiées à l’amiante, au plomb et aux polluants."
+                  title="Selection pro"
+                  description="References Epicap dediees a l'amiante, au plomb et aux polluants."
                 />
                 <ServiceHighlight
                   icon={<Phone className="size-5 text-primary" />}
@@ -126,6 +146,11 @@ export default function CartPage() {
       </>
     )
   }
+
+  const freeShippingProgress =
+    pricing.shippingThreshold && pricing.shippingThreshold > 0
+      ? Math.min((pricing.subtotal / pricing.shippingThreshold) * 100, 100)
+      : 100
 
   return (
     <>
@@ -150,19 +175,24 @@ export default function CartPage() {
             <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
               <div className="max-w-3xl">
                 <Badge variant="secondary" className="mb-4 rounded-full px-4 py-1">
-                  Préparation de commande
+                  Preparation de commande
                 </Badge>
-                <h1 className="mb-3 text-4xl font-bold tracking-tight">Vérifier les quantités avant validation</h1>
+                <h1 className="mb-3 text-4xl font-bold tracking-tight">
+                  Verifier les quantites avant validation
+                </h1>
                 <p className="text-base leading-7 text-muted-foreground">
-                  Contrôlez votre sélection, ajustez les volumes par chantier et basculez vers le
-                  checkout ou une demande de devis selon votre mode d’achat.
+                  Le panier tient maintenant compte des remises B2B et des contraintes logistiques.
+                  Les references lourdes, louables ou sur devis peuvent etre redirigees vers une
+                  validation manuelle.
                 </p>
               </div>
 
               <div className="flex flex-wrap gap-3">
                 <Badge className="rounded-full px-4 py-1.5">{itemCount} article(s)</Badge>
                 <Badge variant="outline" className="rounded-full px-4 py-1.5">
-                  {shipping === 0 ? "Livraison offerte acquise" : "Livraison estimée à partir de 15 € HT"}
+                  {pricing.logisticsMode === "manual"
+                    ? "Logistique chantier a confirmer"
+                    : "Logistique standard estimee"}
                 </Badge>
               </div>
             </div>
@@ -177,9 +207,9 @@ export default function CartPage() {
                   <CardHeader className="border-b border-border/70 bg-muted/18">
                     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                       <div>
-                        <CardTitle>Articles sélectionnés</CardTitle>
+                        <CardTitle>Articles selectionnes</CardTitle>
                         <CardDescription>
-                          {items.length} ligne(s) de commande prêtes à être confirmées.
+                          {items.length} ligne(s) de commande prêtes a etre transmises.
                         </CardDescription>
                       </div>
                       <Button variant="ghost" onClick={clearCart} className="rounded-full">
@@ -207,7 +237,7 @@ export default function CartPage() {
                     <Link href="/boutique">Continuer vos achats</Link>
                   </Button>
                   <Button asChild variant="outline" className="rounded-full">
-                    <Link href="/devis">
+                    <Link href="/devis?cart=1&source=cart">
                       Basculer en demande de devis
                       <FileText className="ml-2 size-4" />
                     </Link>
@@ -217,18 +247,18 @@ export default function CartPage() {
                 <div className="grid gap-4 md:grid-cols-3">
                   <ServiceHighlight
                     icon={<Truck className="size-5 text-primary" />}
-                    title="Expédition chantier"
-                    description="Préparation atelier et livraison selon disponibilité des références."
+                    title="Expedition chantier"
+                    description="Livraison standard, retrait agence ou validation transport dedie."
                   />
                   <ServiceHighlight
                     icon={<ShieldCheck className="size-5 text-primary" />}
-                    title="Conformité usage pro"
-                    description="Matériels adaptés aux environnements amiante, confinement et décontamination."
+                    title="Conformite usage pro"
+                    description="Materiels adaptes aux environnements amiante, confinement et decontamination."
                   />
                   <ServiceHighlight
                     icon={<Phone className="size-5 text-primary" />}
                     title="Validation commerciale"
-                    description="Besoin d’un arbitrage technique ou d’un produit équivalent : Epicap vous rappelle."
+                    description="Epicap peut arbitrer entre achat, devis et location."
                   />
                 </div>
               </div>
@@ -237,41 +267,70 @@ export default function CartPage() {
                 <Card className="overflow-hidden p-0">
                   <div className="bg-[linear-gradient(135deg,#101114_0%,#17191d_100%)] px-6 py-6 text-background">
                     <p className="mb-2 text-xs font-semibold uppercase tracking-[0.22em] text-background/60">
-                      Résumé commande
+                      Resume commande
                     </p>
-                    <h2 className="text-2xl font-bold">Prêt pour le checkout</h2>
+                    <h2 className="text-2xl font-bold">Pret pour le checkout</h2>
                     <p className="mt-2 text-sm leading-6 text-background/72">
-                      Les montants ci-dessous restent indicatifs. Les articles sur devis seront
-                      confirmés par l’équipe Epicap.
+                      Les montants deviennent pilotables et les exceptions logistiques remontent
+                      maintenant clairement.
                     </p>
                   </div>
 
                   <CardContent className="space-y-6 p-6">
-                    <div className="space-y-3 rounded-2xl border border-border/70 bg-muted/20 p-4">
-                      <div className="flex items-center justify-between text-sm">
-                        <span>Seuil livraison offerte</span>
-                        <span className="font-semibold">{formatPrice(FREE_SHIPPING_THRESHOLD)}</span>
+                    {pricing.logisticsMode === "estimated" && pricing.shippingThreshold ? (
+                      <div className="space-y-3 rounded-2xl border border-border/70 bg-muted/20 p-4">
+                        <div className="flex items-center justify-between text-sm">
+                          <span>Seuil livraison offerte</span>
+                          <span className="font-semibold">{formatPrice(pricing.shippingThreshold)}</span>
+                        </div>
+                        <Progress value={freeShippingProgress} />
+                        <p className="text-sm text-muted-foreground">
+                          {pricing.remainingForFreeShipping && pricing.remainingForFreeShipping > 0
+                            ? `Plus que ${formatPrice(pricing.remainingForFreeShipping)} HT pour debloquer la livraison offerte.`
+                            : "Le seuil de livraison offerte est atteint."}
+                        </p>
                       </div>
-                      <Progress value={freeShippingProgress} />
-                      <p className="text-sm text-muted-foreground">
-                        {remainingForFreeShipping > 0
-                          ? `Plus que ${formatPrice(remainingForFreeShipping)} HT pour débloquer la livraison offerte.`
-                          : "Le seuil de livraison offerte est atteint."}
-                      </p>
-                    </div>
+                    ) : (
+                      <div className="rounded-2xl border border-border/70 bg-muted/20 p-4 text-sm leading-6 text-muted-foreground">
+                        La logistique est a confirmer car le panier contient au moins une reference
+                        louable, une famille a transport specifique ou un article sur devis.
+                      </div>
+                    )}
 
                     <div className="space-y-3 text-sm">
-                      <SummaryRow label="Sous-total HT" value={formatPrice(subtotal)} />
+                      <SummaryRow label="Sous-total HT" value={formatPrice(pricing.subtotal)} />
                       <SummaryRow
-                        label="Livraison"
-                        value={shipping === 0 ? "Offerte" : formatPrice(shipping)}
-                        valueClassName={shipping === 0 ? "text-success" : undefined}
+                        label="Remise societe"
+                        value={
+                          pricing.discountAmount > 0
+                            ? `-${formatPrice(pricing.discountAmount)}`
+                            : "Aucune"
+                        }
                       />
-                      <SummaryRow label="TVA estimée (20%)" value={formatPrice(tax)} />
+                      <SummaryRow
+                        label="Logistique"
+                        value={
+                          pricing.logisticsMode === "manual"
+                            ? "A confirmer"
+                            : pricing.shippingAmount === 0
+                              ? "Offerte"
+                              : formatPrice(pricing.shippingAmount)
+                        }
+                        valueClassName={
+                          pricing.logisticsMode === "manual" || pricing.shippingAmount === 0
+                            ? "text-success"
+                            : undefined
+                        }
+                      />
+                      <SummaryRow label="TVA estimee (20%)" value={formatPrice(pricing.taxAmount)} />
                       <Separator />
                       <SummaryRow
-                        label="Total estimé TTC"
-                        value={formatPrice(total)}
+                        label="Total estime"
+                        value={
+                          pricing.hasQuoteOnlyItems
+                            ? "Affinage commercial"
+                            : formatPrice(pricing.total)
+                        }
                         className="text-base font-semibold text-foreground"
                         valueClassName="text-lg"
                       />
@@ -280,23 +339,27 @@ export default function CartPage() {
                     <div className="space-y-3">
                       <Button asChild className="w-full" size="lg">
                         <Link href="/checkout">
-                          Procéder au checkout
+                          Proceder au checkout
                           <ArrowRight className="ml-2 size-4" />
                         </Link>
                       </Button>
                       <Button asChild variant="outline" className="w-full" size="lg">
-                        <Link href="/devis">Demander un devis</Link>
+                        <Link href="/devis?cart=1&source=cart">Demander un devis</Link>
                       </Button>
                     </div>
 
                     <div className="rounded-2xl border border-border/70 bg-muted/20 p-4">
-                      <p className="mb-2 text-sm font-semibold">Besoin d’une validation technique ?</p>
+                      <p className="mb-2 text-sm font-semibold">Conditions B2B</p>
                       <p className="mb-4 text-sm leading-6 text-muted-foreground">
-                        L’équipe Epicap peut confirmer le bon modèle, la disponibilité chantier et
-                        les alternatives location / vente.
+                        {profile?.company?.payment_terms
+                          ? `Conditions de compte: ${profile.company.payment_terms}.`
+                          : "Aucune condition societe appliquee actuellement."}
                       </p>
                       <Button asChild variant="ghost" className="h-auto rounded-full px-0 text-primary">
-                        <a href={`tel:${companyInfo.phone.replace(/\s+/g, "")}`}>
+                        <a
+                          href={`tel:${companyInfo.phone.replace(/\s+/g, "")}`}
+                          onClick={() => safeTrack("Phone Clicked", { source_page: "cart" })}
+                        >
                           <Phone className="mr-2 size-4" />
                           {companyInfo.phone}
                         </a>
@@ -337,12 +400,7 @@ function CartLineItem({
         className="relative aspect-square overflow-hidden rounded-[1.4rem] border border-border/70 bg-[linear-gradient(180deg,rgba(255,133,28,0.08),rgba(15,16,18,0.02))]"
       >
         {item.product.image ? (
-          <Image
-            src={item.product.image}
-            alt={item.product.name}
-            fill
-            className="object-cover"
-          />
+          <Image src={item.product.image} alt={item.product.name} fill className="object-cover" />
         ) : (
           <div className="absolute inset-0 bg-muted" />
         )}
@@ -366,7 +424,7 @@ function CartLineItem({
           </Link>
 
           <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm text-muted-foreground">
-            <span>Réf. {item.product.sku}</span>
+            <span>Ref. {item.product.sku}</span>
             <span>{item.product.inStock ? "En stock" : "Sur commande"}</span>
           </div>
         </div>
@@ -377,7 +435,7 @@ function CartLineItem({
               onClick={onDecrease}
               className="flex size-10 items-center justify-center rounded-full transition-colors hover:bg-accent"
               disabled={item.quantity <= 1}
-              aria-label="Diminuer la quantité"
+              aria-label="Diminuer la quantite"
             >
               <Minus className="size-4" />
             </button>
@@ -386,7 +444,7 @@ function CartLineItem({
               onClick={onIncrease}
               className="flex size-10 items-center justify-center rounded-full transition-colors hover:bg-accent"
               disabled={item.quantity >= maxSelectableQuantity}
-              aria-label="Augmenter la quantité"
+              aria-label="Augmenter la quantite"
             >
               <Plus className="size-4" />
             </button>

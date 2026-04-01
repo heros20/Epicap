@@ -105,7 +105,7 @@ export default async function MaintenancePage() {
 
                   <div className="flex flex-col gap-3 sm:flex-row lg:flex-col">
                     <Button asChild>
-                      <Link href="/devis">
+                      <Link href="/devis?service=maintenance&source=maintenance">
                         Demander une prise en charge
                         <ArrowRight className="ml-2 size-4" />
                       </Link>

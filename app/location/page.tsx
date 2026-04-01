@@ -25,6 +25,9 @@ export default async function LocationPage({ searchParams }: PageProps) {
   const params = await searchParams
   const requestedProduct = params.product ? await getCatalogProductBySlug(params.product) : undefined
   const rentableProducts = await getRentableCatalogProducts(4)
+  const quoteHref = requestedProduct
+    ? `/devis?service=location&product=${requestedProduct.slug}&source=location`
+    : "/devis?service=location&source=location"
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -108,7 +111,7 @@ export default async function LocationPage({ searchParams }: PageProps) {
 
                   <div className="flex flex-col gap-3 sm:flex-row">
                     <Button asChild>
-                      <Link href="/devis">
+                      <Link href={quoteHref}>
                         Demander un devis
                         <ArrowRight className="ml-2 size-4" />
                       </Link>

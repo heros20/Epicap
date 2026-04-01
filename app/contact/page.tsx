@@ -104,7 +104,7 @@ export default function ContactPage() {
           <div className="container mx-auto px-4">
             <div className="flex flex-col gap-3 sm:flex-row">
               <Button asChild>
-                <Link href="/devis">Demander un devis</Link>
+                <Link href="/devis?source=contact">Demander un devis</Link>
               </Button>
               <Button variant="outline" asChild>
                 <Link href="/location">Voir la location</Link>

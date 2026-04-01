@@ -55,7 +55,7 @@ export function ProductCard({ product, className }: ProductCardProps) {
 
           <div className="absolute inset-x-0 bottom-0 translate-y-full p-3 transition-transform duration-300 group-hover:translate-y-0">
             <div className="flex h-9 w-full items-center justify-center rounded-full bg-primary px-3 text-sm font-semibold text-primary-foreground shadow-[0_14px_28px_-20px_rgba(255,133,28,0.55)]">
-              Ajouter au panier
+              Voir la fiche
             </div>
           </div>
 

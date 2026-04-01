@@ -163,6 +163,66 @@ export type Database = {
           },
         ]
       }
+      order_items: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          is_rental: boolean
+          name: string
+          order_id: string
+          product_id: number | null
+          quantity: number
+          rental_days: number | null
+          sku: string
+          total_price: number
+          unit_price: number
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_rental?: boolean
+          name: string
+          order_id: string
+          product_id?: number | null
+          quantity: number
+          rental_days?: number | null
+          sku: string
+          total_price?: number
+          unit_price?: number
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_rental?: boolean
+          name?: string
+          order_id?: string
+          product_id?: number | null
+          quantity?: number
+          rental_days?: number | null
+          sku?: string
+          total_price?: number
+          unit_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_items_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       product_categories: {
         Row: {
           created_at: string
@@ -439,6 +499,66 @@ export type Database = {
           },
         ]
       }
+      quote_items: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          is_rental: boolean
+          name: string
+          product_id: number | null
+          quantity: number
+          quote_id: string
+          rental_days: number | null
+          sku: string
+          total_price: number
+          unit_price: number
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_rental?: boolean
+          name: string
+          product_id?: number | null
+          quantity: number
+          quote_id: string
+          rental_days?: number | null
+          sku: string
+          total_price?: number
+          unit_price?: number
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_rental?: boolean
+          name?: string
+          product_id?: number | null
+          quantity?: number
+          quote_id?: string
+          rental_days?: number | null
+          sku?: string
+          total_price?: number
+          unit_price?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quote_items_product_id_fkey"
+            columns: ["product_id"]
+            isOneToOne: false
+            referencedRelation: "products"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quote_items_quote_id_fkey"
+            columns: ["quote_id"]
+            isOneToOne: false
+            referencedRelation: "quotes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       catalog_products: {
@@ -521,6 +641,48 @@ export type Database = {
       }
       is_admin: { Args: never; Returns: boolean }
       is_super_admin: { Args: never; Returns: boolean }
+      submit_order_request: {
+        Args: {
+          next_billing_address?: Json
+          next_company_name: string
+          next_contact_email: string
+          next_contact_name: string
+          next_discount_amount?: number
+          next_items?: Json
+          next_metadata?: Json
+          next_notes?: string
+          next_payment_method?: string
+          next_shipping_address?: Json
+          next_shipping_amount?: number
+          next_shipping_method?: string
+          next_subtotal?: number
+          next_tax_amount?: number
+          next_total?: number
+        }
+        Returns: {
+          id: string
+          reference: string
+        }[]
+      }
+      submit_quote_request: {
+        Args: {
+          next_company_name: string
+          next_contact_email: string
+          next_contact_name: string
+          next_discount_amount?: number
+          next_items?: Json
+          next_metadata?: Json
+          next_notes?: string
+          next_subtotal?: number
+          next_tax_amount?: number
+          next_total?: number
+          next_valid_until?: string | null
+        }
+        Returns: {
+          id: string
+          reference: string
+        }[]
+      }
       update_my_profile: {
         Args: {
           next_company_name: string
