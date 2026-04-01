@@ -7,6 +7,12 @@ import { getCurrentAuthState } from "@/lib/auth/server"
 import { getCatalogProductBySlug, getCatalogProducts } from "@/lib/catalog/data"
 import type { RequestActionState } from "@/lib/commerce/request-action-state"
 import { getPricingSnapshot } from "@/lib/commerce/pricing"
+import {
+  safeParseOrderRequestFormData,
+  safeParseQuoteRequestFormData,
+  toFieldErrors,
+  type QuoteRequestInput,
+} from "@/lib/commerce/request-validation"
 import type { Product } from "@/lib/data/products"
 
 type RequestRpcResult = {
@@ -43,42 +49,6 @@ const cartPayloadSchema = z
   )
   .max(100)
 
-const quoteFormSchema = z.object({
-  contactName: z.string().trim().min(2, "Le nom du contact est requis."),
-  contactEmail: z.string().trim().email("Adresse email invalide."),
-  contactPhone: z.string().trim().min(8, "Le téléphone est requis."),
-  companyName: z.string().trim().min(2, "Le nom de société est requis."),
-  requestType: z.enum(["purchase", "rental", "maintenance", "fit-test", "mixed"]),
-  requestedAgency: z.string().trim().optional(),
-  requestedDelay: z.string().trim().optional(),
-  message: z
-    .string()
-    .trim()
-    .min(20, "Décrivez le besoin chantier avec un peu plus de détail."),
-  productSlug: z.string().trim().optional(),
-  productQuantity: z.coerce.number().int().positive().max(999).optional(),
-  rentalDays: z.coerce.number().int().positive().max(365).optional(),
-  cartPayload: z.string().trim().optional(),
-  sourcePage: z.string().trim().optional(),
-  contextLabel: z.string().trim().optional(),
-})
-
-const orderFormSchema = z.object({
-  contactName: z.string().trim().min(2, "Le nom du contact est requis."),
-  contactEmail: z.string().trim().email("Adresse email invalide."),
-  contactPhone: z.string().trim().min(8, "Le téléphone est requis."),
-  companyName: z.string().trim().min(2, "Le nom de société est requis."),
-  siret: z.string().trim().optional(),
-  siteReference: z.string().trim().optional(),
-  address: z.string().trim().min(4, "L'adresse de livraison est requise."),
-  postalCode: z.string().trim().min(4, "Le code postal est requis."),
-  city: z.string().trim().min(2, "La ville est requise."),
-  country: z.string().trim().min(2, "Le pays est requis."),
-  notes: z.string().trim().optional(),
-  paymentMethod: z.enum(["card-review", "bank-transfer", "account-terms"]),
-  cartPayload: z.string().trim().min(2, "Le panier est vide."),
-})
-
 function safeParseCartPayload(value: string | undefined) {
   if (!value) {
     return []
@@ -104,8 +74,7 @@ function resolveUnitPrice(
   },
 ) {
   const baseUnitPrice = options.isRental ? product.rentalPriceDaily ?? 0 : product.price
-  const totalPrice =
-    baseUnitPrice * (options.isRental ? options.rentalDays ?? 1 : 1)
+  const totalPrice = baseUnitPrice * (options.isRental ? options.rentalDays ?? 1 : 1)
 
   return {
     unitPrice: baseUnitPrice,
@@ -117,7 +86,7 @@ async function resolveRequestLines(options: {
   cartPayload?: string
   productSlug?: string
   productQuantity?: number
-  requestType: z.infer<typeof quoteFormSchema>["requestType"] | "purchase"
+  requestType: QuoteRequestInput["requestType"] | "purchase"
   rentalDays?: number
 }) {
   const catalogProducts = await getCatalogProducts()
@@ -216,7 +185,7 @@ async function callRequestRpc(
 
   if (error) {
     return {
-      error: toDisplayError(error.message, "La demande n'a pas pu être enregistrée."),
+      error: toDisplayError(error.message, "La demande n'a pas pu etre enregistree."),
       result: null,
     }
   }
@@ -224,7 +193,7 @@ async function callRequestRpc(
   const result = data?.[0] ?? null
   if (!result) {
     return {
-      error: "La demande n'a pas pu être enregistrée.",
+      error: "La demande n'a pas pu etre enregistree.",
       result: null,
     }
   }
@@ -239,27 +208,13 @@ export async function submitQuoteRequestAction(
   _previousState: RequestActionState,
   formData: FormData,
 ): Promise<RequestActionState> {
-  const parsed = quoteFormSchema.safeParse({
-    contactName: formData.get("contactName"),
-    contactEmail: formData.get("contactEmail"),
-    contactPhone: formData.get("contactPhone"),
-    companyName: formData.get("companyName"),
-    requestType: formData.get("requestType"),
-    requestedAgency: formData.get("requestedAgency"),
-    requestedDelay: formData.get("requestedDelay"),
-    message: formData.get("message"),
-    productSlug: formData.get("productSlug"),
-    productQuantity: formData.get("productQuantity"),
-    rentalDays: formData.get("rentalDays"),
-    cartPayload: formData.get("cartPayload"),
-    sourcePage: formData.get("sourcePage"),
-    contextLabel: formData.get("contextLabel"),
-  })
+  const parsed = safeParseQuoteRequestFormData(formData)
 
   if (!parsed.success) {
     return {
       status: "error",
-      message: parsed.error.issues[0]?.message ?? "Le formulaire de devis est invalide.",
+      message: "Corrigez les champs du devis indiques ci-dessous.",
+      fieldErrors: toFieldErrors(parsed.error),
     }
   }
 
@@ -271,7 +226,14 @@ export async function submitQuoteRequestAction(
     requestType: parsed.data.requestType,
     rentalDays: parsed.data.rentalDays,
   })
-  const discountRate = getAuthenticatedDiscountRate(authState.profile)
+  const customerLabel =
+    parsed.data.customerType === "individual"
+      ? "Particulier"
+      : parsed.data.companyName.trim()
+  const discountRate =
+    parsed.data.customerType === "company"
+      ? getAuthenticatedDiscountRate(authState.profile)
+      : 0
   const pricing = getPricingSnapshot(
     resolvedLines.map((line) => ({
       quantity: line.quantity,
@@ -287,6 +249,7 @@ export async function submitQuoteRequestAction(
   )
   const metadata = {
     type: "quote_request",
+    customerType: parsed.data.customerType,
     requestType: parsed.data.requestType,
     requestedAgency: parsed.data.requestedAgency || null,
     requestedDelay: parsed.data.requestedDelay || null,
@@ -307,10 +270,10 @@ export async function submitQuoteRequestAction(
     authState.supabase as unknown as RequestRpcClient,
     "submit_quote_request",
     {
-      next_company_name: parsed.data.companyName,
+      next_company_name: customerLabel,
       next_contact_name: parsed.data.contactName,
       next_contact_email: parsed.data.contactEmail,
-      next_notes: parsed.data.message,
+      next_notes: parsed.data.message || null,
       next_metadata: metadata,
       next_items: resolvedLines.map((line) => ({
         productId: line.productId,
@@ -335,6 +298,7 @@ export async function submitQuoteRequestAction(
     return {
       status: "error",
       message: rpcResult.error,
+      fieldErrors: {},
     }
   }
 
@@ -348,6 +312,7 @@ export async function submitQuoteRequestAction(
 
   await track("Quote Request Submitted", {
     authenticated: Boolean(authState.user),
+    customer_type: parsed.data.customerType,
     request_type: parsed.data.requestType,
     cart_items: resolvedLines.length,
     logistics_mode: pricing.logisticsMode,
@@ -356,7 +321,7 @@ export async function submitQuoteRequestAction(
   return {
     status: "success",
     message:
-      "Votre demande de devis a bien été transmise. L'équipe Epicap peut maintenant reprendre l'étude.",
+      "Votre demande de devis a bien ete transmise. L'equipe Epicap peut maintenant reprendre l'etude.",
     reference: quoteResult.reference,
     subtotal: pricing.subtotal,
     discountAmount: pricing.discountAmount,
@@ -372,28 +337,13 @@ export async function submitOrderRequestAction(
   _previousState: RequestActionState,
   formData: FormData,
 ): Promise<RequestActionState> {
-  const parsed = orderFormSchema.safeParse({
-    contactName: formData.get("contactName"),
-    contactEmail: formData.get("contactEmail"),
-    contactPhone: formData.get("contactPhone"),
-    companyName: formData.get("companyName"),
-    siret: formData.get("siret"),
-    siteReference: formData.get("siteReference"),
-    address: formData.get("address"),
-    postalCode: formData.get("postalCode"),
-    city: formData.get("city"),
-    country: formData.get("country"),
-    notes: formData.get("notes"),
-    paymentMethod: formData.get("paymentMethod"),
-    cartPayload: formData.get("cartPayload"),
-  })
+  const parsed = safeParseOrderRequestFormData(formData)
 
   if (!parsed.success) {
     return {
       status: "error",
-      message:
-        parsed.error.issues[0]?.message ??
-        "Le formulaire de demande de commande est invalide.",
+      message: "Corrigez les champs de commande indiques ci-dessous.",
+      fieldErrors: toFieldErrors(parsed.error),
     }
   }
 
@@ -406,11 +356,22 @@ export async function submitOrderRequestAction(
   if (resolvedLines.length === 0) {
     return {
       status: "error",
-      message: "Le panier est vide ou ne contient plus de références valides.",
+      message: "Ajoutez au moins un article valide avant de transmettre la commande.",
+      fieldErrors: {
+        cartPayload:
+          "Votre panier est vide ou ne contient plus de references valides.",
+      },
     }
   }
 
-  const discountRate = getAuthenticatedDiscountRate(authState.profile)
+  const customerLabel =
+    parsed.data.customerType === "individual"
+      ? "Particulier"
+      : parsed.data.companyName.trim()
+  const discountRate =
+    parsed.data.customerType === "company"
+      ? getAuthenticatedDiscountRate(authState.profile)
+      : 0
   const pricing = getPricingSnapshot(
     resolvedLines.map((line) => ({
       quantity: line.quantity,
@@ -433,8 +394,10 @@ export async function submitOrderRequestAction(
   })
   const metadata = {
     type: "order_request",
+    customerType: parsed.data.customerType,
     contactPhone: parsed.data.contactPhone,
-    siret: parsed.data.siret || null,
+    siret:
+      parsed.data.customerType === "company" ? parsed.data.siret || null : null,
     siteReference: parsed.data.siteReference || null,
     pricing: {
       discountRate,
@@ -448,7 +411,7 @@ export async function submitOrderRequestAction(
     authState.supabase as unknown as RequestRpcClient,
     "submit_order_request",
     {
-      next_company_name: parsed.data.companyName,
+      next_company_name: customerLabel,
       next_contact_name: parsed.data.contactName,
       next_contact_email: parsed.data.contactEmail,
       next_payment_method: parsed.data.paymentMethod,
@@ -483,6 +446,7 @@ export async function submitOrderRequestAction(
     return {
       status: "error",
       message: rpcResult.error,
+      fieldErrors: {},
     }
   }
 
@@ -496,6 +460,7 @@ export async function submitOrderRequestAction(
 
   await track("Order Request Submitted", {
     authenticated: Boolean(authState.user),
+    customer_type: parsed.data.customerType,
     cart_items: resolvedLines.length,
     logistics_mode: pricing.logisticsMode,
     payment_method: parsed.data.paymentMethod,
@@ -504,7 +469,7 @@ export async function submitOrderRequestAction(
   return {
     status: "success",
     message:
-      "Votre demande de commande a bien été transmise. Un conseiller Epicap peut maintenant confirmer les disponibilités et la logistique.",
+      "Votre demande de commande a bien ete transmise. Un conseiller Epicap peut maintenant confirmer les disponibilites et la logistique.",
     reference: orderResult.reference,
     subtotal: pricing.subtotal,
     discountAmount: pricing.discountAmount,

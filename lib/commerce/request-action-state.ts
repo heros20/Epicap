@@ -1,3 +1,5 @@
+import type { RequestFieldErrors } from "@/lib/commerce/request-validation"
+
 export interface RequestActionState {
   status: "idle" | "success" | "error"
   message?: string
@@ -9,6 +11,7 @@ export interface RequestActionState {
   total?: number
   logisticsMode?: "estimated" | "manual"
   hasQuoteOnlyItems?: boolean
+  fieldErrors?: RequestFieldErrors
 }
 
 export const initialRequestActionState = {

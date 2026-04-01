@@ -13,14 +13,29 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { safeTrack } from "@/lib/analytics/events"
-import { getPricingSnapshot } from "@/lib/commerce/pricing"
 import { initialRequestActionState } from "@/lib/commerce/request-action-state"
 import { submitOrderRequestAction } from "@/lib/commerce/request-actions"
+import { getPricingSnapshot } from "@/lib/commerce/pricing"
+import {
+  safeParseOrderRequestFormData,
+  toFieldErrors,
+  type CustomerType,
+  type OrderPaymentMethod,
+  type RequestFieldErrors,
+} from "@/lib/commerce/request-validation"
 import { useCart } from "@/lib/cart/use-cart"
 
 export function OrderRequestForm() {
   const { user, profile } = useAuth()
   const { items } = useCart()
+  const hasCompanyProfile = Boolean(profile?.company?.name ?? profile?.company_name)
+  const [customerType, setCustomerType] = React.useState<CustomerType>(
+    hasCompanyProfile ? "company" : "individual",
+  )
+  const [paymentMethod, setPaymentMethod] = React.useState<OrderPaymentMethod>(
+    hasCompanyProfile && profile?.company?.payment_terms ? "account-terms" : "bank-transfer",
+  )
+  const [clientFieldErrors, setClientFieldErrors] = React.useState<RequestFieldErrors>({})
   const [state, formAction, pending] = useActionState(
     submitOrderRequestAction,
     initialRequestActionState,
@@ -31,6 +46,10 @@ export function OrderRequestForm() {
   const defaultEmail = user?.email ?? profile?.email ?? ""
   const defaultPhone = profile?.phone ?? ""
   const companyDiscountRate = Number(profile?.company?.discount_percentage ?? 0)
+  const activeFieldErrors =
+    Object.keys(clientFieldErrors).length > 0
+      ? clientFieldErrors
+      : state.fieldErrors ?? {}
   const pricing = React.useMemo(
     () =>
       getPricingSnapshot(
@@ -38,9 +57,9 @@ export function OrderRequestForm() {
           product: item.product,
           quantity: item.quantity,
         })),
-        companyDiscountRate,
+        customerType === "company" ? companyDiscountRate : 0,
       ),
-    [companyDiscountRate, items],
+    [companyDiscountRate, customerType, items],
   )
   const cartPayload = React.useMemo(
     () =>
@@ -56,12 +75,64 @@ export function OrderRequestForm() {
   React.useEffect(() => {
     safeTrack("Checkout Viewed", {
       authenticated: Boolean(user),
+      customer_type: customerType,
       cart_items: items.length,
       logistics_mode: pricing.logisticsMode,
       quote_only_items: pricing.hasQuoteOnlyItems,
-      company_discount_rate: companyDiscountRate || undefined,
+      company_discount_rate:
+        customerType === "company" ? companyDiscountRate || undefined : undefined,
     })
-  }, [companyDiscountRate, items.length, pricing.hasQuoteOnlyItems, pricing.logisticsMode, user])
+  }, [
+    companyDiscountRate,
+    customerType,
+    items.length,
+    pricing.hasQuoteOnlyItems,
+    pricing.logisticsMode,
+    user,
+  ])
+
+  React.useEffect(() => {
+    if (customerType === "individual" && paymentMethod === "account-terms") {
+      setPaymentMethod("bank-transfer")
+    }
+  }, [customerType, paymentMethod])
+
+  const handleSubmit = React.useCallback((event: React.FormEvent<HTMLFormElement>) => {
+    const validation = safeParseOrderRequestFormData(new FormData(event.currentTarget))
+
+    if (!validation.success) {
+      event.preventDefault()
+      setClientFieldErrors(toFieldErrors(validation.error))
+      return
+    }
+
+    setClientFieldErrors({})
+  }, [])
+
+  const handleFieldChange = React.useCallback(
+    (event: React.FormEvent<HTMLFormElement>) => {
+      const target = event.target
+      if (
+        !(target instanceof HTMLInputElement) &&
+        !(target instanceof HTMLTextAreaElement) &&
+        !(target instanceof HTMLSelectElement)
+      ) {
+        return
+      }
+
+      const fieldName = target.name
+      if (!fieldName || !clientFieldErrors[fieldName]) {
+        return
+      }
+
+      setClientFieldErrors((currentErrors) => {
+        const nextErrors = { ...currentErrors }
+        delete nextErrors[fieldName]
+        return nextErrors
+      })
+    },
+    [clientFieldErrors],
+  )
 
   return (
     <div className="space-y-6">
@@ -114,9 +185,13 @@ export function OrderRequestForm() {
         </Card>
       ) : null}
 
-      {state.status === "error" ? (
+      {state.status === "error" || Object.keys(activeFieldErrors).length > 0 ? (
         <Card className="border-destructive/25 bg-destructive/6 p-0">
-          <CardContent className="p-4 text-sm text-destructive">{state.message}</CardContent>
+          <CardContent className="p-4 text-sm text-destructive">
+            {state.status === "error"
+              ? state.message
+              : "Corrigez les champs signales avant de transmettre la commande."}
+          </CardContent>
         </Card>
       ) : null}
 
@@ -127,56 +202,135 @@ export function OrderRequestForm() {
               <div>
                 <h2 className="text-xl font-semibold">Transmettre la demande de commande</h2>
                 <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                  Le tunnel ne simule plus un paiement. La demande est creee en base puis reprise
-                  par Epicap pour confirmation stock, transport et conditions B2B.
+                  Le tunnel n&apos;impose plus une logique strictement B2B. Le parcours
+                  s&apos;adapte aussi aux particuliers, avec des erreurs affichees directement
+                  sous les bons champs.
                 </p>
               </div>
 
-              <form action={formAction} className="space-y-6">
+              <form
+                action={formAction}
+                className="space-y-6"
+                noValidate
+                onSubmit={handleSubmit}
+                onChange={handleFieldChange}
+              >
                 <input type="hidden" name="cartPayload" value={cartPayload} />
 
                 <div className="grid gap-4 md:grid-cols-2">
-                  <Field label="Nom du contact" htmlFor="contactName">
+                  <Field
+                    label="Profil d'achat"
+                    htmlFor="customerType"
+                    className="md:col-span-2"
+                    hint="Entreprise pour une societe, Particulier pour un achat en nom propre."
+                    error={activeFieldErrors.customerType}
+                  >
+                    <select
+                      id="customerType"
+                      name="customerType"
+                      value={customerType}
+                      onChange={(event) => setCustomerType(event.target.value as CustomerType)}
+                      className="border-input bg-background h-10 w-full rounded-md border px-3 text-sm"
+                    >
+                      <option value="company">Entreprise</option>
+                      <option value="individual">Particulier</option>
+                    </select>
+                  </Field>
+                  <Field
+                    label="Nom du contact"
+                    htmlFor="contactName"
+                    error={activeFieldErrors.contactName}
+                    required
+                  >
                     <Input
                       id="contactName"
                       name="contactName"
                       defaultValue={defaultContactName}
-                      placeholder="Responsable chantier"
+                      aria-invalid={Boolean(activeFieldErrors.contactName)}
+                      placeholder={
+                        customerType === "company" ? "Responsable chantier" : "Nom et prenom"
+                      }
                       required
                     />
                   </Field>
-                  <Field label="Societe" htmlFor="companyName">
-                    <Input
-                      id="companyName"
-                      name="companyName"
-                      defaultValue={defaultCompanyName}
-                      placeholder="Entreprise"
+                  {customerType === "company" ? (
+                    <Field
+                      label="Societe"
+                      htmlFor="companyName"
+                      hint="Obligatoire pour une commande entreprise."
+                      error={activeFieldErrors.companyName}
                       required
-                    />
-                  </Field>
-                  <Field label="Email" htmlFor="contactEmail">
+                    >
+                      <Input
+                        id="companyName"
+                        name="companyName"
+                        defaultValue={defaultCompanyName}
+                        aria-invalid={Boolean(activeFieldErrors.companyName)}
+                        placeholder="Nom de la societe"
+                        required
+                      />
+                    </Field>
+                  ) : (
+                    <Field
+                      label="Statut"
+                      htmlFor="customerType-individual"
+                      hint="Aucune societe ni SIRET n'est requis pour un particulier."
+                    >
+                      <div
+                        id="customerType-individual"
+                        className="rounded-xl border border-border/70 bg-muted/20 px-4 py-3 text-sm text-muted-foreground"
+                      >
+                        Cette commande sera enregistree comme particulier.
+                      </div>
+                    </Field>
+                  )}
+                  <Field
+                    label="Email"
+                    htmlFor="contactEmail"
+                    error={activeFieldErrors.contactEmail}
+                    required
+                  >
                     <Input
                       id="contactEmail"
                       name="contactEmail"
                       type="email"
                       defaultValue={defaultEmail}
-                      placeholder="contact@entreprise.fr"
+                      aria-invalid={Boolean(activeFieldErrors.contactEmail)}
+                      placeholder="contact@exemple.fr"
                       required
                     />
                   </Field>
-                  <Field label="Telephone" htmlFor="contactPhone">
+                  <Field
+                    label="Telephone"
+                    htmlFor="contactPhone"
+                    error={activeFieldErrors.contactPhone}
+                    required
+                  >
                     <Input
                       id="contactPhone"
                       name="contactPhone"
                       type="tel"
                       defaultValue={defaultPhone}
+                      aria-invalid={Boolean(activeFieldErrors.contactPhone)}
                       placeholder="+33 6 12 34 56 78"
                       required
                     />
                   </Field>
-                  <Field label="SIRET" htmlFor="siret">
-                    <Input id="siret" name="siret" placeholder="12345678901234" />
-                  </Field>
+                  {customerType === "company" ? (
+                    <Field
+                      label="SIRET"
+                      htmlFor="siret"
+                      hint="Optionnel, mais utile pour accelerer le traitement."
+                      error={activeFieldErrors.siret}
+                    >
+                      <Input
+                        id="siret"
+                        name="siret"
+                        aria-invalid={Boolean(activeFieldErrors.siret)}
+                        placeholder="12345678901234"
+                      />
+                    </Field>
+                  ) : null}
                   <Field label="Reference chantier" htmlFor="siteReference">
                     <Input
                       id="siteReference"
@@ -187,36 +341,80 @@ export function OrderRequestForm() {
                 </div>
 
                 <div className="grid gap-4 md:grid-cols-3">
-                  <Field label="Adresse" htmlFor="address" className="md:col-span-3">
+                  <Field
+                    label="Adresse"
+                    htmlFor="address"
+                    className="md:col-span-3"
+                    error={activeFieldErrors.address}
+                    required
+                  >
                     <Input
                       id="address"
                       name="address"
+                      aria-invalid={Boolean(activeFieldErrors.address)}
                       placeholder="12 rue des Entrepreneurs"
                       required
                     />
                   </Field>
-                  <Field label="Code postal" htmlFor="postalCode">
-                    <Input id="postalCode" name="postalCode" placeholder="75001" required />
+                  <Field
+                    label="Code postal"
+                    htmlFor="postalCode"
+                    error={activeFieldErrors.postalCode}
+                    required
+                  >
+                    <Input
+                      id="postalCode"
+                      name="postalCode"
+                      aria-invalid={Boolean(activeFieldErrors.postalCode)}
+                      placeholder="75001"
+                      required
+                    />
                   </Field>
-                  <Field label="Ville" htmlFor="city">
-                    <Input id="city" name="city" placeholder="Paris" required />
+                  <Field label="Ville" htmlFor="city" error={activeFieldErrors.city} required>
+                    <Input
+                      id="city"
+                      name="city"
+                      aria-invalid={Boolean(activeFieldErrors.city)}
+                      placeholder="Paris"
+                      required
+                    />
                   </Field>
-                  <Field label="Pays" htmlFor="country">
-                    <Input id="country" name="country" defaultValue="France" required />
+                  <Field label="Pays" htmlFor="country" error={activeFieldErrors.country} required>
+                    <Input
+                      id="country"
+                      name="country"
+                      defaultValue="France"
+                      aria-invalid={Boolean(activeFieldErrors.country)}
+                      required
+                    />
                   </Field>
                 </div>
 
-                <Field label="Mode de reglement" htmlFor="paymentMethod">
+                <Field
+                  label="Mode de reglement"
+                  htmlFor="paymentMethod"
+                  hint={
+                    customerType === "company"
+                      ? "Les conditions de compte restent reservees aux entreprises."
+                      : "Les particuliers peuvent regler par virement ou validation CB."
+                  }
+                  error={activeFieldErrors.paymentMethod}
+                  required
+                >
                   <select
                     id="paymentMethod"
                     name="paymentMethod"
-                    defaultValue={
-                      profile?.company?.payment_terms ? "account-terms" : "bank-transfer"
+                    value={paymentMethod}
+                    onChange={(event) =>
+                      setPaymentMethod(event.target.value as OrderPaymentMethod)
                     }
+                    aria-invalid={Boolean(activeFieldErrors.paymentMethod)}
                     className="border-input bg-background h-10 w-full rounded-md border px-3 text-sm"
                   >
                     <option value="bank-transfer">Virement bancaire</option>
-                    <option value="account-terms">Conditions de compte</option>
+                    {customerType === "company" ? (
+                      <option value="account-terms">Conditions de compte</option>
+                    ) : null}
                     <option value="card-review">Validation CB par conseiller</option>
                   </select>
                 </Field>
@@ -232,8 +430,10 @@ export function OrderRequestForm() {
 
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <div className="text-sm text-muted-foreground">
-                    {profile?.company?.payment_terms ? (
+                    {customerType === "company" && profile?.company?.payment_terms ? (
                       <span>Conditions societes actuelles: {profile.company.payment_terms}</span>
+                    ) : customerType === "individual" ? (
+                      <span>Les particuliers peuvent aussi transmettre une commande directe.</span>
                     ) : (
                       <span>
                         Vous pouvez aussi convertir le panier en demande de devis si besoin.
@@ -282,20 +482,31 @@ export function OrderRequestForm() {
                     <Building2 className="size-5 text-primary" />
                   </div>
                   <div>
-                    <p className="text-base font-semibold">Conditions B2B</p>
+                    <p className="text-base font-semibold">Profil de commande</p>
                     <p className="text-sm text-muted-foreground">
-                      Les remises et termes de compte sont integres au recapitulatif.
+                      Le profil choisi adapte les champs et les conditions appliquees.
                     </p>
                   </div>
                 </div>
-                <InfoRow label="Societe" value={defaultCompanyName || "A renseigner"} />
                 <InfoRow
-                  label="Remise societe"
-                  value={companyDiscountRate > 0 ? `${companyDiscountRate.toFixed(0)}%` : "Aucune"}
+                  label="Profil"
+                  value={customerType === "company" ? "Entreprise" : "Particulier"}
+                />
+                <InfoRow
+                  label="Compte"
+                  value={
+                    customerType === "company"
+                      ? defaultCompanyName || "A renseigner"
+                      : "Aucune societe requise"
+                  }
                 />
                 <InfoRow
                   label="Reglement"
-                  value={profile?.company?.payment_terms || "Validation a definir"}
+                  value={
+                    customerType === "company"
+                      ? profile?.company?.payment_terms || "Validation a definir"
+                      : "Paiement standard"
+                  }
                 />
               </CardContent>
             </Card>
@@ -371,16 +582,30 @@ function Field({
   htmlFor,
   children,
   className,
+  hint,
+  error,
+  required = false,
 }: {
   label: string
   htmlFor: string
   children: React.ReactNode
   className?: string
+  hint?: string
+  error?: string
+  required?: boolean
 }) {
   return (
     <div className={className}>
-      <Label htmlFor={htmlFor}>{label}</Label>
+      <Label htmlFor={htmlFor}>
+        {label}
+        {required ? <span className="ml-1 text-destructive">*</span> : null}
+      </Label>
       <div className="mt-2">{children}</div>
+      {error ? (
+        <p className="mt-2 text-sm text-destructive">{error}</p>
+      ) : hint ? (
+        <p className="mt-2 text-sm text-muted-foreground">{hint}</p>
+      ) : null}
     </div>
   )
 }
