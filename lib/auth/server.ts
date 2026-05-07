@@ -9,6 +9,8 @@ type ProfileSelectRow = Database["public"]["Tables"]["profiles"]["Row"] & {
   company: ProfileWithCompany["company"]
 }
 
+type SupabaseServerClient = Awaited<ReturnType<typeof createClient>>
+
 export async function getCurrentAuthState() {
   if (!isSupabaseConfigured()) {
     return {
@@ -56,7 +58,10 @@ export async function requireAuthenticatedUser(next = "/dashboard") {
     redirect(`/connexion?next=${encodeURIComponent(next)}`)
   }
 
-  return authState
+  return authState as typeof authState & {
+    supabase: SupabaseServerClient
+    user: AuthUser
+  }
 }
 
 export async function requireProfile(next = "/dashboard") {
@@ -70,7 +75,11 @@ export async function requireProfile(next = "/dashboard") {
     redirect("/forbidden?reason=inactive")
   }
 
-  return authState as typeof authState & { profile: ProfileWithCompany; user: AuthUser }
+  return authState as typeof authState & {
+    supabase: SupabaseServerClient
+    profile: ProfileWithCompany
+    user: AuthUser
+  }
 }
 
 export async function requireRole(

@@ -1,7 +1,7 @@
 "use server"
 
 import { revalidatePath } from "next/cache"
-import { redirect } from "next/navigation"
+import { redirect, unstable_rethrow } from "next/navigation"
 import { z } from "zod"
 
 import {
@@ -499,6 +499,8 @@ export async function saveCatalogProductAction(formData: FormData) {
       ),
     )
   } catch (error) {
+    unstable_rethrow(error)
+
     await removeStoragePaths(supabase, uploadedPaths)
 
     redirect(
