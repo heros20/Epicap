@@ -56,8 +56,8 @@ export default async function DashboardCataloguePage({
         <CardContent className="space-y-6 p-6">
           <p className="max-w-3xl text-sm leading-7 text-background/74">
             Le pilotage catalogue passe en mode cockpit: lecture instantanee des fiches,
-            separation nette entre offre vente et offre location, acces direct a la
-            creation et edition, puis suppression maitrisee depuis la fiche detaillee.
+            séparation nette entre offre vente et offre location, accès direct à la
+            création et édition, puis suppression maîtrisée depuis la fiche détaillée.
           </p>
 
           <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">

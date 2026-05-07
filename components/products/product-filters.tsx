@@ -56,6 +56,15 @@ export function ProductFilters({
     searchParams.get("rentable") === "true"
   )
 
+  const keepWheelInsideFilters = (event: React.WheelEvent<HTMLDivElement>) => {
+    if (event.ctrlKey) {
+      return
+    }
+
+    event.currentTarget.scrollTop += event.deltaY
+    event.preventDefault()
+  }
+
   const activeFiltersCount = [
     selectedBrands.length > 0,
     inStockOnly,
@@ -142,35 +151,6 @@ export function ProductFilters({
                     {category.name}
                   </Button>
                 ))}
-              </div>
-            </AccordionContent>
-          </AccordionItem>
-        </Accordion>
-      )}
-
-      {/* Subcategories */}
-      {currentCategory && (
-        <Accordion type="single" collapsible defaultValue="subcategories">
-          <AccordionItem value="subcategories" className="border-none">
-            <AccordionTrigger className="py-2 hover:no-underline">
-              <span className="text-sm font-medium">Sous-catégories</span>
-            </AccordionTrigger>
-            <AccordionContent>
-              <div className="space-y-2 pt-2">
-                {categories
-                  .find(c => c.slug === currentCategory)
-                  ?.subcategories.map((sub) => (
-                    <Button
-                      key={sub.slug}
-                      variant="ghost"
-                      className="w-full justify-start h-auto py-2 px-2 text-sm font-normal"
-                      onClick={() =>
-                        router.push(`/boutique/${currentCategory}?subcategory=${sub.slug}`)
-                      }
-                    >
-                      {sub.name}
-                    </Button>
-                  ))}
               </div>
             </AccordionContent>
           </AccordionItem>
@@ -280,7 +260,10 @@ export function ProductFilters({
     <>
       {/* Desktop Filters */}
       <aside className={cn("hidden lg:block w-64 flex-shrink-0", className)}>
-        <div className="sticky top-24 rounded-[1.5rem] border border-border/70 bg-card/85 p-5 shadow-[0_18px_55px_-42px_rgba(35,29,28,0.45)] backdrop-blur">
+        <div
+          className="sticky top-32 max-h-[calc(100vh-9rem)] overflow-y-auto overscroll-contain rounded-[1.5rem] border border-border/70 bg-card/85 p-5 shadow-[0_18px_55px_-42px_rgba(35,29,28,0.45)] backdrop-blur"
+          onWheel={keepWheelInsideFilters}
+        >
           <div className="flex items-center justify-between mb-4">
             <h2 className="font-semibold">Filtres</h2>
             {activeFiltersCount > 0 && (
@@ -306,7 +289,7 @@ export function ProductFilters({
           <SheetHeader className="border-b border-border/70 bg-muted/35 p-4">
             <SheetTitle className="text-left">Filtres</SheetTitle>
           </SheetHeader>
-          <div className="p-4 overflow-y-auto h-[calc(100vh-80px)]">
+          <div className="h-[calc(100vh-80px)] overflow-y-auto overscroll-contain p-4">
             {filterContent}
           </div>
         </SheetContent>

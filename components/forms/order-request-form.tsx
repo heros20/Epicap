@@ -140,10 +140,10 @@ export function OrderRequestForm() {
         <Card className="border-success/25 bg-success/8 p-0">
           <CardContent className="space-y-4 p-6">
             <Badge className="border border-success/30 bg-success/12 text-success">
-              Demande de commande creee
+              Demande de commande créée
             </Badge>
             <div>
-              <h2 className="text-2xl font-semibold">Reference {state.reference}</h2>
+              <h2 className="text-2xl font-semibold">Référence {state.reference}</h2>
               <p className="mt-2 text-sm leading-6 text-muted-foreground">{state.message}</p>
             </div>
             <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
@@ -160,12 +160,12 @@ export function OrderRequestForm() {
                 label="Logistique"
                 value={
                   state.logisticsMode === "manual"
-                    ? "A confirmer"
+                    ? "À confirmer"
                     : formatPrice(state.shippingAmount ?? 0)
                 }
               />
               <SuccessChip
-                label="Total estime"
+                label="Total estimé"
                 value={
                   state.hasQuoteOnlyItems
                     ? "Affinage commercial"
@@ -190,7 +190,7 @@ export function OrderRequestForm() {
           <CardContent className="p-4 text-sm text-destructive">
             {state.status === "error"
               ? state.message
-              : "Corrigez les champs signales avant de transmettre la commande."}
+              : "Corrigez les champs signalés avant de transmettre la commande."}
           </CardContent>
         </Card>
       ) : null}
@@ -203,7 +203,7 @@ export function OrderRequestForm() {
                 <h2 className="text-xl font-semibold">Transmettre la demande de commande</h2>
                 <p className="mt-2 text-sm leading-6 text-muted-foreground">
                   Le tunnel n&apos;impose plus une logique strictement B2B. Le parcours
-                  s&apos;adapte aussi aux particuliers, avec des erreurs affichees directement
+                  s&apos;adapte aussi aux particuliers, avec des erreurs affichées directement
                   sous les bons champs.
                 </p>
               </div>
@@ -222,7 +222,7 @@ export function OrderRequestForm() {
                     label="Profil d'achat"
                     htmlFor="customerType"
                     className="md:col-span-2"
-                    hint="Entreprise pour une societe, Particulier pour un achat en nom propre."
+                    hint="Entreprise pour une société, Particulier pour un achat en nom propre."
                     error={activeFieldErrors.customerType}
                   >
                     <select
@@ -248,14 +248,14 @@ export function OrderRequestForm() {
                       defaultValue={defaultContactName}
                       aria-invalid={Boolean(activeFieldErrors.contactName)}
                       placeholder={
-                        customerType === "company" ? "Responsable chantier" : "Nom et prenom"
+                        customerType === "company" ? "Responsable chantier" : "Nom et prénom"
                       }
                       required
                     />
                   </Field>
                   {customerType === "company" ? (
                     <Field
-                      label="Societe"
+                      label="Société"
                       htmlFor="companyName"
                       hint="Obligatoire pour une commande entreprise."
                       error={activeFieldErrors.companyName}
@@ -266,7 +266,7 @@ export function OrderRequestForm() {
                         name="companyName"
                         defaultValue={defaultCompanyName}
                         aria-invalid={Boolean(activeFieldErrors.companyName)}
-                        placeholder="Nom de la societe"
+                        placeholder="Nom de la société"
                         required
                       />
                     </Field>
@@ -274,13 +274,13 @@ export function OrderRequestForm() {
                     <Field
                       label="Statut"
                       htmlFor="customerType-individual"
-                      hint="Aucune societe ni SIRET n'est requis pour un particulier."
+                      hint="Aucune société ni SIRET n'est requis pour un particulier."
                     >
                       <div
                         id="customerType-individual"
                         className="rounded-xl border border-border/70 bg-muted/20 px-4 py-3 text-sm text-muted-foreground"
                       >
-                        Cette commande sera enregistree comme particulier.
+                        Cette commande sera enregistrée comme particulier.
                       </div>
                     </Field>
                   )}
@@ -301,7 +301,7 @@ export function OrderRequestForm() {
                     />
                   </Field>
                   <Field
-                    label="Telephone"
+                    label="Téléphone"
                     htmlFor="contactPhone"
                     error={activeFieldErrors.contactPhone}
                     required
@@ -320,7 +320,7 @@ export function OrderRequestForm() {
                     <Field
                       label="SIRET"
                       htmlFor="siret"
-                      hint="Optionnel, mais utile pour accelerer le traitement."
+                      hint="Optionnel, mais utile pour accélérer le traitement."
                       error={activeFieldErrors.siret}
                     >
                       <Input
@@ -331,7 +331,7 @@ export function OrderRequestForm() {
                       />
                     </Field>
                   ) : null}
-                  <Field label="Reference chantier" htmlFor="siteReference">
+                  <Field label="Référence chantier" htmlFor="siteReference">
                     <Input
                       id="siteReference"
                       name="siteReference"
@@ -391,12 +391,12 @@ export function OrderRequestForm() {
                 </div>
 
                 <Field
-                  label="Mode de reglement"
+                  label="Mode de règlement"
                   htmlFor="paymentMethod"
                   hint={
                     customerType === "company"
-                      ? "Les conditions de compte restent reservees aux entreprises."
-                      : "Les particuliers peuvent regler par virement ou validation CB."
+                      ? "Les conditions de compte restent réservées aux entreprises."
+                      : "Les particuliers peuvent régler par virement ou validation CB."
                   }
                   error={activeFieldErrors.paymentMethod}
                   required
@@ -424,14 +424,14 @@ export function OrderRequestForm() {
                     id="notes"
                     name="notes"
                     className="min-h-32"
-                    placeholder="Acces chantier, horaires, livraison agence ou site, contraintes de manutention, besoin de retrait..."
+                    placeholder="Accès chantier, horaires, livraison agence ou site, contraintes de manutention, besoin de retrait..."
                   />
                 </Field>
 
                 <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <div className="text-sm text-muted-foreground">
                     {customerType === "company" && profile?.company?.payment_terms ? (
-                      <span>Conditions societes actuelles: {profile.company.payment_terms}</span>
+                      <span>Conditions sociétés actuelles : {profile.company.payment_terms}</span>
                     ) : customerType === "individual" ? (
                       <span>Les particuliers peuvent aussi transmettre une commande directe.</span>
                     ) : (
@@ -465,13 +465,13 @@ export function OrderRequestForm() {
                 <InfoRow label="Articles" value={`${items.length} ligne(s)`} />
                 <InfoRow
                   label="Logistique"
-                  value={pricing.logisticsMode === "manual" ? "A confirmer" : "Estimee"}
+                  value={pricing.logisticsMode === "manual" ? "À confirmer" : "Estimée"}
                 />
                 <InfoRow
                   label="Produits sur devis"
                   value={pricing.hasQuoteOnlyItems ? "Oui" : "Non"}
                 />
-                <InfoRow label="Compte" value={user ? "Connecte" : "Public non connecte"} />
+                <InfoRow label="Compte" value={user ? "Connecté" : "Public non connecté"} />
               </CardContent>
             </Card>
 
@@ -484,7 +484,7 @@ export function OrderRequestForm() {
                   <div>
                     <p className="text-base font-semibold">Profil de commande</p>
                     <p className="text-sm text-muted-foreground">
-                      Le profil choisi adapte les champs et les conditions appliquees.
+                      Le profil choisi adapte les champs et les conditions appliquées.
                     </p>
                   </div>
                 </div>
@@ -496,15 +496,15 @@ export function OrderRequestForm() {
                   label="Compte"
                   value={
                     customerType === "company"
-                      ? defaultCompanyName || "A renseigner"
-                      : "Aucune societe requise"
+                      ? defaultCompanyName || "À renseigner"
+                      : "Aucune société requise"
                   }
                 />
                 <InfoRow
                   label="Reglement"
                   value={
                     customerType === "company"
-                      ? profile?.company?.payment_terms || "Validation a definir"
+                      ? profile?.company?.payment_terms || "Validation à définir"
                       : "Paiement standard"
                   }
                 />
@@ -520,7 +520,7 @@ export function OrderRequestForm() {
                   <div>
                     <p className="text-base font-semibold">Recapitulatif</p>
                     <p className="text-sm text-muted-foreground">
-                      Estimation calculee a partir du panier courant.
+                      Estimation calculée à partir du panier courant.
                     </p>
                   </div>
                 </div>
@@ -537,15 +537,15 @@ export function OrderRequestForm() {
                   label="Logistique"
                   value={
                     pricing.logisticsMode === "manual"
-                      ? "A confirmer"
+                      ? "À confirmer"
                       : pricing.shippingAmount === 0
                         ? "Offerte"
                         : formatPrice(pricing.shippingAmount)
                   }
                 />
-                <InfoRow label="TVA estimee" value={formatPrice(pricing.taxAmount)} />
+                <InfoRow label="TVA estimée" value={formatPrice(pricing.taxAmount)} />
                 <InfoRow
-                  label="Total estime"
+                  label="Total estimé"
                   value={
                     pricing.hasQuoteOnlyItems
                       ? "Affinage commercial"
@@ -563,7 +563,7 @@ export function OrderRequestForm() {
                 </div>
                 <p className="text-sm leading-6 text-muted-foreground">
                   Pour basculer un panier complexe, une location ou un besoin multisites, la
-                  demande de devis reste disponible avec les memes references.
+                  demande de devis reste disponible avec les mêmes références.
                 </p>
                 <Button asChild variant="outline" className="w-full">
                   <Link href="/devis?cart=1&source=checkout">Basculer en demande de devis</Link>

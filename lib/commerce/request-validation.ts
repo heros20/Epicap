@@ -106,7 +106,7 @@ const quoteRequestSchema = z
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ["companyName"],
-        message: "Renseignez la societe ou choisissez le profil Particulier.",
+        message: "Renseignez la société ou choisissez le profil Particulier.",
       })
     }
 
@@ -172,7 +172,7 @@ const orderRequestSchema = z
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         path: ["companyName"],
-        message: "Renseignez la societe ou choisissez le profil Particulier.",
+        message: "Renseignez la société ou choisissez le profil Particulier.",
       })
     }
 
@@ -184,7 +184,7 @@ const orderRequestSchema = z
         code: z.ZodIssueCode.custom,
         path: ["paymentMethod"],
         message:
-          "Les conditions de compte sont reservees aux entreprises. Choisissez un autre mode de reglement.",
+          "Les conditions de compte sont réservées aux entreprises. Choisissez un autre mode de règlement.",
       })
     }
 

@@ -327,7 +327,7 @@ function DesktopProductRow({ product }: { product: CatalogEntry }) {
         <div className="flex flex-col gap-3 rounded-[1.2rem] border border-border/70 bg-white/72 p-4 2xl:min-w-[188px]">
           <div>
             <p className="text-[11px] font-bold uppercase tracking-[0.18em] text-primary/80">
-              Mise a jour
+              Mise à jour
             </p>
             <p className="mt-2 text-sm text-muted-foreground">
               {product.updatedAt ? dateFormatter.format(new Date(product.updatedAt)) : "-"}

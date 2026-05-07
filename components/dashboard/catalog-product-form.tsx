@@ -65,7 +65,7 @@ export function CatalogProductForm({
             icon={<Truck className="size-4 text-emerald-700" />}
             title="Medias"
             value={`${product?.images.length ?? 0} image(s)`}
-            helper={`${product?.documents.length ?? 0} document(s) rattache(s) a la fiche.`}
+            helper={`${product?.documents.length ?? 0} document(s) rattaché(s) à la fiche.`}
             tone="rental"
           />
         </CardContent>
@@ -88,7 +88,7 @@ export function CatalogProductForm({
           <Field label="Slug" htmlFor="slug">
             <Input id="slug" name="slug" defaultValue={product?.slug ?? ""} required />
           </Field>
-          <Field label="Categorie" htmlFor="categorySlug">
+          <Field label="Catégorie" htmlFor="categorySlug">
             <select
               id="categorySlug"
               name="categorySlug"
@@ -118,7 +118,7 @@ export function CatalogProductForm({
             </select>
           </Field>
           <div className="lg:col-span-2">
-            <Field label="Resume court" htmlFor="shortDescription">
+            <Field label="Résumé court" htmlFor="shortDescription">
               <Textarea
                 id="shortDescription"
                 name="shortDescription"
@@ -129,7 +129,7 @@ export function CatalogProductForm({
             </Field>
           </div>
           <div className="lg:col-span-2">
-            <Field label="Description detaillee" htmlFor="description">
+            <Field label="Description détaillée" htmlFor="description">
               <Textarea
                 id="description"
                 name="description"
@@ -208,7 +208,7 @@ export function CatalogProductForm({
                 </p>
                 <p className="mt-2 text-sm text-muted-foreground">
                   Activez la location pour faire remonter la fiche dans le catalogue et sur la
-                  page dediee.
+                  page dédiée.
                 </p>
               </div>
               <label className="flex items-center gap-3 rounded-[1.1rem] border border-emerald-300/25 bg-white/70 px-4 py-3 text-sm">
@@ -264,11 +264,11 @@ export function CatalogProductForm({
 
       <Card className="border-border/70 bg-card/92">
         <CardHeader className="border-b border-border/70">
-          <CardTitle>Caracteristiques et documents</CardTitle>
+          <CardTitle>Caractéristiques et documents</CardTitle>
         </CardHeader>
         <CardContent className="grid gap-6 p-6 lg:grid-cols-2">
           <Field
-            label="Caracteristiques"
+            label="Caractéristiques"
             htmlFor="specsText"
             description="Une ligne par valeur, au format Nom: Valeur"
           >

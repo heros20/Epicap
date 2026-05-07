@@ -4,6 +4,7 @@ import {
   DashboardMobileNavigation,
   DashboardSidebar,
 } from "@/components/dashboard/dashboard-sidebar"
+import { DashboardActionFeedback } from "@/components/dashboard/dashboard-action-feedback"
 import { Footer } from "@/components/layout/footer"
 import { Header } from "@/components/layout/header"
 import { Badge } from "@/components/ui/badge"
@@ -70,6 +71,7 @@ export function DashboardShell({
                       </div>
                     </CardContent>
                   </Card>
+                  <DashboardActionFeedback />
                   {children}
                 </div>
               </div>
@@ -121,7 +123,10 @@ export function DashboardShell({
               <div className="hidden xl:block">
                 <DashboardSidebar user={user} profile={profile} />
               </div>
-              <div className="min-w-0">{children}</div>
+              <div className="min-w-0 space-y-6">
+                <DashboardActionFeedback />
+                {children}
+              </div>
             </div>
           </div>
         </section>

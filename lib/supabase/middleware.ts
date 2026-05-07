@@ -1,18 +1,35 @@
 import { createServerClient } from "@supabase/ssr"
 import { NextResponse, type NextRequest } from "next/server"
 
+import { getSupabasePublicEnv } from "@/lib/supabase/config"
 import type { Database } from "@/types/supabase"
 
 export async function updateSession(request: NextRequest) {
   let supabaseResponse = NextResponse.next({
     request,
   })
+  const supabaseEnv = getSupabasePublicEnv()
+  const isProtectedDashboardRoute = request.nextUrl.pathname.startsWith("/dashboard")
+
+  if (!supabaseEnv) {
+    if (isProtectedDashboardRoute) {
+      const url = request.nextUrl.clone()
+      url.pathname = "/connexion"
+      url.searchParams.set(
+        "next",
+        `${request.nextUrl.pathname}${request.nextUrl.search}`,
+      )
+      return NextResponse.redirect(url)
+    }
+
+    return supabaseResponse
+  }
 
   // With Fluid compute, don't put this client in a global environment
   // variable. Always create a new one on each request.
   const supabase = createServerClient<Database>(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    supabaseEnv.url,
+    supabaseEnv.anonKey,
     {
       cookies: {
         getAll() {
@@ -42,8 +59,6 @@ export async function updateSession(request: NextRequest) {
   const {
     data: { user },
   } = await supabase.auth.getUser()
-
-  const isProtectedDashboardRoute = request.nextUrl.pathname.startsWith("/dashboard")
 
   if (isProtectedDashboardRoute && !user) {
     const url = request.nextUrl.clone()

@@ -1,5 +1,5 @@
+import { AdminSubmitButton } from "@/components/dashboard/admin-submit-button"
 import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -34,9 +34,9 @@ const dateFormatter = new Intl.DateTimeFormat("fr-FR", {
 
 const paymentStatusLabels: Record<Order["payment_status"], string> = {
   pending: "En attente",
-  paid: "Regle",
-  failed: "Echec",
-  refunded: "Rembourse",
+  paid: "Réglé",
+  failed: "Échec",
+  refunded: "Remboursé",
   partial: "Partiel",
 }
 
@@ -105,14 +105,14 @@ export default async function DashboardOrdersPage({
                   <TableHead>Contact</TableHead>
                   <TableHead>Statut</TableHead>
                   <TableHead>Montant</TableHead>
-                  <TableHead>Creee le</TableHead>
+                  <TableHead>Créée le</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {orders.map((order) => (
                   <TableRow key={order.id}>
                     <TableCell className="font-medium">
-                      {order.order_number ?? "Sans numero"}
+                      {order.order_number ?? "Sans numéro"}
                     </TableCell>
                     <TableCell>
                       <div className="space-y-1">
@@ -145,7 +145,7 @@ export default async function DashboardOrdersPage({
         </CardHeader>
         <CardContent className="space-y-4 p-6">
           <p className="text-sm text-muted-foreground">
-            Les commandes peuvent maintenant etre pilotees depuis l&apos;admin: statut, paiement,
+            Les commandes peuvent être pilotées depuis l&apos;admin : statut, paiement,
             logistique, suivi transport et notes internes.
           </p>
           {error ? <MessageBox tone="error" message={error} /> : null}
@@ -181,7 +181,7 @@ function AdminOrderCard({ order }: { order: DashboardOrderRecord }) {
       <CardHeader className="border-b border-border/70">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div className="space-y-2">
-            <CardTitle>{order.order_number ?? "Sans numero"}</CardTitle>
+            <CardTitle>{order.order_number ?? "Sans numéro"}</CardTitle>
             <div className="flex flex-wrap gap-2">
               <Badge variant="secondary">{ORDER_STATUS_LABELS[order.status]}</Badge>
               <Badge variant="outline">{paymentStatusLabels[order.payment_status]}</Badge>
@@ -194,7 +194,7 @@ function AdminOrderCard({ order }: { order: DashboardOrderRecord }) {
             </div>
             <p className="text-sm text-muted-foreground">
               {order.contact_name ?? "Compte Epicap"} -{" "}
-              {order.company_name ?? order.contact_email ?? "Sans societe"} -{" "}
+              {order.company_name ?? order.contact_email ?? "Sans société"} -{" "}
               {dateFormatter.format(new Date(order.created_at))}
             </p>
           </div>
@@ -209,12 +209,12 @@ function AdminOrderCard({ order }: { order: DashboardOrderRecord }) {
       <CardContent className="space-y-6 p-6">
         <div className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
           <div className="space-y-6">
-            <SectionCard title="Coordonnees">
+            <SectionCard title="Coordonnées">
               <InfoGrid
                 items={[
                   ["Contact", order.contact_name ?? "Compte Epicap"],
                   ["Email", order.contact_email ?? "Sans email"],
-                  ["Societe", order.company_name ?? "Sans societe"],
+                  ["Société", order.company_name ?? "Sans société"],
                   ["Paiement", paymentStatusLabels[order.payment_status]],
                 ]}
               />
@@ -228,7 +228,7 @@ function AdminOrderCard({ order }: { order: DashboardOrderRecord }) {
                   ))}
                 </div>
               ) : (
-                <p className="text-sm text-muted-foreground">Aucune ligne detaillee.</p>
+                <p className="text-sm text-muted-foreground">Aucune ligne détaillée.</p>
               )}
             </SectionCard>
 
@@ -247,7 +247,7 @@ function AdminOrderCard({ order }: { order: DashboardOrderRecord }) {
               </div>
             </SectionCard>
 
-            <SectionCard title="Mise a jour admin">
+            <SectionCard title="Mise à jour admin">
               <form action={updateDashboardOrderAction} className="grid gap-4">
                 <input type="hidden" name="orderId" value={order.id} />
                 <AdminField label="Statut" htmlFor={`status-${order.id}`}>
@@ -278,12 +278,12 @@ function AdminOrderCard({ order }: { order: DashboardOrderRecord }) {
                     ))}
                   </select>
                 </AdminField>
-                <AdminField label="Mode de reglement" htmlFor={`payment-method-${order.id}`}>
+                <AdminField label="Mode de règlement" htmlFor={`payment-method-${order.id}`}>
                   <Input
                     id={`payment-method-${order.id}`}
                     name="paymentMethod"
                     defaultValue={order.payment_method ?? ""}
-                    placeholder="bank-transfer, account-terms..."
+                    placeholder="Virement, compte client..."
                   />
                 </AdminField>
                 <AdminField label="Mode de livraison" htmlFor={`shipping-method-${order.id}`}>
@@ -291,15 +291,15 @@ function AdminOrderCard({ order }: { order: DashboardOrderRecord }) {
                     id={`shipping-method-${order.id}`}
                     name="shippingMethod"
                     defaultValue={order.shipping_method ?? ""}
-                    placeholder="livraison-standard, retrait-agence..."
+                    placeholder="Livraison standard, retrait agence..."
                   />
                 </AdminField>
-                <AdminField label="Tracking" htmlFor={`tracking-${order.id}`}>
+                <AdminField label="Suivi transport" htmlFor={`tracking-${order.id}`}>
                   <Input
                     id={`tracking-${order.id}`}
                     name="trackingNumber"
                     defaultValue={order.tracking_number ?? ""}
-                    placeholder="Numero de suivi"
+                    placeholder="Numéro de suivi"
                   />
                 </AdminField>
                 <AdminField label="Notes internes" htmlFor={`internal-notes-${order.id}`}>
@@ -311,9 +311,7 @@ function AdminOrderCard({ order }: { order: DashboardOrderRecord }) {
                     placeholder="Commentaire interne, relance, arbitrage commercial..."
                   />
                 </AdminField>
-                <Button type="submit" className="w-full sm:w-fit">
-                  Enregistrer la commande
-                </Button>
+                <AdminSubmitButton>Enregistrer la commande</AdminSubmitButton>
               </form>
             </SectionCard>
           </div>
@@ -373,7 +371,7 @@ function AddressBlock({ title, lines }: { title: string; lines: string[] }) {
           ))}
         </div>
       ) : (
-        <p className="mt-3 text-sm text-muted-foreground">Non renseignee.</p>
+        <p className="mt-3 text-sm text-muted-foreground">Non renseignée.</p>
       )}
     </div>
   )

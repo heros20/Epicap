@@ -84,7 +84,7 @@ export async function updateDashboardOrderAction(formData: FormData) {
       buildRedirect(
         "/dashboard/commandes",
         "error",
-        parsed.error.issues[0]?.message ?? "Mise a jour commande impossible.",
+        parsed.error.issues[0]?.message ?? "Mise à jour commande impossible.",
       ),
     )
   }
@@ -110,7 +110,7 @@ export async function updateDashboardOrderAction(formData: FormData) {
   }
 
   revalidateDashboardRequests()
-  redirect(buildRedirect("/dashboard/commandes", "success", "Commande mise a jour."))
+  redirect(buildRedirect("/dashboard/commandes", "success", "Commande mise à jour."))
 }
 
 export async function updateDashboardQuoteAction(formData: FormData) {
@@ -126,7 +126,7 @@ export async function updateDashboardQuoteAction(formData: FormData) {
       buildRedirect(
         "/dashboard/devis",
         "error",
-        parsed.error.issues[0]?.message ?? "Mise a jour devis impossible.",
+        parsed.error.issues[0]?.message ?? "Mise à jour devis impossible.",
       ),
     )
   }
@@ -149,5 +149,5 @@ export async function updateDashboardQuoteAction(formData: FormData) {
   }
 
   revalidateDashboardRequests()
-  redirect(buildRedirect("/dashboard/devis", "success", "Devis mis a jour."))
+  redirect(buildRedirect("/dashboard/devis", "success", "Devis mis à jour."))
 }

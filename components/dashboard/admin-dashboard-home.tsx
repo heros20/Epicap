@@ -453,7 +453,7 @@ export function AdminDashboardHome({
 
         <Card className="border-border/70 bg-card/92">
           <CardHeader className="border-b border-border/70">
-            <CardTitle>Radar operationnel</CardTitle>
+            <CardTitle>Radar opérationnel</CardTitle>
             <CardDescription>
               Vue synthétique des flux qui demandent une action.
             </CardDescription>

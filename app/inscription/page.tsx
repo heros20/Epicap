@@ -47,12 +47,12 @@ export default async function RegisterPage({
                 <Benefit
                   icon={<UserPlus className="size-5 text-primary" />}
                   title="Compte membre"
-                  description="Role par defaut securise, pret pour la montee en admin ou super admin."
+                  description="Rôle par défaut sécurisé, prêt pour la montée en admin ou super admin."
                 />
                 <Benefit
                   icon={<Building2 className="size-5 text-primary" />}
                   title="Contexte B2B"
-                  description="Nom de societe, fonction et telephone integres au profil."
+                  description="Nom de société, fonction et téléphone intégrés au profil."
                 />
                 <Benefit
                   icon={<ShieldCheck className="size-5 text-primary" />}
@@ -66,12 +66,12 @@ export default async function RegisterPage({
               <CardContent className="p-6 lg:p-8">
                 <div className="mb-6">
                   <p className="text-sm font-medium uppercase tracking-[0.24em] text-muted-foreground">
-                    Onboarding securise
+                    Onboarding sécurisé
                   </p>
                   <h2 className="mt-3 text-2xl font-bold tracking-tight">Creer un compte</h2>
                   <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                    Le role initial cree est `member`. Les roles sensibles se gerent ensuite dans
-                    le dashboard securise.
+                    Le rôle initial créé est `member`. Les rôles sensibles se gèrent ensuite dans
+                    le dashboard sécurisé.
                   </p>
                 </div>
 
@@ -82,7 +82,7 @@ export default async function RegisterPage({
                     next={next}
                     source="inscription"
                     cta="Creer mon compte avec Google"
-                    hint="Si le compte Google n'existe pas encore, Supabase cree un profil membre."
+                    hint="Si le compte Google n’existe pas encore, Supabase crée un profil membre."
                   />
                 </div>
 
@@ -95,13 +95,13 @@ export default async function RegisterPage({
                     <Field label="Nom" htmlFor="lastName">
                       <Input id="lastName" name="lastName" required />
                     </Field>
-                    <Field label="Societe" htmlFor="companyName">
+                    <Field label="Société" htmlFor="companyName">
                       <Input id="companyName" name="companyName" placeholder="Epicap Normandie" />
                     </Field>
                     <Field label="Fonction" htmlFor="jobTitle">
                       <Input id="jobTitle" name="jobTitle" placeholder="Charge d'affaires" />
                     </Field>
-                    <Field label="Telephone" htmlFor="phone">
+                    <Field label="Téléphone" htmlFor="phone">
                       <Input id="phone" name="phone" type="tel" placeholder="06 12 34 56 78" />
                     </Field>
                     <Field label="Adresse email" htmlFor="email">

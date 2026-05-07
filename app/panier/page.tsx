@@ -106,13 +106,13 @@ export default function CartPage() {
                 </Badge>
                 <h1 className="mb-4 text-4xl font-bold tracking-tight">Votre panier est vide</h1>
                 <p className="mx-auto mb-8 max-w-2xl text-base leading-7 text-muted-foreground">
-                  Ajoutez des references du catalogue vente ou preparez directement une demande de
+                  Ajoutez des références du catalogue vente ou préparez directement une demande de
                   devis pour vos besoins chantier.
                 </p>
                 <div className="flex flex-col justify-center gap-3 sm:flex-row">
                   <Button asChild size="lg">
                     <Link href="/boutique">
-                      Acceder au catalogue
+                      Accéder au catalogue
                       <ArrowRight className="ml-2 size-4" />
                     </Link>
                   </Button>
@@ -130,8 +130,8 @@ export default function CartPage() {
                 />
                 <ServiceHighlight
                   icon={<ShieldCheck className="size-5 text-primary" />}
-                  title="Selection pro"
-                  description="References Epicap dediees a l'amiante, au plomb et aux polluants."
+                  title="Sélection pro"
+                  description="Références Epicap dédiées à l'amiante, au plomb et aux polluants."
                 />
                 <ServiceHighlight
                   icon={<Phone className="size-5 text-primary" />}
@@ -181,8 +181,8 @@ export default function CartPage() {
                   Verifier les quantites avant validation
                 </h1>
                 <p className="text-base leading-7 text-muted-foreground">
-                  Le panier tient maintenant compte des remises B2B et des contraintes logistiques.
-                  Les references lourdes, louables ou sur devis peuvent etre redirigees vers une
+                  Le panier distingue les remises B2B et les contraintes logistiques.
+                  Les références lourdes, louables ou sur devis peuvent être redirigées vers une
                   validation manuelle.
                 </p>
               </div>
@@ -191,8 +191,8 @@ export default function CartPage() {
                 <Badge className="rounded-full px-4 py-1.5">{itemCount} article(s)</Badge>
                 <Badge variant="outline" className="rounded-full px-4 py-1.5">
                   {pricing.logisticsMode === "manual"
-                    ? "Logistique chantier a confirmer"
-                    : "Logistique standard estimee"}
+                    ? "Logistique chantier à confirmer"
+                    : "Logistique standard estimée"}
                 </Badge>
               </div>
             </div>
@@ -207,9 +207,9 @@ export default function CartPage() {
                   <CardHeader className="border-b border-border/70 bg-muted/18">
                     <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
                       <div>
-                        <CardTitle>Articles selectionnes</CardTitle>
+                        <CardTitle>Articles sélectionnés</CardTitle>
                         <CardDescription>
-                          {items.length} ligne(s) de commande prêtes a etre transmises.
+                          {items.length} ligne(s) de commande prêtes à être transmises.
                         </CardDescription>
                       </div>
                       <Button variant="ghost" onClick={clearCart} className="rounded-full">
@@ -253,7 +253,7 @@ export default function CartPage() {
                   <ServiceHighlight
                     icon={<ShieldCheck className="size-5 text-primary" />}
                     title="Conformite usage pro"
-                    description="Materiels adaptes aux environnements amiante, confinement et decontamination."
+                    description="Matériels adaptés aux environnements amiante, confinement et décontamination."
                   />
                   <ServiceHighlight
                     icon={<Phone className="size-5 text-primary" />}
@@ -267,12 +267,12 @@ export default function CartPage() {
                 <Card className="overflow-hidden p-0">
                   <div className="bg-[linear-gradient(135deg,#101114_0%,#17191d_100%)] px-6 py-6 text-background">
                     <p className="mb-2 text-xs font-semibold uppercase tracking-[0.22em] text-background/60">
-                      Resume commande
+                      Résumé commande
                     </p>
-                    <h2 className="text-2xl font-bold">Pret pour le checkout</h2>
+                    <h2 className="text-2xl font-bold">Prêt à transmettre</h2>
                     <p className="mt-2 text-sm leading-6 text-background/72">
                       Les montants deviennent pilotables et les exceptions logistiques remontent
-                      maintenant clairement.
+                      clairement dans le récapitulatif.
                     </p>
                   </div>
 
@@ -292,15 +292,15 @@ export default function CartPage() {
                       </div>
                     ) : (
                       <div className="rounded-2xl border border-border/70 bg-muted/20 p-4 text-sm leading-6 text-muted-foreground">
-                        La logistique est a confirmer car le panier contient au moins une reference
-                        louable, une famille a transport specifique ou un article sur devis.
+                        La logistique est à confirmer car le panier contient au moins une référence
+                        louable, une famille à transport spécifique ou un article sur devis.
                       </div>
                     )}
 
                     <div className="space-y-3 text-sm">
                       <SummaryRow label="Sous-total HT" value={formatPrice(pricing.subtotal)} />
                       <SummaryRow
-                        label="Remise societe"
+                        label="Remise société"
                         value={
                           pricing.discountAmount > 0
                             ? `-${formatPrice(pricing.discountAmount)}`
@@ -311,7 +311,7 @@ export default function CartPage() {
                         label="Logistique"
                         value={
                           pricing.logisticsMode === "manual"
-                            ? "A confirmer"
+                            ? "À confirmer"
                             : pricing.shippingAmount === 0
                               ? "Offerte"
                               : formatPrice(pricing.shippingAmount)
@@ -322,10 +322,10 @@ export default function CartPage() {
                             : undefined
                         }
                       />
-                      <SummaryRow label="TVA estimee (20%)" value={formatPrice(pricing.taxAmount)} />
+                      <SummaryRow label="TVA estimée (20%)" value={formatPrice(pricing.taxAmount)} />
                       <Separator />
                       <SummaryRow
-                        label="Total estime"
+                        label="Total estimé"
                         value={
                           pricing.hasQuoteOnlyItems
                             ? "Affinage commercial"
@@ -339,7 +339,7 @@ export default function CartPage() {
                     <div className="space-y-3">
                       <Button asChild className="w-full" size="lg">
                         <Link href="/checkout">
-                          Proceder au checkout
+                          Transmettre la commande
                           <ArrowRight className="ml-2 size-4" />
                         </Link>
                       </Button>
@@ -353,7 +353,7 @@ export default function CartPage() {
                       <p className="mb-4 text-sm leading-6 text-muted-foreground">
                         {profile?.company?.payment_terms
                           ? `Conditions de compte: ${profile.company.payment_terms}.`
-                          : "Aucune condition societe appliquee actuellement."}
+                          : "Aucune condition société appliquée actuellement."}
                       </p>
                       <Button asChild variant="ghost" className="h-auto rounded-full px-0 text-primary">
                         <a
@@ -400,7 +400,7 @@ function CartLineItem({
         className="relative aspect-square overflow-hidden rounded-[1.4rem] border border-border/70 bg-[linear-gradient(180deg,rgba(255,133,28,0.08),rgba(15,16,18,0.02))]"
       >
         {item.product.image ? (
-          <Image src={item.product.image} alt={item.product.name} fill className="object-cover" />
+          <Image src={item.product.image} alt={item.product.name} fill className="object-contain p-2" />
         ) : (
           <div className="absolute inset-0 bg-muted" />
         )}

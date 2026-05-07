@@ -32,8 +32,8 @@ export default async function DashboardCatalogueNewPage({
         <CardContent className="p-6">
           <p className="max-w-3xl text-sm leading-7 text-background/74">
             Creez une reference depuis le cockpit Epicap, puis reglez clairement sa logique
-            commerciale: vente seule ou vente + location, avec publication, medias et documents
-            relies a la meme fiche.
+            commerciale : vente seule ou vente + location, avec publication, médias et documents
+            reliés à la même fiche.
           </p>
         </CardContent>
       </Card>

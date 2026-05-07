@@ -49,7 +49,7 @@ export default async function DashboardHomePage() {
 
   const headline = "Suivi de votre relation Epicap"
   const supportingText =
-    "Espace client pour suivre vos demandes, verifier votre profil et avancer plus vite sur vos futurs achats ou devis."
+    "Espace client pour suivre vos demandes, vérifier votre profil et avancer plus vite sur vos futurs achats ou devis."
 
   const alerts: Array<{
     tone: "warning" | "ok"
@@ -60,7 +60,7 @@ export default async function DashboardHomePage() {
   if (!profile.company && !profile.company_name) {
     alerts.push({
       tone: "warning",
-      title: "Compte sans societe rattachee",
+      title: "Compte sans société rattachée",
       detail: "Completez votre profil pour fiabiliser le contexte B2B et les futurs parcours commande/devis.",
     })
   }
@@ -68,7 +68,7 @@ export default async function DashboardHomePage() {
   if (overview.pendingOrderCount > 0) {
     alerts.push({
       tone: "warning",
-      title: `${overview.pendingOrderCount} commande(s) a suivre`,
+      title: `${overview.pendingOrderCount} commande(s) à suivre`,
       detail: "Votre espace contient des commandes encore en cours de traitement.",
     })
   }
@@ -93,7 +93,7 @@ export default async function DashboardHomePage() {
     {
       label: "Mes commandes",
       value: String(overview.orderCount),
-      helper: "Historique relie a votre compte Epicap.",
+      helper: "Historique relié à votre compte Epicap.",
       accent: "primary" as const,
     },
     {
@@ -105,7 +105,7 @@ export default async function DashboardHomePage() {
     {
       label: "Rattachement",
       value: profile.company?.name ?? profile.company_name ?? "Aucun",
-      helper: "Societe actuellement associee au compte.",
+      helper: "Société actuellement associée au compte.",
       accent: "default" as const,
     },
     {
@@ -137,8 +137,8 @@ export default async function DashboardHomePage() {
   const quickActions = [
     {
       href: "/dashboard/profil",
-      title: "Mettre a jour le profil",
-      description: "Coordonnees, societe et preferences email.",
+      title: "Mettre à jour le profil",
+      description: "Coordonnées, société et préférences email.",
       priority: !profile.company && !profile.company_name,
       icon: <UserRound className="size-4" />,
     },
@@ -164,7 +164,7 @@ export default async function DashboardHomePage() {
         <Card className="overflow-hidden border-primary/20 bg-[radial-gradient(circle_at_top_right,rgba(255,133,28,0.18),transparent_32%),linear-gradient(135deg,#111317_0%,#1a1d22_100%)] text-background">
           <CardContent className="p-8">
             <Badge className="border border-primary/20 bg-primary/20 text-background">
-              Vue operationnelle
+              Vue opérationnelle
             </Badge>
             <h2 className="mt-5 text-3xl font-bold tracking-tight lg:text-4xl">
               {headline}
@@ -276,14 +276,14 @@ export default async function DashboardHomePage() {
             <CardTitle>Etat du compte</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4 p-6">
-            <StateRow label="Role" value={ROLE_LABELS[profile.role]} />
+            <StateRow label="Rôle" value={ROLE_LABELS[profile.role]} />
             <StateRow
               label="Portee"
               value="Vue personnelle"
             />
             <StateRow
-              label="Societe"
-              value={profile.company?.name ?? profile.company_name ?? "Non renseignee"}
+              label="Société"
+              value={profile.company?.name ?? profile.company_name ?? "Non renseignée"}
             />
             <StateRow
               label="Notifications"
@@ -306,7 +306,7 @@ export default async function DashboardHomePage() {
           icon={<ShoppingBag className="size-5 text-primary" />}
           ctaHref="/dashboard/commandes"
           ctaLabel="Voir les commandes"
-          emptyMessage="Aucune commande n'a encore ete enregistree."
+          emptyMessage="Aucune commande n’a encore été enregistrée."
           rows={overview.recentOrders.map((order) => ({
             id: order.id,
             title: order.order_number ?? "Commande sans numero",
@@ -322,7 +322,7 @@ export default async function DashboardHomePage() {
           icon={<FileText className="size-5 text-primary" />}
           ctaHref="/dashboard/devis"
           ctaLabel="Voir les devis"
-          emptyMessage="Aucun devis n'a encore ete saisi."
+          emptyMessage="Aucun devis n’a encore été saisi."
           rows={overview.recentQuotes.map((quote) => ({
             id: quote.id,
             title: quote.quote_number ?? "Devis sans numero",

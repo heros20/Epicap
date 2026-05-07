@@ -12,6 +12,11 @@ interface ProductCardProps {
   className?: string
 }
 
+const priceFormatter = new Intl.NumberFormat("fr-FR", {
+  style: "currency",
+  currency: "EUR",
+})
+
 export function ProductCard({ product, className }: ProductCardProps) {
   const categoryPath = product.subcategorySlug
     ? `${product.categorySlug}/${product.subcategorySlug}`
@@ -25,13 +30,13 @@ export function ProductCard({ product, className }: ProductCardProps) {
       )}
     >
       <Link href={`/boutique/${categoryPath}/${product.slug}`} className="flex h-full flex-col">
-        <div className="relative aspect-square overflow-hidden bg-[linear-gradient(180deg,rgba(255,133,28,0.08),rgba(15,16,18,0.02))]">
+        <div className="relative aspect-square overflow-hidden bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.94),rgba(238,241,245,0.96))]">
           {product.image ? (
             <Image
               src={product.image}
               alt={product.name}
               fill
-              className="object-cover transition-transform duration-500 group-hover:scale-105"
+              className="object-contain p-4 transition-transform duration-500 group-hover:scale-105"
             />
           ) : (
             <div className="absolute inset-0 bg-gradient-to-br from-muted to-muted/60" />
@@ -72,11 +77,11 @@ export function ProductCard({ product, className }: ProductCardProps) {
             {product.price > 0 ? (
               <div className="flex flex-wrap items-baseline gap-2">
                 <span className="text-lg font-bold">
-                  {product.price.toLocaleString("fr-FR", { minimumFractionDigits: 2 })} EUR
+                  {priceFormatter.format(product.price)}
                 </span>
                 {product.compareAtPrice && (
                   <span className="text-sm text-muted-foreground line-through">
-                    {product.compareAtPrice.toLocaleString("fr-FR")} EUR
+                    {priceFormatter.format(product.compareAtPrice)}
                   </span>
                 )}
               </div>
@@ -86,7 +91,7 @@ export function ProductCard({ product, className }: ProductCardProps) {
 
             {product.isRentable && product.rentalPriceDaily && (
               <p className="mt-1 text-xs text-muted-foreground">
-                ou {product.rentalPriceDaily} EUR / jour en location
+                ou {priceFormatter.format(product.rentalPriceDaily)} / jour en location
               </p>
             )}
 

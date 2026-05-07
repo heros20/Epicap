@@ -14,7 +14,7 @@ import { companyInfo } from "@/lib/data/company"
 export const metadata: Metadata = {
   title: "Demande de devis",
   description:
-    "Demande de devis Epicap connectée au back-office pour vente, location, maintenance respiratoire, FIT TEST et besoins chantier de désamiantage.",
+    "Demande de devis Epicap pour vente, location, maintenance respiratoire, FIT TEST et besoins chantier de désamiantage.",
 }
 
 interface QuotePageProps {
@@ -86,8 +86,8 @@ export default async function QuotePage({ searchParams }: QuotePageProps) {
               Centraliser les besoins vente, location et services
             </h1>
             <p className="max-w-3xl text-muted-foreground">
-              Le parcours devis n’est plus un simple renvoi email. Il crée maintenant une demande
-              traçable, exploitable par l’équipe commerciale et visible côté back-office.
+              Le parcours devis crée une demande traçable, exploitable par l’équipe commerciale
+              pour arbitrer vente, location, maintenance et contraintes chantier.
             </p>
           </div>
         </section>

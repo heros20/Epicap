@@ -91,7 +91,7 @@ function getAuthPagePath(source?: z.infer<typeof authSourceSchema>) {
 
 function toFriendlyOAuthError(message: string) {
   if (/provider.*not enabled/i.test(message) || /unsupported provider/i.test(message)) {
-    return "La connexion Google n'est pas encore activee sur ce projet Supabase."
+    return "La connexion Google n’est pas encore activée sur ce projet Supabase."
   }
 
   return message
@@ -231,7 +231,7 @@ export async function signUpAction(formData: FormData) {
     buildActionRedirect(
       "/connexion",
       "success",
-      "Compte cree. Verifiez votre email pour activer le compte, puis connectez-vous.",
+      "Compte créé. Vérifiez votre email pour activer le compte, puis connectez-vous.",
       next,
     ),
   )
@@ -272,7 +272,7 @@ export async function updateMyProfileAction(formData: FormData) {
   }
 
   revalidatePath("/dashboard", "layout")
-  redirect(buildActionRedirect("/dashboard/profil", "success", "Profil mis a jour."))
+  redirect(buildActionRedirect("/dashboard/profil", "success", "Profil mis à jour."))
 }
 
 export async function adminUpdateProfileAction(formData: FormData) {
@@ -287,7 +287,7 @@ export async function adminUpdateProfileAction(formData: FormData) {
       buildActionRedirect(
         "/dashboard/equipe",
         "error",
-        parsed.error.issues[0]?.message ?? "Mise a jour impossible.",
+        parsed.error.issues[0]?.message ?? "Mise à jour impossible.",
       ),
     )
   }
@@ -305,5 +305,5 @@ export async function adminUpdateProfileAction(formData: FormData) {
   }
 
   revalidatePath("/dashboard", "layout")
-  redirect(buildActionRedirect("/dashboard/equipe", "success", "Utilisateur mis a jour."))
+  redirect(buildActionRedirect("/dashboard/equipe", "success", "Utilisateur mis à jour."))
 }

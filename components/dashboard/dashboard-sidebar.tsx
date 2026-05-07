@@ -400,11 +400,11 @@ function AdminNavigationPanel({
             />
             <AdminInfoRow
               icon={<BriefcaseBusiness className="size-4 text-white" />}
-              label={profile.job_title || "Fonction a completer"}
+              label={profile.job_title || "Fonction à compléter"}
             />
             <AdminInfoRow
               icon={<Factory className="size-4 text-white" />}
-              label={companyName || "Societe a completer"}
+              label={companyName || "Société à compléter"}
             />
           </div>
         </div>

@@ -34,14 +34,14 @@ export default function CheckoutPage() {
                   <Package2 className="size-8" />
                 </div>
                 <div>
-                  <h1 className="mb-3 text-3xl font-bold">Aucun article a finaliser</h1>
+                  <h1 className="mb-3 text-3xl font-bold">Aucun article à finaliser</h1>
                   <p className="text-base leading-7 text-muted-foreground">
-                    Ajoutez des references au panier ou basculez directement vers une demande de devis.
+                    Ajoutez des références au panier ou basculez directement vers une demande de devis.
                   </p>
                 </div>
                 <div className="flex flex-col justify-center gap-3 sm:flex-row">
                   <Button asChild size="lg">
-                    <Link href="/boutique">Acceder au catalogue</Link>
+                    <Link href="/boutique">Accéder au catalogue</Link>
                   </Button>
                   <Button asChild size="lg" variant="outline">
                     <Link href="/devis?source=checkout-empty">Demander un devis</Link>
@@ -77,7 +77,7 @@ export default function CheckoutPage() {
                 </BreadcrumbItem>
                 <BreadcrumbSeparator />
                 <BreadcrumbItem>
-                  <BreadcrumbPage>Checkout</BreadcrumbPage>
+                  <BreadcrumbPage>Validation commande</BreadcrumbPage>
                 </BreadcrumbItem>
               </BreadcrumbList>
             </Breadcrumb>
@@ -91,8 +91,8 @@ export default function CheckoutPage() {
                   Transmettre une vraie demande de commande
                 </h1>
                 <p className="text-base leading-7 text-muted-foreground">
-                  Le checkout cree maintenant une demande traçable dans le back-office Epicap.
-                  Le stock, la logistique chantier et les conditions B2B sont verifies avant
+                  La validation crée une demande traçable pour l’équipe Epicap.
+                  Le stock, la logistique chantier et les conditions B2B sont vérifiés avant
                   confirmation finale.
                 </p>
               </div>
@@ -120,8 +120,8 @@ export default function CheckoutPage() {
           <div className="container mx-auto px-4">
             <div className="grid gap-4 md:grid-cols-3">
               <ValueCard
-                title="Commande reliee au dashboard"
-                description="La reference retournee est consultable cote commandes et pilotage."
+                title="Commande reliée au suivi"
+                description="La référence retournée est consultable côté commandes et pilotage."
               />
               <ValueCard
                 title="Logistique chantier filtree"
@@ -129,7 +129,7 @@ export default function CheckoutPage() {
               />
               <ValueCard
                 title="Conditions B2B conservees"
-                description="Remises societe, paiement de compte et contexte chantier restent rattaches a la demande."
+                description="Remises société, paiement de compte et contexte chantier restent rattachés à la demande."
               />
             </div>
           </div>

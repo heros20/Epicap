@@ -1,5 +1,5 @@
+import { AdminSubmitButton } from "@/components/dashboard/admin-submit-button"
 import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -83,14 +83,14 @@ export default async function DashboardQuotesPage({
                   <TableHead>Contact</TableHead>
                   <TableHead>Statut</TableHead>
                   <TableHead>Montant</TableHead>
-                  <TableHead>Cree le</TableHead>
+                  <TableHead>Créé le</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {quotes.map((quote) => (
                   <TableRow key={quote.id}>
                     <TableCell className="font-medium">
-                      {quote.quote_number ?? "Sans numero"}
+                      {quote.quote_number ?? "Sans numéro"}
                     </TableCell>
                     <TableCell>
                       <div className="space-y-1">
@@ -123,8 +123,8 @@ export default async function DashboardQuotesPage({
         </CardHeader>
         <CardContent className="space-y-4 p-6">
           <p className="text-sm text-muted-foreground">
-            Les devis peuvent maintenant etre traites depuis l&apos;admin: statut commercial,
-            echeance, details produits et notes internes.
+            Les devis peuvent être traités depuis l&apos;admin : statut commercial,
+            échéance, détail produits et notes internes.
           </p>
           {error ? <MessageBox tone="error" message={error} /> : null}
           {success ? <MessageBox tone="success" message={success} /> : null}
@@ -157,7 +157,7 @@ function AdminQuoteCard({ quote }: { quote: DashboardQuoteRecord }) {
       <CardHeader className="border-b border-border/70">
         <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div className="space-y-2">
-            <CardTitle>{quote.quote_number ?? "Sans numero"}</CardTitle>
+            <CardTitle>{quote.quote_number ?? "Sans numéro"}</CardTitle>
             <div className="flex flex-wrap gap-2">
               <Badge variant="secondary">{QUOTE_STATUS_LABELS[quote.status]}</Badge>
               {customerType ? (
@@ -174,7 +174,7 @@ function AdminQuoteCard({ quote }: { quote: DashboardQuoteRecord }) {
             </div>
             <p className="text-sm text-muted-foreground">
               {quote.contact_name ?? "Compte Epicap"} -{" "}
-              {quote.company_name ?? quote.contact_email ?? "Sans societe"} -{" "}
+              {quote.company_name ?? quote.contact_email ?? "Sans société"} -{" "}
               {dateFormatter.format(new Date(quote.created_at))}
             </p>
           </div>
@@ -189,13 +189,13 @@ function AdminQuoteCard({ quote }: { quote: DashboardQuoteRecord }) {
       <CardContent className="space-y-6 p-6">
         <div className="grid gap-6 xl:grid-cols-[1.1fr_0.9fr]">
           <div className="space-y-6">
-            <SectionCard title="Coordonnees">
+            <SectionCard title="Coordonnées">
               <InfoGrid
                 items={[
                   ["Contact", quote.contact_name ?? "Compte Epicap"],
                   ["Email", quote.contact_email ?? "Sans email"],
-                  ["Societe", quote.company_name ?? "Sans societe"],
-                  ["Validite", quote.valid_until ? quote.valid_until.slice(0, 10) : "A definir"],
+                  ["Société", quote.company_name ?? "Sans société"],
+                  ["Validité", quote.valid_until ? quote.valid_until.slice(0, 10) : "À définir"],
                 ]}
               />
             </SectionCard>
@@ -208,7 +208,7 @@ function AdminQuoteCard({ quote }: { quote: DashboardQuoteRecord }) {
                   ))}
                 </div>
               ) : (
-                <p className="text-sm text-muted-foreground">Aucune ligne detaillee.</p>
+                <p className="text-sm text-muted-foreground">Aucune ligne détaillée.</p>
               )}
             </SectionCard>
 
@@ -220,7 +220,7 @@ function AdminQuoteCard({ quote }: { quote: DashboardQuoteRecord }) {
           </div>
 
           <div className="space-y-6">
-            <SectionCard title="Mise a jour admin">
+            <SectionCard title="Mise à jour admin">
               <form action={updateDashboardQuoteAction} className="grid gap-4">
                 <input type="hidden" name="quoteId" value={quote.id} />
                 <AdminField label="Statut" htmlFor={`status-${quote.id}`}>
@@ -254,9 +254,7 @@ function AdminQuoteCard({ quote }: { quote: DashboardQuoteRecord }) {
                     placeholder="Commentaire interne, relance, positionnement commercial..."
                   />
                 </AdminField>
-                <Button type="submit" className="w-full sm:w-fit">
-                  Enregistrer le devis
-                </Button>
+                <AdminSubmitButton>Enregistrer le devis</AdminSubmitButton>
               </form>
             </SectionCard>
           </div>

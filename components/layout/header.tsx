@@ -55,9 +55,9 @@ export function Header() {
   }, [])
 
   const desktopNavItemClassName =
-    "inline-flex h-full min-h-14 items-center justify-center px-4 text-sm font-semibold leading-none text-foreground transition-colors hover:bg-accent/70 hover:text-foreground"
+    "inline-flex h-full min-h-12 items-center justify-center px-4 text-sm font-semibold leading-none text-foreground transition-colors hover:bg-accent/70 hover:text-foreground"
   const desktopNavTriggerClassName =
-    "h-full min-h-14 rounded-none bg-transparent px-4 text-sm font-semibold leading-none text-foreground hover:bg-accent/70 hover:text-foreground data-[state=open]:bg-accent/80 data-[state=open]:text-foreground"
+    "h-full min-h-12 rounded-none bg-transparent px-4 text-sm font-semibold leading-none text-foreground hover:bg-accent/70 hover:text-foreground data-[state=open]:bg-accent/80 data-[state=open]:text-foreground"
 
   return (
     <header
@@ -68,7 +68,12 @@ export function Header() {
           : "bg-background/96",
       )}
     >
-      <div className="bg-foreground text-background">
+      <div
+        className={cn(
+          "overflow-hidden bg-foreground text-background transition-all duration-300",
+          isScrolled ? "h-0 opacity-0" : "h-10 opacity-100",
+        )}
+      >
         <div className="container mx-auto px-4">
           <div className="flex h-10 items-center justify-between text-sm">
             <div className="hidden items-center gap-6 md:flex">
@@ -105,11 +110,21 @@ export function Header() {
         <div className="pointer-events-none absolute inset-x-0 top-0 h-px bg-[linear-gradient(90deg,transparent,rgba(255,133,28,0.8),transparent)]" />
 
         <div className="container relative mx-auto px-4">
-          <div className="flex h-16 items-center justify-between gap-4 lg:h-20">
+          <div
+            className={cn(
+              "flex items-center justify-between gap-4 transition-[height] duration-300",
+              isScrolled ? "h-14 lg:h-16" : "h-16 lg:h-20",
+            )}
+          >
             <Link href="/" className="flex-shrink-0">
               <BrandLogo
                 priority
-                className="h-11 w-[150px] sm:h-12 sm:w-[178px] lg:h-14 lg:w-[212px]"
+                className={cn(
+                  "transition-[height,width] duration-300",
+                  isScrolled
+                    ? "h-9 w-[130px] sm:h-10 sm:w-[148px] lg:h-11 lg:w-[166px]"
+                    : "h-11 w-[150px] sm:h-12 sm:w-[178px] lg:h-14 lg:w-[212px]",
+                )}
               />
             </Link>
 
@@ -168,7 +183,10 @@ export function Header() {
 
       <nav className="hidden border-t border-border/60 bg-background/92 backdrop-blur-xl lg:block">
         <div className="container mx-auto px-4">
-          <NavigationMenu className="h-14 max-w-none" viewport={false}>
+          <NavigationMenu
+            className={cn("max-w-none transition-[height] duration-300", isScrolled ? "h-12" : "h-14")}
+            viewport={false}
+          >
             <NavigationMenuList className="h-full items-stretch gap-0">
               <NavigationMenuItem className="h-full">
                 <NavigationMenuTrigger className={desktopNavTriggerClassName}>

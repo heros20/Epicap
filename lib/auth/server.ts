@@ -1,6 +1,7 @@
 import { redirect } from "next/navigation"
 
 import type { AuthUser, ProfileWithCompany } from "@/lib/auth/types"
+import { isSupabaseConfigured } from "@/lib/supabase/config"
 import { createClient } from "@/lib/supabase/server"
 import type { Database } from "@/types/supabase"
 
@@ -9,6 +10,14 @@ type ProfileSelectRow = Database["public"]["Tables"]["profiles"]["Row"] & {
 }
 
 export async function getCurrentAuthState() {
+  if (!isSupabaseConfigured()) {
+    return {
+      supabase: null,
+      user: null as AuthUser | null,
+      profile: null as ProfileWithCompany | null,
+    }
+  }
+
   const supabase = await createClient()
   const {
     data: { user },

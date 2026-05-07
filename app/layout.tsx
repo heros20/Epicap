@@ -3,6 +3,7 @@ import { Analytics } from "@vercel/analytics/next"
 import { Geist_Mono, Manrope, Space_Grotesk } from "next/font/google"
 
 import { AuthProvider } from "@/components/auth/auth-provider"
+import { Toaster } from "@/components/ui/toaster"
 import { getCurrentAuthState } from "@/lib/auth/server"
 import { CartProvider } from "@/lib/cart/cart-provider"
 import "./globals.css"
@@ -99,6 +100,7 @@ export default async function RootLayout({
         <AuthProvider initialUser={user} initialProfile={profile}>
           <CartProvider>{children}</CartProvider>
         </AuthProvider>
+        <Toaster />
         <Analytics />
       </body>
     </html>

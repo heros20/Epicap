@@ -10,6 +10,7 @@ import type { ReactNode } from "react"
 import { useRouter } from "next/navigation"
 
 import type { AuthUser, ProfileWithCompany } from "@/lib/auth/types"
+import { isSupabaseConfigured } from "@/lib/supabase/config"
 import { createClient } from "@/lib/supabase/client"
 
 interface AuthContextValue {
@@ -36,6 +37,10 @@ export function AuthProvider({
   const router = useRouter()
 
   useEffect(() => {
+    if (!isSupabaseConfigured()) {
+      return
+    }
+
     const supabase = createClient()
     const {
       data: { subscription },

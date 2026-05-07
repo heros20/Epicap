@@ -306,7 +306,7 @@ export async function submitQuoteRequestAction(
   if (!quoteResult) {
     return {
       status: "error",
-      message: "La demande de devis n'a pas pu etre finalisee.",
+      message: "La demande de devis n’a pas pu être finalisée.",
     }
   }
 
@@ -454,7 +454,7 @@ export async function submitOrderRequestAction(
   if (!orderResult) {
     return {
       status: "error",
-      message: "La demande de commande n'a pas pu etre finalisee.",
+      message: "La demande de commande n’a pas pu être finalisée.",
     }
   }
 

@@ -156,7 +156,7 @@ export function QuoteRequestForm({
               Demande transmise
             </Badge>
             <div>
-              <h2 className="text-2xl font-semibold">Reference {state.reference}</h2>
+              <h2 className="text-2xl font-semibold">Référence {state.reference}</h2>
               <p className="mt-2 text-sm leading-6 text-muted-foreground">{state.message}</p>
             </div>
             <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
@@ -173,12 +173,12 @@ export function QuoteRequestForm({
                 label="Logistique"
                 value={
                   state.logisticsMode === "manual"
-                    ? "A confirmer"
+                    ? "À confirmer"
                     : formatPrice(state.shippingAmount ?? 0)
                 }
               />
               <SuccessChip
-                label="Montant estime"
+                label="Montant estimé"
                 value={
                   state.hasQuoteOnlyItems
                     ? "Affinage commercial"
@@ -195,7 +195,7 @@ export function QuoteRequestForm({
           <CardContent className="p-4 text-sm text-destructive">
             {state.status === "error"
               ? state.message
-              : "Corrigez les champs signales avant d'envoyer la demande."}
+              : "Corrigez les champs signalés avant d'envoyer la demande."}
           </CardContent>
         </Card>
       ) : null}
@@ -204,9 +204,9 @@ export function QuoteRequestForm({
         <Card className="p-0">
           <CardContent className="space-y-6 p-6 lg:p-8">
             <div>
-              <h2 className="text-xl font-semibold">Decrire votre besoin</h2>
+              <h2 className="text-xl font-semibold">Décrire votre besoin</h2>
               <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                La demande est connectee au back-office Epicap. Les erreurs sont indiquees champ
+                La demande est connectée au back-office Epicap. Les erreurs sont indiquées champ
                 par champ, et le parcours accepte aussi bien les entreprises que les particuliers.
               </p>
             </div>
@@ -228,7 +228,7 @@ export function QuoteRequestForm({
                   label="Profil d'achat"
                   htmlFor="customerType"
                   className="md:col-span-2"
-                  hint="Entreprise pour une societe, Particulier pour un achat en nom propre."
+                  hint="Entreprise pour une société, Particulier pour un achat en nom propre."
                   error={activeFieldErrors.customerType}
                 >
                   <select
@@ -254,14 +254,14 @@ export function QuoteRequestForm({
                     defaultValue={defaultContactName}
                     aria-invalid={Boolean(activeFieldErrors.contactName)}
                     placeholder={
-                      customerType === "company" ? "Responsable chantier" : "Nom et prenom"
+                      customerType === "company" ? "Responsable chantier" : "Nom et prénom"
                     }
                     required
                   />
                 </Field>
                 {customerType === "company" ? (
                   <Field
-                    label="Societe"
+                    label="Société"
                     htmlFor="companyName"
                     hint="Obligatoire pour une demande entreprise."
                     error={activeFieldErrors.companyName}
@@ -272,7 +272,7 @@ export function QuoteRequestForm({
                       name="companyName"
                       defaultValue={defaultCompanyName}
                       aria-invalid={Boolean(activeFieldErrors.companyName)}
-                      placeholder="Nom de la societe"
+                      placeholder="Nom de la société"
                       required
                     />
                   </Field>
@@ -280,13 +280,13 @@ export function QuoteRequestForm({
                   <Field
                     label="Statut"
                     htmlFor="customerType-individual"
-                    hint="Aucune societe n'est requise pour un particulier."
+                    hint="Aucune société n'est requise pour un particulier."
                   >
                     <div
                       id="customerType-individual"
                       className="rounded-xl border border-border/70 bg-muted/20 px-4 py-3 text-sm text-muted-foreground"
                     >
-                      Cette demande sera enregistree comme particulier.
+                    Cette demande sera enregistrée comme particulier.
                     </div>
                   </Field>
                 )}
@@ -307,7 +307,7 @@ export function QuoteRequestForm({
                   />
                 </Field>
                 <Field
-                  label="Telephone"
+                  label="Téléphone"
                   htmlFor="contactPhone"
                   error={activeFieldErrors.contactPhone}
                   required
@@ -354,7 +354,7 @@ export function QuoteRequestForm({
                     placeholder="Ile-de-France, Normandie, multi-sites..."
                   />
                 </Field>
-                <Field label="Delai souhaite" htmlFor="requestedDelay">
+                <Field label="Délai souhaité" htmlFor="requestedDelay">
                   <Input
                     id="requestedDelay"
                     name="requestedDelay"
@@ -362,7 +362,7 @@ export function QuoteRequestForm({
                   />
                 </Field>
                 <Field
-                  label="Duree location (jours)"
+                  label="Durée location (jours)"
                   htmlFor="rentalDays"
                   hint={
                     requestType === "rental"
@@ -392,13 +392,13 @@ export function QuoteRequestForm({
                     <div>
                       <p className="text-sm font-semibold">{requestedProduct.name}</p>
                       <p className="text-sm text-muted-foreground">
-                        Produit precharge depuis le catalogue.
+                      Produit préchargé depuis le catalogue.
                       </p>
                     </div>
                   </div>
                   <div className="mt-4 max-w-[180px]">
                     <Field
-                      label="Quantite"
+                      label="Quantité"
                       htmlFor="productQuantity"
                       compact
                       error={activeFieldErrors.productQuantity}
@@ -429,8 +429,8 @@ export function QuoteRequestForm({
                     <p className="text-sm font-semibold">Joindre le panier actuel</p>
                     <p className="mt-1 text-sm leading-6 text-muted-foreground">
                       {items.length > 0
-                        ? `${items.length} ligne(s) du panier peuvent etre ajoutees a la demande.`
-                        : "Aucun article n'est actuellement present dans le panier local."}
+                        ? `${items.length} ligne(s) du panier peuvent être ajoutées à la demande.`
+                        : "Aucun article n'est actuellement présent dans le panier local."}
                     </p>
                   </div>
                 </label>
@@ -441,8 +441,8 @@ export function QuoteRequestForm({
                 htmlFor="message"
                 hint={
                   hasCatalogContext
-                    ? "Optionnel si le produit ou le panier suffit. Si vous ajoutez un commentaire, soyez precis."
-                    : "Obligatoire si aucun produit ni panier n'est joint a la demande."
+                    ? "Optionnel si le produit ou le panier suffit. Si vous ajoutez un commentaire, soyez précis."
+                    : "Obligatoire si aucun produit ni panier n'est joint à la demande."
                 }
                 error={activeFieldErrors.message}
                 required={!hasCatalogContext}
@@ -451,7 +451,7 @@ export function QuoteRequestForm({
                   id="message"
                   name="message"
                   aria-invalid={Boolean(activeFieldErrors.message)}
-                  placeholder="Nature du chantier, quantites, delais, arbitrage achat/location, contraintes d'acces, besoin de maintenance ou FIT TEST..."
+                  placeholder="Nature du chantier, quantités, délais, arbitrage achat/location, contraintes d'accès, besoin de maintenance ou FIT TEST..."
                   className="min-h-36"
                   required={!hasCatalogContext}
                 />
@@ -460,7 +460,7 @@ export function QuoteRequestForm({
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div className="text-sm text-muted-foreground">
                   {customerType === "company" && profile?.company?.payment_terms ? (
-                    <span>Conditions societe actuelles: {profile.company.payment_terms}</span>
+                    <span>Conditions société actuelles : {profile.company.payment_terms}</span>
                   ) : customerType === "individual" ? (
                     <span>Les particuliers peuvent aussi demander un devis ou une commande.</span>
                   ) : (
@@ -483,17 +483,17 @@ export function QuoteRequestForm({
                 <div>
                   <p className="text-base font-semibold">Contexte de la demande</p>
                   <p className="text-sm text-muted-foreground">
-                    Origine et elements deja connus.
+                    Origine et éléments déjà connus.
                   </p>
                 </div>
               </div>
               <InfoRow label="Parcours" value={contextLabel ?? "Demande libre"} />
-              <InfoRow label="Type recommande" value={requestTypeLabel} />
+              <InfoRow label="Type recommandé" value={requestTypeLabel} />
               <InfoRow
-                label="Produit lie"
-                value={requestedProduct?.name ?? "Aucun produit precharge"}
+                label="Produit lié"
+                value={requestedProduct?.name ?? "Aucun produit préchargé"}
               />
-              <InfoRow label="Compte" value={user ? "Identifie" : "Public non connecte"} />
+              <InfoRow label="Compte" value={user ? "Identifié" : "Public non connecté"} />
             </CardContent>
           </Card>
 
@@ -518,8 +518,8 @@ export function QuoteRequestForm({
                 label="Compte"
                 value={
                   customerType === "company"
-                    ? defaultCompanyName || "A renseigner dans le formulaire"
-                    : "Aucune societe requise"
+                    ? defaultCompanyName || "À renseigner dans le formulaire"
+                    : "Aucune société requise"
                 }
               />
               <InfoRow
@@ -577,10 +577,10 @@ export function QuoteRequestForm({
             <CardContent className="space-y-3 p-6">
               <div className="flex items-center gap-3">
                 <ShieldCheck className="size-5 text-primary" />
-                <p className="font-semibold">Suivi commercial tracable</p>
+                <p className="font-semibold">Suivi commercial traçable</p>
               </div>
               <p className="text-sm leading-6 text-muted-foreground">
-                Chaque demande cree une reference exploitable cote dashboard. Le besoin n&apos;est
+                Chaque demande crée une référence exploitable côté dashboard. Le besoin n&apos;est
                 plus perdu dans un simple lien email.
               </p>
               <Button asChild variant="outline" className="w-full">

@@ -34,15 +34,15 @@ const catalogProductSchema = z
       .string()
       .trim()
       .min(3, "Le slug est requis.")
-      .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Le slug doit etre URL-friendly."),
+      .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, "Le slug doit être compatible URL."),
     brand: z.string().trim().min(2, "La marque est requise."),
-    categorySlug: z.string().trim().refine(isValidCategorySlug, "Categorie invalide."),
+    categorySlug: z.string().trim().refine(isValidCategorySlug, "Catégorie invalide."),
     subcategorySlug: z.preprocess(emptyToUndefined, z.string().trim().optional()),
-    shortDescription: z.string().trim().min(10, "Ajoutez un resume court."),
+    shortDescription: z.string().trim().min(10, "Ajoutez un résumé court."),
     description: z.string().trim().min(20, "Ajoutez une description complete."),
-    price: z.coerce.number().min(0, "Le prix doit etre positif."),
+    price: z.coerce.number().min(0, "Le prix doit être positif."),
     compareAtPrice: z.preprocess(emptyToUndefined, z.coerce.number().min(0).optional()),
-    stockQuantity: z.coerce.number().int().min(0, "Le stock doit etre positif."),
+    stockQuantity: z.coerce.number().int().min(0, "Le stock doit être positif."),
     badge: z.preprocess(emptyToUndefined, z.string().trim().max(80).optional()),
     sourceUrl: z.preprocess(
       emptyToUndefined,
@@ -495,7 +495,7 @@ export async function saveCatalogProductAction(formData: FormData) {
       buildRedirect(
         `/dashboard/catalogue/${response.data.id}`,
         "success",
-        previousProduct ? "Produit mis a jour." : "Produit cree.",
+        previousProduct ? "Produit mis à jour." : "Produit créé.",
       ),
     )
   } catch (error) {

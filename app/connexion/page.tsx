@@ -38,7 +38,7 @@ export default async function LoginPage({
                 Authentification Supabase
               </Badge>
               <h1 className="text-4xl font-bold tracking-tight lg:text-5xl">
-                Connexion securisee Epicap
+                Connexion sécurisée Epicap
               </h1>
               <p className="mt-5 text-base leading-7 text-background/74">
                 Ce socle prepare les comptes membre, admin et super admin avec controle d&apos;acces
@@ -48,7 +48,7 @@ export default async function LoginPage({
                 <FeatureCard
                   icon={<ShieldCheck className="size-5 text-primary" />}
                   title="RLS"
-                  description="Lecture et ecriture filtrees cote base."
+                  description="Lecture et écriture filtrées côté base."
                 />
                 <FeatureCard
                   icon={<UserCog className="size-5 text-primary" />}
@@ -71,8 +71,8 @@ export default async function LoginPage({
                   </p>
                   <h2 className="mt-3 text-2xl font-bold tracking-tight">Se connecter</h2>
                   <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                    Utilisez vos identifiants Epicap ou Google pour acceder a votre espace
-                    securise.
+                    Utilisez vos identifiants Epicap ou Google pour accéder à votre espace
+                    sécurisé.
                   </p>
                 </div>
 

@@ -4,6 +4,7 @@ import { Metadata } from "next"
 
 import { Footer } from "@/components/layout/footer"
 import { Header } from "@/components/layout/header"
+import { ActiveFilterChips } from "@/components/products/active-filter-chips"
 import { ProductCard } from "@/components/products/product-card"
 import { ProductFilters } from "@/components/products/product-filters"
 import { SortSelect } from "@/components/products/sort-select"
@@ -15,6 +16,7 @@ import {
   BreadcrumbPage,
   BreadcrumbSeparator,
 } from "@/components/ui/breadcrumb"
+import { Button } from "@/components/ui/button"
 import {
   getCatalogBrands,
   getCatalogProducts,
@@ -156,8 +158,18 @@ export default async function BoutiquePage({ searchParams }: PageProps) {
                   </div>
                 </div>
 
+                <ActiveFilterChips
+                  brands={params.brands}
+                  inStock={params.inStock}
+                  rentable={params.rentable}
+                  minPrice={params.minPrice}
+                  maxPrice={params.maxPrice}
+                  query={params.query}
+                  resetHref="/boutique"
+                />
+
                 {filteredProducts.length > 0 ? (
-                  <div className="grid grid-cols-2 gap-4 md:grid-cols-3 xl:grid-cols-4 lg:gap-6">
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 lg:gap-6">
                     {filteredProducts.map((product) => (
                       <ProductCard key={product.id} product={product} />
                     ))}
@@ -167,6 +179,9 @@ export default async function BoutiquePage({ searchParams }: PageProps) {
                     <p className="text-muted-foreground">
                       Aucun produit ne correspond à vos critères.
                     </p>
+                    <Button asChild variant="outline" className="mt-4 rounded-full">
+                      <Link href="/boutique">Réinitialiser les filtres</Link>
+                    </Button>
                   </div>
                 )}
               </div>

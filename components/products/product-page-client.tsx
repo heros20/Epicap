@@ -8,6 +8,7 @@ import {
   ChevronLeft,
   ChevronRight,
   Clock,
+  Copy,
   Download,
   FileText,
   Minus,
@@ -34,6 +35,8 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
+import { ToastAction } from "@/components/ui/toast"
+import { toast } from "@/hooks/use-toast"
 import { safeTrack } from "@/lib/analytics/events"
 import { companyInfo } from "@/lib/data/company"
 import { useCart } from "@/lib/cart/use-cart"
@@ -42,6 +45,11 @@ import type { Product } from "@/lib/data/products"
 import { cn } from "@/lib/utils"
 
 type Subcategory = Category["subcategories"][number]
+
+const priceFormatter = new Intl.NumberFormat("fr-FR", {
+  style: "currency",
+  currency: "EUR",
+})
 
 export function ProductPageClient({
   product,
@@ -57,6 +65,7 @@ export function ProductPageClient({
   const { addItem } = useCart()
   const [quantity, setQuantity] = React.useState(1)
   const [isAdded, setIsAdded] = React.useState(false)
+  const [isSkuCopied, setIsSkuCopied] = React.useState(false)
   const hasDocuments = product.documents.length > 0
   const quoteRequestHref = `/devis?product=${product.slug}&source=product`
   const rentalRequestHref = `/devis?product=${product.slug}&service=location&source=product`
@@ -88,6 +97,28 @@ export function ProductPageClient({
       quantity,
     })
     window.setTimeout(() => setIsAdded(false), 2000)
+    toast({
+      title: "Produit ajouté au panier",
+      description: `${quantity} x ${product.name}`,
+      action: (
+        <ToastAction altText="Voir le panier" asChild>
+          <Link href="/panier">Voir le panier</Link>
+        </ToastAction>
+      ),
+    })
+  }
+
+  const handleCopySku = async () => {
+    try {
+      await navigator.clipboard.writeText(product.sku)
+      setIsSkuCopied(true)
+      window.setTimeout(() => setIsSkuCopied(false), 1600)
+    } catch {
+      toast({
+        title: "Copie indisponible",
+        description: `Référence: ${product.sku}`,
+      })
+    }
   }
 
   return (
@@ -158,10 +189,19 @@ export function ProductPageClient({
                   ) : null}
                 </div>
 
-                <div className="mb-2 flex items-center gap-2 text-sm text-muted-foreground">
+                <div className="mb-2 flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
                   <span className="font-medium">{product.brand}</span>
                   <span>|</span>
                   <span className="font-mono">Ref: {product.sku}</span>
+                  <button
+                    type="button"
+                    onClick={handleCopySku}
+                    className="inline-flex items-center gap-1 rounded-full border border-border/70 px-2 py-1 text-xs font-medium text-foreground transition-colors hover:border-primary/35 hover:text-primary"
+                    aria-label={`Copier la référence ${product.sku}`}
+                  >
+                    <Copy className="size-3" />
+                    {isSkuCopied ? "Copiée" : "Copier"}
+                  </button>
                 </div>
 
                 <h1 className="mb-4 text-2xl font-bold lg:text-3xl">{product.name}</h1>
@@ -171,11 +211,11 @@ export function ProductPageClient({
                   {product.price > 0 ? (
                     <div className="flex items-baseline gap-3">
                       <span className="text-3xl font-bold text-primary">
-                        {product.price.toLocaleString("fr-FR", { minimumFractionDigits: 2 })} EUR
+                        {priceFormatter.format(product.price)}
                       </span>
                       {product.compareAtPrice ? (
                         <span className="text-lg text-muted-foreground line-through">
-                          {product.compareAtPrice.toLocaleString("fr-FR")} EUR
+                          {priceFormatter.format(product.compareAtPrice)}
                         </span>
                       ) : null}
                       <span className="text-sm text-muted-foreground">HT</span>
@@ -187,7 +227,7 @@ export function ProductPageClient({
                   )}
                   {product.isRentable && product.rentalPriceDaily ? (
                     <p className="mt-1 text-sm text-muted-foreground">
-                      ou <span className="font-medium">{product.rentalPriceDaily} EUR / jour</span>{" "}
+                      ou <span className="font-medium">{priceFormatter.format(product.rentalPriceDaily)} / jour</span>{" "}
                       en location
                     </p>
                   ) : null}
@@ -200,7 +240,7 @@ export function ProductPageClient({
                       <span className="font-medium">En stock</span>
                       <span className="text-muted-foreground">
                         {product.stockQuantity >= 999
-                          ? "(disponibilite a confirmer)"
+                          ? "(disponibilité à confirmer)"
                           : `(${product.stockQuantity} disponibles)`}
                       </span>
                     </div>
@@ -208,7 +248,7 @@ export function ProductPageClient({
                     <div className="flex items-center gap-2 text-warning">
                       <Clock className="size-5" />
                       <span className="font-medium">Sur commande</span>
-                      <span className="text-muted-foreground">(delai a confirmer)</span>
+                      <span className="text-muted-foreground">(délai à confirmer)</span>
                     </div>
                   )}
                 </div>
@@ -232,7 +272,7 @@ export function ProductPageClient({
                   <ReassuranceItem
                     icon={<Shield className="size-5 text-muted-foreground" />}
                     title="Usage professionnel"
-                    description="Gammes Epicap dediees amiante et polluants"
+                    description="Gammes Epicap dédiées amiante et polluants"
                   />
                   <ReassuranceItem
                     icon={<Phone className="size-5 text-muted-foreground" />}
@@ -264,7 +304,7 @@ export function ProductPageClient({
                   value="specs"
                   className="rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent"
                 >
-                  Caracteristiques
+                  Caractéristiques
                 </TabsTrigger>
                 {hasDocuments ? (
                   <TabsTrigger
@@ -307,7 +347,7 @@ export function ProductPageClient({
                 ) : (
                   <Card className="p-0">
                     <CardContent className="p-6 text-sm text-muted-foreground">
-                      Caracteristiques detaillees non structurees sur cette fiche catalogue.
+                      Caractéristiques détaillées non structurées sur cette fiche catalogue.
                       {hasDocuments
                         ? " Consultez les documents lies ci-dessous pour completer la fiche."
                         : " Contactez Epicap pour la documentation produit complete."}
@@ -364,13 +404,13 @@ export function ProductPageClient({
                   <ul>
                     <li>Expedition selon disponibilite produit et preparation atelier</li>
                     <li>Retrait possible en agence Epicap selon la reference</li>
-                    <li>Materiel lourd et location traites sur devis ou transport dedie</li>
+                    <li>Matériel lourd et location traités sur devis ou transport dédié</li>
                     <li>Services respiratoires et FIT TEST organises via le reseau Epicap</li>
                   </ul>
                   <h4>Retour et accompagnement</h4>
                   <p>
-                    Contactez Epicap avant tout retour pour verifier la reprise possible selon la
-                    famille de produit, la personnalisation et l&apos;etat du materiel.
+                    Contactez Epicap avant tout retour pour vérifier la reprise possible selon la
+                    famille de produit, la personnalisation et l&apos;état du matériel.
                   </p>
                 </div>
               </TabsContent>
@@ -382,7 +422,7 @@ export function ProductPageClient({
           <section className="py-12">
             <div className="container mx-auto px-4">
               <h2 className="mb-6 text-2xl font-bold">Produits complementaires</h2>
-              <div className="grid grid-cols-2 gap-4 md:grid-cols-4 lg:gap-6">
+              <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-4 lg:gap-6">
                 {relatedProducts.slice(0, 4).map((item) => (
                   <ProductCard key={item.id} product={item} />
                 ))}
@@ -488,7 +528,13 @@ function ProductGallery({ product }: { product: Product }) {
     <div className="space-y-4">
       <div className="group relative aspect-square overflow-hidden rounded-xl bg-muted">
         {images[selectedIndex] ? (
-          <Image src={images[selectedIndex]} alt={product.name} fill className="object-cover" priority />
+          <Image
+            src={images[selectedIndex]}
+            alt={product.name}
+            fill
+            className="object-contain p-4"
+            priority
+          />
         ) : (
           <div className="absolute inset-0 bg-gradient-to-br from-muted to-muted/50" />
         )}
@@ -497,19 +543,21 @@ function ProductGallery({ product }: { product: Product }) {
           <>
             <button
               type="button"
+              aria-label="Image précédente"
               onClick={() =>
                 setSelectedIndex((index) => (index === 0 ? images.length - 1 : index - 1))
               }
-              className="absolute left-4 top-1/2 flex size-10 -translate-y-1/2 items-center justify-center rounded-full bg-background/80 backdrop-blur-sm opacity-0 transition-opacity group-hover:opacity-100"
+              className="absolute left-4 top-1/2 flex size-10 -translate-y-1/2 items-center justify-center rounded-full bg-background/80 backdrop-blur-sm transition-opacity lg:opacity-0 lg:group-hover:opacity-100"
             >
               <ChevronLeft className="size-5" />
             </button>
             <button
               type="button"
+              aria-label="Image suivante"
               onClick={() =>
                 setSelectedIndex((index) => (index === images.length - 1 ? 0 : index + 1))
               }
-              className="absolute right-4 top-1/2 flex size-10 -translate-y-1/2 items-center justify-center rounded-full bg-background/80 backdrop-blur-sm opacity-0 transition-opacity group-hover:opacity-100"
+              className="absolute right-4 top-1/2 flex size-10 -translate-y-1/2 items-center justify-center rounded-full bg-background/80 backdrop-blur-sm transition-opacity lg:opacity-0 lg:group-hover:opacity-100"
             >
               <ChevronRight className="size-5" />
             </button>
@@ -530,6 +578,7 @@ function ProductGallery({ product }: { product: Product }) {
               key={`${image}-${index}`}
               type="button"
               onClick={() => setSelectedIndex(index)}
+              aria-label={`Voir l'image ${index + 1}`}
               className={cn(
                 "size-20 flex-shrink-0 overflow-hidden rounded-lg border-2 transition-colors",
                 selectedIndex === index ? "border-primary" : "border-transparent",
@@ -540,7 +589,7 @@ function ProductGallery({ product }: { product: Product }) {
                   src={image}
                   alt={`${product.name} - Image ${index + 1}`}
                   fill
-                  className="object-cover"
+                  className="object-contain p-1"
                 />
               </div>
             </button>
@@ -596,11 +645,13 @@ function AddToCartSection({
       </div>
 
       <div className="flex gap-3">
-        <Button size="lg" className="flex-1" onClick={onAddToCart} disabled={product.stockQuantity === 0}>
-          <ShoppingCart className="mr-2 size-4" />
-          {isAdded ? "Ajoute au panier" : "Ajouter au panier"}
-        </Button>
-        <Button size="lg" variant="outline" asChild>
+        {product.price > 0 && product.stockQuantity > 0 ? (
+          <Button size="lg" className="flex-1" onClick={onAddToCart}>
+            <ShoppingCart className="mr-2 size-4" />
+            {isAdded ? "Ajouté au panier" : "Ajouter au panier"}
+          </Button>
+        ) : null}
+        <Button size="lg" variant={product.price > 0 && product.stockQuantity > 0 ? "outline" : "default"} asChild className={product.price <= 0 || product.stockQuantity === 0 ? "flex-1" : undefined}>
           <Link
             href={quoteRequestHref}
             onClick={() =>
@@ -611,7 +662,7 @@ function AddToCartSection({
               })
             }
           >
-            Devis
+            Demander un devis
           </Link>
         </Button>
       </div>
@@ -624,7 +675,7 @@ function AddToCartSection({
                 <p className="text-sm font-medium">Disponible en location</p>
                 <p className="text-xs text-muted-foreground">
                   {product.rentalPriceDaily
-                    ? `A partir de ${product.rentalPriceDaily} EUR / jour`
+                    ? `A partir de ${priceFormatter.format(product.rentalPriceDaily)} / jour`
                     : "Tarif location sur demande"}
                 </p>
               </div>
