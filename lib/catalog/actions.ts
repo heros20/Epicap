@@ -25,6 +25,17 @@ const emptyToUndefined = (value: unknown) => {
   return trimmed.length > 0 ? trimmed : undefined
 }
 
+const emptyOrZeroToUndefined = (value: unknown) => {
+  const normalized = emptyToUndefined(value)
+
+  if (normalized === undefined) {
+    return undefined
+  }
+
+  const numericValue = Number(normalized)
+  return Number.isFinite(numericValue) && numericValue <= 0 ? undefined : normalized
+}
+
 const catalogProductSchema = z
   .object({
     productId: z.preprocess(emptyToUndefined, z.coerce.number().int().positive().optional()),
@@ -41,7 +52,10 @@ const catalogProductSchema = z
     shortDescription: z.string().trim().min(10, "Ajoutez un résumé court."),
     description: z.string().trim().min(20, "Ajoutez une description complete."),
     price: z.coerce.number().min(0, "Le prix doit être positif."),
-    compareAtPrice: z.preprocess(emptyToUndefined, z.coerce.number().min(0).optional()),
+    compareAtPrice: z.preprocess(
+      emptyOrZeroToUndefined,
+      z.coerce.number().positive("Le prix compare doit etre superieur a zero.").optional(),
+    ),
     stockQuantity: z.coerce.number().int().min(0, "Le stock doit être positif."),
     badge: z.preprocess(emptyToUndefined, z.string().trim().max(80).optional()),
     sourceUrl: z.preprocess(
@@ -67,6 +81,13 @@ const catalogProductSchema = z
     path: ["rentalPriceDaily"],
     message: "Renseignez un tarif journalier pour les produits louables.",
   })
+  .refine(
+    (value) => value.compareAtPrice === undefined || value.compareAtPrice > value.price,
+    {
+      path: ["compareAtPrice"],
+      message: "Le prix compare doit etre superieur au prix HT.",
+    },
+  )
 
 const deleteSchema = z.object({
   productId: z.coerce.number().int().positive("Produit introuvable."),
