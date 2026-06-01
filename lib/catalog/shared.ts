@@ -1,6 +1,7 @@
 import { categories } from "@/lib/data/navigation"
 
 export const CATALOG_ASSET_BUCKET = "catalog-assets"
+export const CATALOG_CACHE_TAG = "catalog"
 
 export interface CatalogCategoryOption {
   slug: string

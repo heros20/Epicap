@@ -5,29 +5,23 @@ import {
   Building2,
   CheckCircle2,
   ClipboardCheck,
-  Factory,
   MapPin,
   Phone,
-  Shield,
+  ShieldCheck,
+  ShoppingCart,
   Truck,
   Wrench,
 } from "lucide-react"
 
+import { HeaderSearchBox } from "@/components/layout/header-search-box"
 import { Footer } from "@/components/layout/footer"
 import { Header } from "@/components/layout/header"
 import { ProductCard } from "@/components/products/product-card"
 import { JsonLd } from "@/components/seo/json-ld"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import {
-  companyInfo,
-  companyOfferings,
-  companyStats,
-  manufacturerHighlights,
-  serviceDetails,
-} from "@/lib/data/company"
 import { getCatalogProducts, getFeaturedCatalogProducts } from "@/lib/catalog/data"
+import { companyInfo, companyOfferings, serviceDetails } from "@/lib/data/company"
 import { agencies, categories } from "@/lib/data/navigation"
 
 const categoryImageKeywords: Record<string, string[]> = {
@@ -55,6 +49,29 @@ const categoryImageProductOverrides: Record<string, string[]> = {
     "film-polyethylene-80-thr-240m-blanc-epicap",
   ],
 }
+
+const quickLinks = [
+  {
+    label: "Masques",
+    href: "/boutique/equipements-de-protection-respiratoire",
+  },
+  {
+    label: "Extracteurs EPIAIR",
+    href: "/boutique/extracteurs-d-air-epiair",
+  },
+  {
+    label: "Combinaisons",
+    href: "/boutique/equipements-de-protection-individuelle?query=combinaison",
+  },
+  {
+    label: "Sas",
+    href: "/boutique/decontamination?query=sas",
+  },
+  {
+    label: "Sacs & Big bags",
+    href: "/boutique/emballages",
+  },
+]
 
 function getRepresentativeCategoryImage(
   categorySlug: string,
@@ -90,19 +107,23 @@ function getRepresentativeCategoryImage(
 
   return {
     src: matchingProduct.image,
-    alt: `${matchingProduct.name} - illustration ${categorySlug}`,
+    alt: `${matchingProduct.name} - ${categorySlug}`,
   }
 }
 
 export default async function HomePage() {
   const catalogProducts = await getCatalogProducts()
-  const featuredProducts = await getFeaturedCatalogProducts(6)
+  const featuredProducts = await getFeaturedCatalogProducts(4)
+  const rentableProducts = catalogProducts.filter((product) => product.isRentable).slice(0, 3)
+  const inStockProducts = catalogProducts.filter((product) => product.inStock).slice(0, 3)
+  const heroProducts = featuredProducts.slice(0, 3)
   const categoryImages = new Map(
     categories.map((category) => [
       category.slug,
       getRepresentativeCategoryImage(category.slug, catalogProducts),
     ]),
   )
+
   const localBusinessStructuredData = {
     "@context": "https://schema.org",
     "@type": "LocalBusiness",
@@ -125,393 +146,290 @@ export default async function HomePage() {
   return (
     <>
       <JsonLd data={localBusinessStructuredData} />
-      <div className="flex min-h-screen flex-col">
+      <div className="flex min-h-screen flex-col bg-background">
         <Header />
 
         <main className="flex-1">
-        <section className="relative overflow-hidden bg-[radial-gradient(circle_at_top_right,rgba(255,133,28,0.24),transparent_24%),linear-gradient(135deg,#0f1012_0%,#17191d_52%,#090a0b_100%)] text-background">
-          <div className="absolute inset-0 opacity-[0.08]">
-            <div
-              className="absolute inset-0"
-              style={{
-                backgroundImage:
-                  "url(\"data:image/svg+xml,%3Csvg width='72' height='72' viewBox='0 0 72 72' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='1'%3E%3Cpath d='M0 71h72v1H0zm0-18h72v1H0zm0-18h72v1H0zm0-18h72v1H0zm17 54V0h1v71zm18 0V0h1v71zm18 0V0h1v71z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E\")",
-              }}
-            />
-          </div>
+          <section className="border-b border-border/70 bg-[linear-gradient(180deg,#f7f8fa_0%,#ffffff_64%)]">
+            <div className="container mx-auto px-4 py-8 lg:py-12">
+              <div className="grid gap-8 lg:grid-cols-[minmax(0,1.08fr)_minmax(340px,0.92fr)] lg:items-center">
+                <div className="min-w-0">
+                  <Badge className="mb-4 rounded-md border border-primary/20 bg-primary/10 text-primary">
+                    Vente, location et maintenance
+                  </Badge>
+                  <h1 className="max-w-5xl text-4xl font-bold leading-tight tracking-normal text-foreground lg:text-6xl">
+                    EPICAP Matériels de désamiantage
+                  </h1>
+                  <p className="mt-4 max-w-3xl text-base leading-7 text-muted-foreground lg:text-lg">
+                    Équipements de protection individuelle et collective contre l&apos;amiante et
+                    autres polluants, disponibles à la vente, en maintenance et en location.
+                  </p>
 
-          <div className="container relative mx-auto px-4 py-16 lg:py-24">
-            <div className="grid items-center gap-12 lg:grid-cols-[1.1fr_0.9fr]">
-              <div className="space-y-6">
-                <Badge className="border border-primary/25 bg-background/8 text-primary shadow-sm">
-                  {companyInfo.tagline}
-                </Badge>
-
-                <h1 className="max-w-4xl text-4xl font-bold leading-[0.94] text-balance lg:text-6xl xl:text-7xl">
-                  {companyInfo.heroTitle}
-                </h1>
-
-                <p className="max-w-2xl text-lg leading-relaxed text-background/76">
-                  {companyInfo.summary} Vente, location, maintenance respiratoire, FIT TEST,
-                  confinement, décontamination et consommables chantier.
-                </p>
-
-                <div className="grid gap-3 sm:grid-cols-2">
-                  {companyOfferings.slice(0, 4).map((offering) => (
-                    <div key={offering} className="flex items-start gap-3 rounded-2xl border border-background/10 bg-background/5 p-4 backdrop-blur-sm">
-                      <CheckCircle2 className="mt-0.5 size-5 text-primary" />
-                      <span className="text-sm text-background/84">{offering}</span>
+                  <div className="mt-7 max-w-3xl rounded-lg border border-border/70 bg-card p-3 shadow-[0_22px_58px_-42px_rgba(15,16,18,0.28)]">
+                    <HeaderSearchBox className="w-full" />
+                    <div className="mt-3 flex flex-wrap gap-2">
+                      {quickLinks.map((link) => (
+                        <Link
+                          key={link.href}
+                          href={link.href}
+                          className="rounded-md border border-border/70 bg-background px-3 py-1.5 text-xs font-medium text-muted-foreground transition-colors hover:border-primary/40 hover:text-primary"
+                        >
+                          {link.label}
+                        </Link>
+                      ))}
                     </div>
-                  ))}
-                </div>
-
-                <div className="flex flex-col gap-4 sm:flex-row">
-                  <Button size="lg" asChild className="px-6 text-base">
-                    <Link href="/boutique">
-                      Voir le catalogue
-                      <ArrowRight className="ml-2 size-4" />
-                    </Link>
-                  </Button>
-                  <Button
-                    size="lg"
-                    variant="outline"
-                    asChild
-                    className="border-background/16 bg-background/6 text-base text-background hover:bg-background/10 hover:text-background"
-                  >
-                    <Link href="/location">Voir la location</Link>
-                  </Button>
-                </div>
-              </div>
-
-              <div className="space-y-5">
-                <div className="relative overflow-hidden rounded-[2rem] border border-background/10 bg-background/5 p-5 shadow-[0_44px_110px_-58px_rgba(0,0,0,0.78)] backdrop-blur-sm">
-                  <div className="absolute inset-0 bg-[radial-gradient(circle_at_top_right,rgba(255,133,28,0.16),transparent_38%)]" />
-                  <div className="overflow-hidden rounded-[1.5rem] border border-background/10">
-                    <Image
-                      src="/images/hero-equipment.jpg"
-                      alt="Matériel Epicap pour chantier de désamiantage"
-                      width={1200}
-                      height={960}
-                      className="h-auto w-full object-cover"
-                      priority
-                    />
                   </div>
 
-                  <div className="relative mt-5 grid gap-3 sm:grid-cols-2">
-                    {companyStats.map((stat) => (
-                      <div key={stat.label} className="rounded-[1.25rem] border border-background/10 bg-black/18 p-4">
-                        <p className="text-2xl font-bold text-primary">{stat.value}</p>
-                        <p className="mt-1 text-sm text-background/72">{stat.label}</p>
+                  <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+                    <Button asChild size="lg" className="rounded-md px-5">
+                      <Link href="/boutique">
+                        <ShoppingCart className="size-4" />
+                        Parcourir le catalogue
+                      </Link>
+                    </Button>
+                    <Button asChild variant="outline" size="lg" className="rounded-md px-5">
+                      <Link href="/devis?source=home-modern-hero">
+                        Demander un devis
+                        <ArrowRight className="size-4" />
+                      </Link>
+                    </Button>
+                  </div>
+
+                  <div className="mt-7 grid max-w-3xl gap-3 sm:grid-cols-3">
+                    <ProofItem value={String(catalogProducts.length)} label="references catalogue" />
+                    <ProofItem value={String(agencies.length)} label="agences en France" />
+                    <ProofItem value="Vente + location" label="pour chantiers SS3/SS4" />
+                  </div>
+                </div>
+
+                <div className="grid gap-3">
+                  <div className="relative overflow-hidden rounded-lg border border-border/70 bg-[#111317] p-5 text-background shadow-[0_28px_80px_-54px_rgba(15,16,18,0.42)]">
+                    <div className="grid gap-4 sm:grid-cols-[1fr_150px] sm:items-center">
+                      <div>
+                        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">
+                          Selection immediate
+                        </p>
+                        <h2 className="mt-3 text-2xl font-bold">Equipements prioritaires</h2>
+                        <p className="mt-2 text-sm leading-6 text-background/72">
+                          Les produits a verifier en premier pour preparer une commande ou un devis.
+                        </p>
                       </div>
+                      <Image
+                        src="/images/hero-equipment.jpg"
+                        alt="Materiel Epicap pour chantier"
+                        width={360}
+                        height={300}
+                        priority
+                        className="h-36 w-full rounded-md object-cover sm:h-40"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid gap-3 sm:grid-cols-3">
+                    {heroProducts.map((product) => (
+                      <Link
+                        key={product.id}
+                        href={`/boutique/${product.categorySlug}/${product.subcategorySlug ? `${product.subcategorySlug}/` : ""}${product.slug}`}
+                        className="group rounded-lg border border-border/70 bg-card p-3 shadow-[0_16px_40px_-34px_rgba(15,16,18,0.24)] transition-colors hover:border-primary/40"
+                      >
+                        <div className="relative aspect-square rounded-md bg-[radial-gradient(circle_at_top,#ffffff,#eef1f5)]">
+                          {product.image ? (
+                            <Image
+                              src={product.image}
+                              alt={product.name}
+                              fill
+                              className="object-contain p-3 transition-transform duration-500 group-hover:scale-[1.04]"
+                            />
+                          ) : null}
+                        </div>
+                        <p className="mt-3 line-clamp-2 min-h-10 text-sm font-semibold leading-5">
+                          {product.name}
+                        </p>
+                        <p className="mt-1 text-xs text-muted-foreground">
+                          {product.price > 0 ? `${product.price.toLocaleString("fr-FR")} EUR HT` : "Sur devis"}
+                        </p>
+                      </Link>
                     ))}
                   </div>
                 </div>
-
-                <div className="flex flex-wrap items-center gap-6 rounded-[1.4rem] border border-background/10 bg-background/5 px-5 py-4 text-sm text-background/82 backdrop-blur-sm">
-                  <div className="flex items-center gap-2">
-                    <Building2 className="size-4 text-primary" />
-                    <span>Siège à {companyInfo.headOffice.city}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <MapPin className="size-4 text-primary" />
-                    <span>Réseau national d&apos;agences</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Phone className="size-4 text-primary" />
-                    <a href={`tel:${companyInfo.phone.replace(/\s+/g, "")}`}>{companyInfo.phone}</a>
-                  </div>
-                </div>
               </div>
             </div>
-          </div>
-        </section>
+          </section>
 
-        <section className="bg-[linear-gradient(180deg,rgba(255,133,28,0.05),transparent_38%)] py-16 lg:py-24">
-          <div className="container mx-auto px-4">
-            <div className="mb-12 max-w-3xl">
-              <Badge variant="secondary" className="mb-4 border border-border/60 shadow-sm">
-                Gammes Epicap
-              </Badge>
-              <h2 className="mb-4 text-3xl font-bold lg:text-4xl">
-                Les familles de produits présentes sur epicap.com
-              </h2>
-              <p className="text-muted-foreground">
-                Le projet reprend maintenant la structure officielle des gammes Epicap :
-                respiratoire, EPI, décontamination, EPIAIR, aspirateurs Type H, confinement,
-                emballages, brumisation, mesures et déplombage.
-              </p>
-            </div>
+          <section className="border-b border-border/70 py-8">
+            <div className="container mx-auto px-4">
+              <SectionHeader
+                eyebrow="Orientation rapide"
+                title="Choisir par besoin chantier"
+                href="/boutique"
+                cta="Toutes les gammes"
+              />
+              <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+                {categories.slice(0, 8).map((category) => {
+                  const categoryImage = categoryImages.get(category.slug)
 
-            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-              {categories.map((category) => {
-                const categoryImage = categoryImages.get(category.slug)
-
-                return (
-                  <Link
-                    key={category.slug}
-                    href={`/boutique/${category.slug}`}
-                    className="group overflow-hidden rounded-[1.5rem] border border-border/70 bg-card shadow-[0_18px_45px_-34px_rgba(15,16,18,0.12)] transition-all duration-300 hover:-translate-y-1 hover:border-primary/35 hover:shadow-[0_26px_62px_-34px_rgba(255,133,28,0.26)]"
-                  >
-                    <div className="relative">
-                      {categoryImage ? (
-                        <div className="relative aspect-[16/9] overflow-hidden bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.92),rgba(238,241,245,0.96))]">
+                  return (
+                    <Link
+                      key={category.slug}
+                      href={`/boutique/${category.slug}`}
+                      className="group grid min-h-32 grid-cols-[96px_minmax(0,1fr)] gap-4 rounded-lg border border-border/70 bg-card p-3 transition-colors hover:border-primary/40"
+                    >
+                      <div className="relative overflow-hidden rounded-md bg-[radial-gradient(circle_at_top,#ffffff,#eef1f5)]">
+                        {categoryImage ? (
                           <Image
                             src={categoryImage.src}
                             alt={categoryImage.alt}
                             fill
-                            className="object-contain p-4 transition duration-500 group-hover:scale-[1.03]"
+                            className="object-contain p-2 transition-transform duration-500 group-hover:scale-[1.04]"
                           />
-                          <div className="absolute inset-0 bg-[linear-gradient(180deg,rgba(255,255,255,0.02),rgba(12,13,16,0.12))]" />
-                        </div>
-                      ) : (
-                        <div className="h-32 bg-[linear-gradient(135deg,rgba(255,133,28,0.15),rgba(15,16,18,0.06))]" />
-                      )}
-
-                      <div className="absolute left-4 top-4">
-                        <Badge variant="secondary" className="border border-white/15 bg-white/86 shadow-sm">
+                        ) : null}
+                      </div>
+                      <div className="min-w-0">
+                        <p className="text-xs font-semibold uppercase tracking-[0.16em] text-primary">
                           {category.shortName}
-                        </Badge>
-                      </div>
-
-                      <div className="absolute right-4 top-4 flex size-9 items-center justify-center rounded-full border border-white/16 bg-white/82 shadow-sm">
-                        <ArrowRight className="size-4 text-foreground transition-transform group-hover:translate-x-0.5" />
-                      </div>
-                    </div>
-
-                    <div className="p-6">
-                      <h3 className="mb-3 text-xl font-semibold">{category.name}</h3>
-                      <p className="text-sm leading-relaxed text-muted-foreground">
-                        {category.description}
-                      </p>
-                      <div className="mt-5 flex flex-wrap gap-2">
-                        {category.subcategories.slice(0, 3).map((subcategory) => (
-                          <span
-                            key={subcategory.slug}
-                            className="rounded-full border border-border/70 bg-background px-3 py-1 text-xs text-muted-foreground"
-                          >
-                            {subcategory.name}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  </Link>
-                )
-              })}
-            </div>
-          </div>
-        </section>
-
-        <section className="py-16 lg:py-24">
-          <div className="container mx-auto px-4">
-            <div className="mb-12 flex items-end justify-between gap-6">
-              <div className="max-w-3xl">
-                <Badge variant="secondary" className="mb-4 border border-border/60 shadow-sm">
-                  Sélection représentative
-                </Badge>
-                <h2 className="mb-4 text-3xl font-bold lg:text-4xl">Produits et services phares</h2>
-                <p className="text-muted-foreground">
-                  Les références ci-dessous reprennent des produits et prestations mis en avant
-                  sur le site officiel Epicap : Phantom Vision, CUBAIR, EPIROLL, EPIAIR,
-                  BULKAIR, Easy Gel Protect ou encore le FIT TEST.
-                </p>
-              </div>
-
-              <Button variant="outline" asChild className="hidden sm:flex">
-                <Link href="/boutique">
-                  Voir tout le catalogue
-                  <ArrowRight className="ml-2 size-4" />
-                </Link>
-              </Button>
-            </div>
-
-            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-3">
-              {featuredProducts.map((product) => (
-                <ProductCard key={product.id} product={product} />
-              ))}
-            </div>
-          </div>
-        </section>
-
-        <section className="bg-[radial-gradient(circle_at_top,rgba(255,133,28,0.14),transparent_28%),linear-gradient(135deg,#101114_0%,#17191d_100%)] py-16 text-background lg:py-24">
-          <div className="container mx-auto px-4">
-            <div className="mb-12 max-w-3xl">
-              <Badge className="mb-4 border border-primary/20 bg-background/8 text-primary shadow-sm">
-                Services terrain
-              </Badge>
-              <h2 className="mb-4 text-3xl font-bold lg:text-4xl">
-                Location, maintenance respiratoire et FIT TEST
-              </h2>
-              <p className="text-background/70">
-                Le contenu de ces services est maintenant aligné sur les informations visibles sur
-                epicap.com, sans blocs marketing fictifs.
-              </p>
-            </div>
-
-            <div className="grid gap-6 md:grid-cols-3 lg:gap-8">
-              <ServiceCard
-                href="/location"
-                icon={<Truck className="size-7 text-primary" />}
-                title={serviceDetails.location.title}
-                description={serviceDetails.location.description}
-                bullets={serviceDetails.location.points.slice(0, 2)}
-              />
-              <ServiceCard
-                href="/maintenance"
-                icon={<Wrench className="size-7 text-primary" />}
-                title={serviceDetails.maintenance.title}
-                description={serviceDetails.maintenance.description}
-                bullets={serviceDetails.maintenance.points.slice(0, 2)}
-              />
-              <ServiceCard
-                href="/fit-test"
-                icon={<ClipboardCheck className="size-7 text-primary" />}
-                title={serviceDetails["fit-test"].title}
-                description={serviceDetails["fit-test"].description}
-                bullets={serviceDetails["fit-test"].points.slice(0, 2)}
-              />
-            </div>
-          </div>
-        </section>
-
-        <section className="py-16 lg:py-24">
-          <div className="container mx-auto px-4">
-            <div className="grid items-start gap-10 lg:grid-cols-[1.05fr_0.95fr]">
-              <div>
-                <Badge variant="secondary" className="mb-4 border border-border/60 shadow-sm">
-                  À propos d&apos;Epicap
-                </Badge>
-                <h2 className="mb-6 text-3xl font-bold lg:text-4xl">
-                  Fourniture, location et maintenance de matériel anti-amiante
-                </h2>
-                <p className="mb-8 leading-relaxed text-muted-foreground">
-                  Le site Epicap présente l&apos;entreprise comme un spécialiste de la fourniture,
-                  de la location et de la maintenance de matériel et d&apos;équipements de
-                  protection contre l&apos;amiante et les autres polluants. Le siège social est
-                  situé à {companyInfo.headOffice.city} et s&apos;appuie sur un réseau
-                  d&apos;implantations en
-                  France.
-                </p>
-
-                <div className="grid gap-4 sm:grid-cols-2">
-                  {companyOfferings.map((offering) => (
-                    <div key={offering} className="rounded-[1.3rem] border border-border/70 bg-card p-4 shadow-[0_18px_45px_-34px_rgba(15,16,18,0.12)]">
-                      <div className="mb-3 flex size-10 items-center justify-center rounded-xl bg-primary/12">
-                        <Shield className="size-5 text-primary" />
-                      </div>
-                      <p className="text-sm leading-relaxed">{offering}</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-
-              <div className="space-y-6">
-                <div className="relative aspect-[4/3] overflow-hidden rounded-[1.8rem] border border-border/70 bg-muted shadow-[0_28px_70px_-44px_rgba(15,16,18,0.26)]">
-                  <Image src="/images/about-team.jpg" alt="Equipe Epicap" fill className="object-cover" />
-                </div>
-                <Card className="p-0">
-                  <CardContent className="p-6">
-                    <div className="mb-4 flex items-center gap-3">
-                      <div className="flex size-12 items-center justify-center rounded-xl bg-primary/12">
-                        <Factory className="size-6 text-primary" />
-                      </div>
-                      <div>
-                        <h3 className="text-lg font-semibold">Fabricants et solutions suivis</h3>
-                        <p className="text-sm text-muted-foreground">
-                          Marques et familles visibles sur les catalogues Epicap
+                        </p>
+                        <h2 className="mt-2 line-clamp-2 text-sm font-semibold leading-5">
+                          {category.name}
+                        </h2>
+                        <p className="mt-2 line-clamp-2 text-xs leading-5 text-muted-foreground">
+                          {category.description}
                         </p>
                       </div>
-                    </div>
-
-                    <div className="flex flex-wrap gap-2">
-                      {manufacturerHighlights.map((manufacturer) => (
-                        <span
-                          key={manufacturer}
-                          className="rounded-full border border-border/70 bg-background px-3 py-1 text-xs font-medium text-muted-foreground"
-                        >
-                          {manufacturer}
-                        </span>
-                      ))}
-                    </div>
-                  </CardContent>
-                </Card>
+                    </Link>
+                  )
+                })}
               </div>
             </div>
-          </div>
-        </section>
+          </section>
 
-        <section className="bg-[linear-gradient(180deg,rgba(15,16,18,0.03),transparent_38%)] py-16 lg:py-24">
-          <div className="container mx-auto px-4">
-            <div className="mb-12 flex items-end justify-between gap-6">
-              <div>
-                <Badge variant="secondary" className="mb-4 border border-border/60 shadow-sm">
-                  Nos agences
-                </Badge>
-                <h2 className="mb-4 text-3xl font-bold lg:text-4xl">Implantations Epicap</h2>
-                <p className="text-muted-foreground">
-                  Escaudain, Rhône-Alpes, Île-de-France, Est, Normandie, Sud-Est, Grand-Ouest et
-                  Sud-Ouest.
-                </p>
-              </div>
-
-              <Button variant="outline" asChild className="hidden sm:flex">
-                <Link href="/agences">
-                  Voir toutes les agences
-                  <ArrowRight className="ml-2 size-4" />
-                </Link>
-              </Button>
-            </div>
-
-            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-4">
-              {agencies.map((agency) => (
-                <Link
-                  key={agency.slug}
-                  href={`/agences/${agency.slug}`}
-                  className="group rounded-[1.4rem] border border-border/70 bg-card p-5 shadow-[0_18px_45px_-34px_rgba(15,16,18,0.12)] transition-all duration-300 hover:-translate-y-1 hover:border-primary/35 hover:shadow-[0_26px_62px_-34px_rgba(255,133,28,0.26)]"
-                >
-                  <div className="mb-4 flex size-11 items-center justify-center rounded-xl bg-primary/12">
-                    <MapPin className="size-5 text-primary" />
+          <section className="py-10">
+            <div className="container mx-auto px-4">
+              <div className="grid gap-8 xl:grid-cols-[minmax(0,1fr)_360px]">
+                <div>
+                  <SectionHeader
+                    eyebrow="Catalogue"
+                    title="References mises en avant"
+                    href="/boutique"
+                    cta="Voir plus"
+                  />
+                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+                    {featuredProducts.map((product) => (
+                      <ProductCard key={product.id} product={product} />
+                    ))}
                   </div>
-                  <h3 className="text-lg font-semibold">{agency.name}</h3>
-                  <p className="mt-1 text-sm text-muted-foreground">
-                    {agency.address}, {agency.postalCode} {agency.city}
-                  </p>
-                  <p className="mt-4 text-sm font-medium">{agency.phone}</p>
-                </Link>
-              ))}
-            </div>
-          </div>
-        </section>
+                </div>
 
-        <section className="bg-[linear-gradient(135deg,#ff851c_0%,#ff9a2f_100%)] py-16 text-primary-foreground lg:py-24">
-          <div className="container mx-auto px-4 text-center">
-            <h2 className="mb-4 text-3xl font-bold lg:text-4xl">
-              Besoin d&apos;un conseil ou d&apos;un devis chantier ?
-            </h2>
-            <p className="mx-auto mb-8 max-w-2xl text-primary-foreground/78">
-              Le projet reprend maintenant les coordonnées principales d&apos;Epicap et ses pages
-              agences, contact, maintenance, location et FIT TEST.
-            </p>
-            <div className="flex flex-col justify-center gap-4 sm:flex-row">
-              <Button size="lg" variant="secondary" asChild>
-                <Link href="/devis?source=home">
-                  Demander un devis
-                  <ArrowRight className="ml-2 size-4" />
-                </Link>
-              </Button>
-              <Button
-                size="lg"
-                variant="outline"
-                asChild
-                className="border-primary-foreground/20 bg-transparent text-primary-foreground hover:bg-primary-foreground/10 hover:text-primary-foreground"
-              >
-                <a href={`tel:${companyInfo.phone.replace(/\s+/g, "")}`}>
-                  <Phone className="mr-2 size-4" />
-                  {companyInfo.phone}
-                </a>
-              </Button>
+                <aside className="rounded-lg border border-border/70 bg-[linear-gradient(180deg,#111317,#1b1f25)] p-5 text-background">
+                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">
+                    Achat assiste
+                  </p>
+                  <h2 className="mt-3 text-2xl font-bold">Vous avez une liste d&apos;articles ?</h2>
+                  <p className="mt-3 text-sm leading-6 text-background/72">
+                    Transmettez votre besoin, une reference ou un panier chantier. L&apos;equipe
+                    Epicap peut orienter la demande vers la bonne agence.
+                  </p>
+                  <div className="mt-5 grid gap-2">
+                    <Button asChild className="justify-between rounded-md">
+                      <Link href="/devis?source=home-modern-panel">
+                        Demander un devis
+                        <ArrowRight className="size-4" />
+                      </Link>
+                    </Button>
+                    <Button
+                      asChild
+                      variant="outline"
+                      className="justify-between rounded-md border-background/20 bg-transparent text-background hover:bg-background/10 hover:text-background"
+                    >
+                      <a href={`tel:${companyInfo.phone.replace(/\s+/g, "")}`}>
+                        {companyInfo.phone}
+                        <Phone className="size-4" />
+                      </a>
+                    </Button>
+                  </div>
+                  <div className="mt-5 space-y-3 border-t border-background/10 pt-5">
+                    {companyOfferings.slice(0, 3).map((offering) => (
+                      <div key={offering} className="flex gap-3">
+                        <CheckCircle2 className="mt-0.5 size-4 shrink-0 text-primary" />
+                        <p className="text-sm leading-6 text-background/74">{offering}</p>
+                      </div>
+                    ))}
+                  </div>
+                </aside>
+              </div>
             </div>
-          </div>
-        </section>
+          </section>
+
+          <section className="border-y border-border/70 bg-[#f7f8fa] py-10">
+            <div className="container mx-auto px-4">
+              <div className="grid gap-8 lg:grid-cols-2">
+                <CompactProductList
+                  title="Disponible en stock"
+                  eyebrow="Commande rapide"
+                  href="/boutique?inStock=true"
+                  products={inStockProducts}
+                />
+                <CompactProductList
+                  title="Materiel en location"
+                  eyebrow="Besoin temporaire"
+                  href="/location"
+                  products={rentableProducts}
+                />
+              </div>
+            </div>
+          </section>
+
+          <section className="py-10">
+            <div className="container mx-auto px-4">
+              <SectionHeader
+                eyebrow="Services terrain"
+                title="Achat, location et conformite au meme endroit"
+                href="/contact"
+                cta="Contacter Epicap"
+              />
+              <div className="grid gap-4 md:grid-cols-3">
+                <ServiceTile
+                  href="/location"
+                  icon={<Truck className="size-5" />}
+                  title={serviceDetails.location.title}
+                  description={serviceDetails.location.description}
+                />
+                <ServiceTile
+                  href="/maintenance"
+                  icon={<Wrench className="size-5" />}
+                  title={serviceDetails.maintenance.title}
+                  description={serviceDetails.maintenance.description}
+                />
+                <ServiceTile
+                  href="/fit-test"
+                  icon={<ClipboardCheck className="size-5" />}
+                  title={serviceDetails["fit-test"].title}
+                  description={serviceDetails["fit-test"].description}
+                />
+              </div>
+            </div>
+          </section>
+
+          <section className="border-t border-border/70 bg-[linear-gradient(180deg,#ffffff,#f7f8fa)] py-10">
+            <div className="container mx-auto px-4">
+              <div className="grid gap-5 lg:grid-cols-[minmax(0,1fr)_420px] lg:items-center">
+                <div>
+                  <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">
+                    Reseau Epicap
+                  </p>
+                  <h2 className="mt-2 text-3xl font-bold">Une agence pour suivre votre demande</h2>
+                  <p className="mt-3 max-w-3xl text-sm leading-6 text-muted-foreground">
+                    Siege a {companyInfo.headOffice.city}, interlocuteurs regionaux et services
+                    dedies aux equipements anti-amiante.
+                  </p>
+                </div>
+                <div className="grid gap-2 sm:grid-cols-3 lg:grid-cols-1">
+                  <ActionLink href="/agences" icon={<MapPin className="size-4" />} label="Trouver une agence" />
+                  <ActionLink href="/devis?source=home-modern-footer" icon={<ShieldCheck className="size-4" />} label="Demander un devis" />
+                  <ActionLink href="/contact" icon={<Building2 className="size-4" />} label="Contacter Epicap" />
+                </div>
+              </div>
+            </div>
+          </section>
         </main>
 
         <Footer />
@@ -520,48 +438,127 @@ export default async function HomePage() {
   )
 }
 
-function ServiceCard({
+function ProofItem({ value, label }: { value: string; label: string }) {
+  return (
+    <div className="rounded-lg border border-border/70 bg-card px-4 py-3">
+      <p className="text-lg font-bold">{value}</p>
+      <p className="mt-1 text-xs leading-5 text-muted-foreground">{label}</p>
+    </div>
+  )
+}
+
+function SectionHeader({
+  eyebrow,
+  title,
+  href,
+  cta,
+}: {
+  eyebrow: string
+  title: string
+  href: string
+  cta: string
+}) {
+  return (
+    <div className="mb-5 flex items-end justify-between gap-4">
+      <div>
+        <p className="text-xs font-semibold uppercase tracking-[0.2em] text-primary">{eyebrow}</p>
+        <h2 className="mt-2 text-2xl font-bold lg:text-3xl">{title}</h2>
+      </div>
+      <Button asChild variant="outline" className="hidden rounded-md sm:inline-flex">
+        <Link href={href}>
+          {cta}
+          <ArrowRight className="size-4" />
+        </Link>
+      </Button>
+    </div>
+  )
+}
+
+function CompactProductList({
+  title,
+  eyebrow,
+  href,
+  products,
+}: {
+  title: string
+  eyebrow: string
+  href: string
+  products: Awaited<ReturnType<typeof getCatalogProducts>>
+}) {
+  return (
+    <div>
+      <SectionHeader eyebrow={eyebrow} title={title} href={href} cta="Voir la selection" />
+      <div className="grid gap-3">
+        {products.map((product) => (
+          <Link
+            key={product.id}
+            href={`/boutique/${product.categorySlug}/${product.subcategorySlug ? `${product.subcategorySlug}/` : ""}${product.slug}`}
+            className="grid grid-cols-[84px_minmax(0,1fr)_auto] items-center gap-4 rounded-lg border border-border/70 bg-card p-3 transition-colors hover:border-primary/40"
+          >
+            <div className="relative aspect-square overflow-hidden rounded-md bg-[radial-gradient(circle_at_top,#ffffff,#eef1f5)]">
+              {product.image ? (
+                <Image src={product.image} alt={product.name} fill className="object-contain p-2" />
+              ) : null}
+            </div>
+            <div className="min-w-0">
+              <p className="truncate text-sm font-semibold">{product.name}</p>
+              <p className="mt-1 text-xs text-muted-foreground">{product.brand}</p>
+            </div>
+            <ArrowRight className="size-4 text-muted-foreground" />
+          </Link>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function ServiceTile({
+  href,
   icon,
   title,
   description,
-  bullets,
-  href,
 }: {
+  href: string
   icon: React.ReactNode
   title: string
   description: string
-  bullets: readonly string[]
-  href: string
 }) {
   return (
-    <Card className="border border-background/10 bg-background/5 p-0 text-background backdrop-blur-sm">
-      <CardContent className="p-6 lg:p-8">
-        <div className="mb-6 flex size-14 items-center justify-center rounded-2xl bg-primary/18">
+    <Link
+      href={href}
+      className="group block rounded-lg border border-border/70 bg-card p-5 transition-colors hover:border-primary/40"
+    >
+      <div className="mb-5 flex size-10 items-center justify-center rounded-md bg-primary/12 text-primary">
+        {icon}
+      </div>
+      <h2 className="text-lg font-semibold">{title}</h2>
+      <p className="mt-3 line-clamp-3 text-sm leading-6 text-muted-foreground">{description}</p>
+      <div className="mt-5 flex items-center gap-2 text-sm font-semibold text-primary">
+        En savoir plus
+        <ArrowRight className="size-4 transition-transform group-hover:translate-x-0.5" />
+      </div>
+    </Link>
+  )
+}
+
+function ActionLink({
+  href,
+  icon,
+  label,
+}: {
+  href: string
+  icon: React.ReactNode
+  label: string
+}) {
+  return (
+    <Button asChild variant="outline" className="justify-between rounded-md">
+      <Link href={href}>
+        <span className="inline-flex items-center gap-2">
           {icon}
-        </div>
-        <h3 className="mb-3 text-xl font-semibold">{title}</h3>
-        <p className="mb-5 leading-relaxed text-background/70">{description}</p>
-
-        <div className="mb-6 space-y-3">
-          {bullets.map((bullet) => (
-            <div key={bullet} className="flex items-start gap-3">
-              <CheckCircle2 className="mt-0.5 size-4 text-primary" />
-              <p className="text-sm text-background/72">{bullet}</p>
-            </div>
-          ))}
-        </div>
-
-        <Button
-          variant="outline"
-          asChild
-          className="border-background/18 bg-transparent text-background hover:bg-background/10 hover:text-background"
-        >
-          <Link href={href}>
-            En savoir plus
-            <ArrowRight className="ml-2 size-4" />
-          </Link>
-        </Button>
-      </CardContent>
-    </Card>
+          {label}
+        </span>
+        <ArrowRight className="size-4" />
+      </Link>
+    </Button>
   )
 }

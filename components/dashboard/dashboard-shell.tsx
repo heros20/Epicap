@@ -4,6 +4,7 @@ import {
   DashboardMobileNavigation,
   DashboardSidebar,
 } from "@/components/dashboard/dashboard-sidebar"
+import { AuthProvider } from "@/components/auth/auth-provider"
 import { DashboardActionFeedback } from "@/components/dashboard/dashboard-action-feedback"
 import { Footer } from "@/components/layout/footer"
 import { Header } from "@/components/layout/header"
@@ -30,6 +31,7 @@ export function DashboardShell({
 
   if (adminMode) {
     return (
+      <AuthProvider initialUser={user} initialProfile={profile}>
       <div className="flex min-h-screen flex-col">
         <Header />
         <main className="flex-1 bg-[radial-gradient(circle_at_top_left,rgba(255,133,28,0.10),transparent_22%),radial-gradient(circle_at_top_right,rgba(33,186,146,0.12),transparent_26%),linear-gradient(180deg,rgba(12,17,24,0.02),rgba(255,255,255,0)_72%)]">
@@ -80,10 +82,12 @@ export function DashboardShell({
         </main>
         <Footer />
       </div>
+      </AuthProvider>
     )
   }
 
   return (
+    <AuthProvider initialUser={user} initialProfile={profile}>
     <div className="flex min-h-screen flex-col">
       <Header />
       <main className="flex-1 bg-[radial-gradient(circle_at_top_right,rgba(255,133,28,0.09),transparent_28%),linear-gradient(180deg,rgba(15,16,18,0.02),rgba(255,255,255,0)_70%)]">
@@ -133,5 +137,6 @@ export function DashboardShell({
       </main>
       <Footer />
     </div>
+    </AuthProvider>
   )
 }

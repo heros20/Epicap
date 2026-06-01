@@ -1,10 +1,11 @@
 "use server"
 
-import { revalidatePath } from "next/cache"
+import { revalidatePath, revalidateTag } from "next/cache"
 import { redirect, unstable_rethrow } from "next/navigation"
 import { z } from "zod"
 
 import {
+  CATALOG_CACHE_TAG,
   CATALOG_ASSET_BUCKET,
   buildCatalogProductHref,
   isValidCategorySlug,
@@ -321,6 +322,8 @@ function collectProductPaths(product: Pick<ProductRow, "image" | "images" | "doc
 }
 
 function revalidateCatalogPages(product?: Pick<ProductRow, "category_slug" | "subcategory_slug" | "slug"> | null) {
+  revalidateTag(CATALOG_CACHE_TAG, "max")
+
   const paths = new Set<string>([
     "/",
     "/boutique",

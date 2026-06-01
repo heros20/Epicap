@@ -11,18 +11,18 @@ export async function updateSession(request: NextRequest) {
   const supabaseEnv = getSupabasePublicEnv()
   const isProtectedDashboardRoute = request.nextUrl.pathname.startsWith("/dashboard")
 
-  if (!supabaseEnv) {
-    if (isProtectedDashboardRoute) {
-      const url = request.nextUrl.clone()
-      url.pathname = "/connexion"
-      url.searchParams.set(
-        "next",
-        `${request.nextUrl.pathname}${request.nextUrl.search}`,
-      )
-      return NextResponse.redirect(url)
-    }
-
+  if (!isProtectedDashboardRoute) {
     return supabaseResponse
+  }
+
+  if (!supabaseEnv) {
+    const url = request.nextUrl.clone()
+    url.pathname = "/connexion"
+    url.searchParams.set(
+      "next",
+      `${request.nextUrl.pathname}${request.nextUrl.search}`,
+    )
+    return NextResponse.redirect(url)
   }
 
   // With Fluid compute, don't put this client in a global environment
@@ -60,7 +60,7 @@ export async function updateSession(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser()
 
-  if (isProtectedDashboardRoute && !user) {
+  if (!user) {
     const url = request.nextUrl.clone()
     url.pathname = "/connexion"
     url.searchParams.set(

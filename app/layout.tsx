@@ -4,7 +4,6 @@ import { Geist_Mono, Manrope, Space_Grotesk } from "next/font/google"
 
 import { AuthProvider } from "@/components/auth/auth-provider"
 import { Toaster } from "@/components/ui/toaster"
-import { getCurrentAuthState } from "@/lib/auth/server"
 import { CartProvider } from "@/lib/cart/cart-provider"
 import "./globals.css"
 
@@ -88,8 +87,6 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode
 }>) {
-  const { user, profile } = await getCurrentAuthState()
-
   return (
     <html
       lang="fr"
@@ -97,7 +94,7 @@ export default async function RootLayout({
       className={`${manrope.variable} ${spaceGrotesk.variable} ${geistMono.variable}`}
     >
       <body className="min-h-screen bg-background font-sans text-foreground antialiased">
-        <AuthProvider initialUser={user} initialProfile={profile}>
+        <AuthProvider>
           <CartProvider>{children}</CartProvider>
         </AuthProvider>
         <Toaster />

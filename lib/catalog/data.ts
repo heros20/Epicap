@@ -1,7 +1,8 @@
-import { cache } from "react"
+import { unstable_cache } from "next/cache"
 
 import {
   buildCatalogProductHref,
+  CATALOG_CACHE_TAG,
   getCatalogCategoryMeta,
 } from "@/lib/catalog/shared"
 import { normalizeBrandLabel } from "@/lib/catalog/normalize"
@@ -11,6 +12,7 @@ import {
   type Product,
   type ProductDocument,
 } from "@/lib/data/products"
+import { createPublicServerClient } from "@/lib/supabase/public-server"
 import { createClient } from "@/lib/supabase/server"
 import type { Database, Json } from "@/types/supabase"
 
@@ -199,9 +201,9 @@ function normalizeProductRow(row: ProductRow): CatalogEntry {
   }
 }
 
-const getCatalogEntriesCached = cache(async (): Promise<CatalogEntry[]> => {
+const getCatalogEntriesCached = unstable_cache(async (): Promise<CatalogEntry[]> => {
   try {
-    const supabase = await createClient()
+    const supabase = createPublicServerClient()
     const { data, error } = await supabase.from("products").select(PUBLIC_PRODUCT_SELECT).order("name")
 
     if (error || !data?.length) {
@@ -213,6 +215,9 @@ const getCatalogEntriesCached = cache(async (): Promise<CatalogEntry[]> => {
   } catch {
     return fallbackCatalog
   }
+}, ["catalog-products"], {
+  revalidate: 300,
+  tags: [CATALOG_CACHE_TAG],
 })
 
 export async function getCatalogProducts(): Promise<Product[]> {
