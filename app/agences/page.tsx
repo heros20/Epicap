@@ -29,9 +29,9 @@ export default function AgenciesPage() {
             </Badge>
             <h1 className="mb-4 text-3xl font-bold lg:text-5xl">Nos agences</h1>
             <p className="max-w-3xl text-muted-foreground">
-              Le projet reprend désormais les implantations visibles sur epicap.com : siège social
-              à {companyInfo.headOffice.city} et agences régionales pour la vente, la location, la
-              maintenance respiratoire et le support chantier.
+              Retrouvez le siège social à {companyInfo.headOffice.city} et les agences régionales
+              Epicap pour vos besoins en vente, location, maintenance respiratoire et accompagnement
+              chantier.
             </p>
           </div>
         </section>

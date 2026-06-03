@@ -35,30 +35,30 @@ export default async function LoginPage({
           <div className="container mx-auto grid gap-10 px-4 lg:grid-cols-[0.95fr_1.05fr]">
             <div className="max-w-xl">
               <Badge className="mb-5 border border-primary/20 bg-primary/20 text-background">
-                Authentification Supabase
+                Espace client Epicap
               </Badge>
               <h1 className="text-4xl font-bold tracking-tight lg:text-5xl">
                 Connexion sécurisée Epicap
               </h1>
               <p className="mt-5 text-base leading-7 text-background/74">
-                Ce socle prepare les comptes membre, admin et super admin avec controle d&apos;acces
-                serveur, RLS et dashboard dedie.
+                Connectez-vous pour retrouver vos informations, suivre vos demandes et préparer
+                plus facilement vos prochains échanges avec Epicap.
               </p>
               <div className="mt-8 grid gap-4 sm:grid-cols-3">
                 <FeatureCard
                   icon={<ShieldCheck className="size-5 text-primary" />}
-                  title="RLS"
-                  description="Lecture et écriture filtrées côté base."
+                  title="Sécurité"
+                  description="Accès protégé à votre espace."
                 />
                 <FeatureCard
                   icon={<UserCog className="size-5 text-primary" />}
-                  title="Roles"
-                  description="Membre, admin et super admin."
+                  title="Compte"
+                  description="Profil client et informations société."
                 />
                 <FeatureCard
                   icon={<KeyRound className="size-5 text-primary" />}
-                  title="SSR"
-                  description="Session geree sur client et serveur."
+                  title="Suivi"
+                  description="Demandes et commandes centralisées."
                 />
               </div>
             </div>
@@ -67,7 +67,7 @@ export default async function LoginPage({
               <CardContent className="p-6 lg:p-8">
                 <div className="mb-6">
                   <p className="text-sm font-medium uppercase tracking-[0.24em] text-muted-foreground">
-                    Acces au dashboard
+                    Accès à votre espace
                   </p>
                   <h2 className="mt-3 text-2xl font-bold tracking-tight">Se connecter</h2>
                   <p className="mt-2 text-sm leading-6 text-muted-foreground">

@@ -57,9 +57,8 @@ export default async function AgencyPage({ params }: PageProps) {
               {agency.name} - {agency.city}
             </h1>
             <p className="max-w-3xl text-muted-foreground">
-              Cette fiche reprend les coordonnées visibles sur le site officiel Epicap pour
-              l&apos;agence {agency.name.toLowerCase()}. Vente, location, maintenance respiratoire et
-              orientation chantier peuvent être traitées via cette implantation.
+              Contactez l&apos;agence {agency.name.toLowerCase()} pour vos demandes de vente,
+              location, maintenance respiratoire et accompagnement chantier dans votre secteur.
             </p>
           </div>
         </section>

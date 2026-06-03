@@ -91,7 +91,7 @@ function getAuthPagePath(source?: z.infer<typeof authSourceSchema>) {
 
 function toFriendlyOAuthError(message: string) {
   if (/provider.*not enabled/i.test(message) || /unsupported provider/i.test(message)) {
-    return "La connexion Google n’est pas encore activée sur ce projet Supabase."
+    return "La connexion Google n'est pas disponible pour le moment."
   }
 
   return message

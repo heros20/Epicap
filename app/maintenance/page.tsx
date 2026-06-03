@@ -62,8 +62,8 @@ export default async function MaintenancePage() {
             <div className="mb-8 max-w-3xl">
               <h2 className="mb-3 text-2xl font-bold">Matériels concernés</h2>
               <p className="text-muted-foreground">
-                Sélection respiratoire représentative intégrée au projet pour illustrer le service
-                de maintenance Epicap.
+                Sélection de matériels respiratoires concernés par les services de maintenance
+                Epicap.
               </p>
             </div>
 

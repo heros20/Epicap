@@ -88,12 +88,11 @@ export default function CheckoutPage() {
                   Validation commande
                 </Badge>
                 <h1 className="mb-3 text-4xl font-bold tracking-tight">
-                  Transmettre une vraie demande de commande
+                  Finaliser votre demande de commande
                 </h1>
                 <p className="text-base leading-7 text-muted-foreground">
-                  La validation crée une demande traçable pour l’équipe Epicap.
-                  Le stock, la logistique chantier et les conditions B2B sont vérifiés avant
-                  confirmation finale.
+                  Votre panier est transmis à l’équipe Epicap. Le stock, la logistique chantier et
+                  les conditions B2B sont vérifiés avant confirmation finale.
                 </p>
               </div>
 
@@ -120,16 +119,16 @@ export default function CheckoutPage() {
           <div className="container mx-auto px-4">
             <div className="grid gap-4 md:grid-cols-3">
               <ValueCard
-                title="Commande reliée au suivi"
-                description="La référence retournée est consultable côté commandes et pilotage."
+                title="Référence de suivi"
+                description="Une référence vous est fournie pour faciliter les échanges avec notre équipe."
               />
               <ValueCard
-                title="Logistique chantier filtree"
-                description="Les familles lourdes, louables ou sur devis repassent en validation manuelle."
+                title="Logistique chantier vérifiée"
+                description="Les articles lourds, louables ou sur devis sont contrôlés avant confirmation."
               />
               <ValueCard
-                title="Conditions B2B conservees"
-                description="Remises société, paiement de compte et contexte chantier restent rattachés à la demande."
+                title="Conditions B2B prises en compte"
+                description="Remises société, paiement de compte et contexte chantier sont intégrés à la demande."
               />
             </div>
           </div>

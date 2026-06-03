@@ -181,7 +181,7 @@ export function QuoteRequestForm({
                 label="Montant estimé"
                 value={
                   state.hasQuoteOnlyItems
-                    ? "Affinage commercial"
+                    ? "À préciser"
                     : formatPrice(state.total ?? 0)
                 }
               />
@@ -206,8 +206,8 @@ export function QuoteRequestForm({
             <div>
               <h2 className="text-xl font-semibold">Décrire votre besoin</h2>
               <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                La demande est connectée au back-office Epicap. Les erreurs sont indiquées champ
-                par champ, et le parcours accepte aussi bien les entreprises que les particuliers.
+                Renseignez vos coordonnées et votre besoin. Les champs à corriger seront signalés
+                avant l&apos;envoi de la demande.
               </p>
             </div>
 
@@ -451,7 +451,7 @@ export function QuoteRequestForm({
                   id="message"
                   name="message"
                   aria-invalid={Boolean(activeFieldErrors.message)}
-                  placeholder="Nature du chantier, quantités, délais, arbitrage achat/location, contraintes d'accès, besoin de maintenance ou FIT TEST..."
+                  placeholder="Nature du chantier, quantités, délais, besoin d'achat ou de location, contraintes d'accès, maintenance ou FIT TEST..."
                   className="min-h-36"
                   required={!hasCatalogContext}
                 />
@@ -577,11 +577,11 @@ export function QuoteRequestForm({
             <CardContent className="space-y-3 p-6">
               <div className="flex items-center gap-3">
                 <ShieldCheck className="size-5 text-primary" />
-                <p className="font-semibold">Suivi commercial traçable</p>
+                <p className="font-semibold">Suivi de votre demande</p>
               </div>
               <p className="text-sm leading-6 text-muted-foreground">
-                Chaque demande crée une référence exploitable côté dashboard. Le besoin n&apos;est
-                plus perdu dans un simple lien email.
+                Chaque demande reçoit une référence pour faciliter le suivi et les échanges avec
+                notre équipe.
               </p>
               <Button asChild variant="outline" className="w-full">
                 <Link href="/connexion">Se connecter pour suivre ses demandes</Link>

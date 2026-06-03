@@ -321,7 +321,7 @@ export async function submitQuoteRequestAction(
   return {
     status: "success",
     message:
-      "Votre demande de devis a bien ete transmise. L'equipe Epicap peut maintenant reprendre l'etude.",
+      "Votre demande de devis a bien ete transmise. L'equipe Epicap vous recontactera pour finaliser l'etude.",
     reference: quoteResult.reference,
     subtotal: pricing.subtotal,
     discountAmount: pricing.discountAmount,
@@ -469,7 +469,7 @@ export async function submitOrderRequestAction(
   return {
     status: "success",
     message:
-      "Votre demande de commande a bien ete transmise. Un conseiller Epicap peut maintenant confirmer les disponibilites et la logistique.",
+      "Votre demande de commande a bien ete transmise. Un conseiller Epicap vous recontactera pour confirmer les disponibilites et la logistique.",
     reference: orderResult.reference,
     subtotal: pricing.subtotal,
     discountAmount: pricing.discountAmount,

@@ -29,8 +29,8 @@ export default function ContactPage() {
             </Badge>
             <h1 className="mb-4 text-3xl font-bold lg:text-5xl">Nous contacter</h1>
             <p className="max-w-3xl text-muted-foreground">
-              Le site projet intègre désormais les coordonnées Epicap utiles pour les demandes
-              produit, location, maintenance respiratoire, FIT TEST et besoins multi-agences.
+              Nos équipes vous orientent pour vos demandes produit, location, maintenance
+              respiratoire, FIT TEST et besoins multi-agences.
             </p>
           </div>
         </section>

@@ -168,14 +168,14 @@ export function OrderRequestForm() {
                 label="Total estimé"
                 value={
                   state.hasQuoteOnlyItems
-                    ? "Affinage commercial"
+                    ? "À préciser"
                     : formatPrice(state.total ?? 0)
                 }
               />
             </div>
             <div className="flex flex-col gap-3 sm:flex-row">
               <Button asChild>
-                <Link href="/dashboard/commandes">Voir le suivi</Link>
+                <Link href="/dashboard/commandes">Voir mes commandes</Link>
               </Button>
               <Button asChild variant="outline">
                 <Link href="/panier">Retour au panier</Link>
@@ -202,9 +202,8 @@ export function OrderRequestForm() {
               <div>
                 <h2 className="text-xl font-semibold">Transmettre la demande de commande</h2>
                 <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                  Le tunnel n&apos;impose plus une logique strictement B2B. Le parcours
-                  s&apos;adapte aussi aux particuliers, avec des erreurs affichées directement
-                  sous les bons champs.
+                  Renseignez vos coordonnées, l&apos;adresse de livraison et les consignes utiles
+                  pour transmettre votre demande à Epicap.
                 </p>
               </div>
 
@@ -548,7 +547,7 @@ export function OrderRequestForm() {
                   label="Total estimé"
                   value={
                     pricing.hasQuoteOnlyItems
-                      ? "Affinage commercial"
+                      ? "À préciser"
                       : formatPrice(pricing.total)
                   }
                 />

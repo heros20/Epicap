@@ -102,7 +102,7 @@ export default async function BoutiquePage({ searchParams }: PageProps) {
             <p className="max-w-3xl text-muted-foreground">
               {query
                 ? "La recherche parcourt les références produit, les descriptions, les marques et les documents associés du catalogue."
-                : "Cette boutique reprend les familles officielles du site Epicap avec une sélection représentative de produits et prestations pour les chantiers de désamiantage et de dépollution."}
+                : "Explorez les produits et prestations Epicap pour vos chantiers de désamiantage, dépollution, protection respiratoire et décontamination."}
             </p>
           </div>
         </section>
@@ -195,15 +195,13 @@ export default async function BoutiquePage({ searchParams }: PageProps) {
               <h2 className="mb-4 text-2xl font-bold">Gammes et services officiels Epicap</h2>
               <div className="space-y-4 text-sm leading-relaxed text-muted-foreground">
                 <p>
-                  Le catalogue s&apos;appuie désormais sur les grandes familles visibles sur
-                  epicap.com : protection respiratoire, équipements de protection individuelle,
-                  décontamination, extracteurs EPIAIR, aspirateurs Type H, confinement,
-                  emballages, brumisation, instrumentation et déplombage.
+                  Retrouvez les grandes familles Epicap : protection respiratoire, équipements de
+                  protection individuelle, décontamination, extracteurs EPIAIR, aspirateurs Type H,
+                  confinement, emballages, brumisation, instrumentation et déplombage.
                 </p>
                 <p>
-                  Les contenus de location, maintenance des systèmes respiratoires et FIT TEST
-                  disposent maintenant de pages dédiées, afin de refléter la dimension service du
-                  site Epicap au-delà de la simple vente de produits.
+                  Pour un besoin de location, maintenance respiratoire ou FIT TEST, nos pages
+                  services vous guident vers les informations et les contacts adaptés.
                 </p>
               </div>
             </div>

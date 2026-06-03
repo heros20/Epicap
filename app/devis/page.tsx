@@ -86,8 +86,8 @@ export default async function QuotePage({ searchParams }: QuotePageProps) {
               Centraliser les besoins vente, location et services
             </h1>
             <p className="max-w-3xl text-muted-foreground">
-              Le parcours devis crée une demande traçable, exploitable par l’équipe commerciale
-              pour arbitrer vente, location, maintenance et contraintes chantier.
+              Décrivez votre besoin et l’équipe Epicap vous accompagne pour choisir la solution
+              adaptée en vente, location, maintenance ou FIT TEST.
             </p>
           </div>
         </section>
@@ -111,8 +111,8 @@ export default async function QuotePage({ searchParams }: QuotePageProps) {
                 <CardContent className="space-y-3 p-6">
                   <h2 className="text-lg font-semibold">Canal direct</h2>
                   <p className="text-sm text-muted-foreground">
-                    Le formulaire connecté est prioritaire, mais les coordonnées directes restent
-                    disponibles.
+                    Utilisez le formulaire pour détailler votre besoin ou contactez-nous
+                    directement par e-mail.
                   </p>
                   <Button asChild className="w-full">
                     <a href={`mailto:${companyInfo.email}?subject=Demande de devis Epicap`}>
@@ -127,7 +127,7 @@ export default async function QuotePage({ searchParams }: QuotePageProps) {
                 <CardContent className="space-y-3 p-6">
                   <h2 className="text-lg font-semibold">Appel commercial</h2>
                   <p className="text-sm text-muted-foreground">
-                    Utile pour arbitrer rapidement entre vente, location et solution chantier.
+                    Utile pour échanger rapidement sur une solution de vente, location ou chantier.
                   </p>
                   <Button variant="outline" asChild className="w-full">
                     <a href={`tel:${companyInfo.phone.replace(/\s+/g, "")}`}>

@@ -79,8 +79,8 @@ export default async function LocationPage({ searchParams }: PageProps) {
             <div className="mb-8 max-w-3xl">
               <h2 className="mb-3 text-2xl font-bold">Références proposées en location</h2>
               <p className="text-muted-foreground">
-                Exemples de matériels visibles dans le projet et cohérents avec l&apos;offre location
-                mise en avant sur le site Epicap.
+                Exemples de matériels proposés en location pour les besoins de protection
+                collective et de décontamination.
               </p>
             </div>
 

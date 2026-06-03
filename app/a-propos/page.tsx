@@ -64,7 +64,7 @@ export default function AboutPage() {
                     <div>
                       <h2 className="text-xl font-semibold">Activités mises en avant</h2>
                       <p className="text-sm text-muted-foreground">
-                        Synthèse du positionnement observé sur epicap.com
+                        Les expertises proposées par Epicap
                       </p>
                     </div>
                   </div>
@@ -88,7 +88,7 @@ export default function AboutPage() {
                     <div>
                       <h2 className="text-xl font-semibold">Marques et solutions</h2>
                       <p className="text-sm text-muted-foreground">
-                        Fabricants et familles visibles sur les catalogues Epicap
+                        Fabricants et familles de produits référencés
                       </p>
                     </div>
                   </div>

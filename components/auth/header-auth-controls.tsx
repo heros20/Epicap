@@ -92,7 +92,7 @@ export function HeaderAuthControls({ mobile = false }: { mobile?: boolean }) {
         </div>
         <div className="mt-4 grid gap-2">
           <Button asChild className="w-full rounded-full">
-            <Link href="/dashboard">Ouvrir le dashboard</Link>
+            <Link href="/dashboard">Ouvrir mon espace</Link>
           </Button>
           <Button
             variant="outline"

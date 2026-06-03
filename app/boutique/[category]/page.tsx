@@ -291,14 +291,13 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
               <h2 className="mb-4 text-2xl font-bold">{category.name}</h2>
               <div className="space-y-4 text-sm leading-relaxed text-muted-foreground">
                 <p>
-                  Cette page reprend la logique de gamme Epicap observée sur le site officiel et
-                  regroupe des produits et services représentatifs liés à{" "}
+                  Cette gamme regroupe des produits et services Epicap liés à{" "}
                   {category.name.toLowerCase()}.
                 </p>
                 <p>
-                  Besoin d&apos;une configuration plus précise pour un chantier SS3 ou SS4 ? Le projet
-                  intègre maintenant des pages dédiées aux agences, au devis, à la location, à la
-                  maintenance respiratoire et au FIT TEST.
+                  Besoin d&apos;une configuration plus précise pour un chantier SS3 ou SS4 ? Nos pages
+                  agences, devis, location, maintenance respiratoire et FIT TEST vous orientent vers
+                  la solution adaptée.
                 </p>
               </div>
             </div>

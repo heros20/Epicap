@@ -70,7 +70,7 @@ export const serviceDetails = {
     description:
       "Epicap assure la maintenance des systèmes respiratoires utilisés sur les chantiers amiante avec un maillage d'agences et une documentation dédiée.",
     intro:
-      "Le site officiel met en avant la maintenance des systèmes respiratoires 3M, SCOTT et KASCO pour les zones Nord, Normandie, Île-de-France, Est, Sud-Est, Bretagne et Rhône-Alpes.",
+      "Epicap assure la maintenance des systèmes respiratoires 3M, SCOTT et KASCO pour les zones Nord, Normandie, Île-de-France, Est, Sud-Est, Bretagne et Rhône-Alpes.",
     points: [
       "Prise en charge des appareils de ventilation assistée et des systèmes à adduction d'air.",
       "Attestation 3M / SCOTT et agrément KASCO disponibles avec le tarif de maintenance.",
@@ -86,7 +86,7 @@ export const serviceDetails = {
     description:
       "Epicap propose un test d'ajustement quantitatif pour vérifier l'étanchéité des masques avant mise en service sur chantier.",
     intro:
-      "Le service FIT TEST mis en avant sur epicap.com s'appuie sur une technologie à pression négative contrôlée OHD Quantifit.",
+      "Le service FIT TEST s'appuie sur une technologie à pression négative contrôlée OHD Quantifit.",
     points: [
       "Simulation d'un taux de respiration supérieur à 90 litres d'air par minute.",
       "Mesure d'une éventuelle fuite en 8 secondes.",

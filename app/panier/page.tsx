@@ -257,8 +257,8 @@ export default function CartPage() {
                   />
                   <ServiceHighlight
                     icon={<Phone className="size-5 text-primary" />}
-                    title="Validation commerciale"
-                    description="Epicap peut arbitrer entre achat, devis et location."
+                  title="Conseil commercial"
+                  description="Epicap vous aide à choisir entre achat, devis et location."
                   />
                 </div>
               </div>
@@ -271,8 +271,8 @@ export default function CartPage() {
                     </p>
                     <h2 className="text-2xl font-bold">Prêt à transmettre</h2>
                     <p className="mt-2 text-sm leading-6 text-background/72">
-                      Les montants deviennent pilotables et les exceptions logistiques remontent
-                      clairement dans le récapitulatif.
+                      Retrouvez le détail des montants, remises éventuelles et contraintes
+                      logistiques avant transmission.
                     </p>
                   </div>
 
@@ -328,7 +328,7 @@ export default function CartPage() {
                         label="Total estimé"
                         value={
                           pricing.hasQuoteOnlyItems
-                            ? "Affinage commercial"
+                            ? "À préciser"
                             : formatPrice(pricing.total)
                         }
                         className="text-base font-semibold text-foreground"

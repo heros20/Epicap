@@ -13,8 +13,8 @@ function pickFirstValue(value: string | string[] | undefined) {
 
 const REASONS: Record<string, string> = {
   role: "Votre rôle actuel ne permet pas d'accéder à cette section.",
-  inactive: "Votre compte a été désactivé. Un super admin doit le réactiver.",
-  "missing-profile": "La session existe, mais le profil applicatif n'a pas été trouvé.",
+  inactive: "Votre compte a été désactivé. Contactez Epicap pour le réactiver.",
+  "missing-profile": "Votre profil n'a pas été trouvé. Contactez Epicap si le problème persiste.",
 }
 
 export default async function ForbiddenPage({

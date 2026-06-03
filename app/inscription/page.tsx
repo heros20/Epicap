@@ -37,27 +37,27 @@ export default async function RegisterPage({
                 Compte membre Epicap
               </Badge>
               <h1 className="text-4xl font-bold tracking-tight lg:text-5xl">
-                Creer un acces client solide des la premiere etape
+                Créer votre accès client Epicap
               </h1>
               <p className="mt-5 text-base leading-7 text-muted-foreground">
-                Le formulaire alimente Supabase Auth, genere automatiquement le profil applicatif
-                et ouvre la voie au rattachement d&apos;entreprise, aux devis et aux commandes.
+                Créez un compte pour renseigner vos informations, faciliter vos demandes de devis
+                et préparer vos futures commandes.
               </p>
               <div className="mt-8 grid gap-4">
                 <Benefit
                   icon={<UserPlus className="size-5 text-primary" />}
                   title="Compte membre"
-                  description="Rôle par défaut sécurisé, prêt pour la montée en admin ou super admin."
+                  description="Un espace personnel pour suivre vos informations et vos demandes."
                 />
                 <Benefit
                   icon={<Building2 className="size-5 text-primary" />}
                   title="Contexte B2B"
-                  description="Nom de société, fonction et téléphone intégrés au profil."
+                  description="Nom de société, fonction et téléphone peuvent être ajoutés au profil."
                 />
                 <Benefit
                   icon={<ShieldCheck className="size-5 text-primary" />}
-                  title="Architecture durable"
-                  description="Migration versionnee, politiques RLS et dashboard back-office."
+                  title="Suivi simplifié"
+                  description="Vos échanges avec Epicap sont plus faciles à retrouver."
                 />
               </div>
             </div>
@@ -70,8 +70,8 @@ export default async function RegisterPage({
                   </p>
                   <h2 className="mt-3 text-2xl font-bold tracking-tight">Creer un compte</h2>
                   <p className="mt-2 text-sm leading-6 text-muted-foreground">
-                    Le rôle initial créé est `member`. Les rôles sensibles se gèrent ensuite dans
-                    le dashboard sécurisé.
+                    Renseignez vos informations ou utilisez votre compte Google pour créer votre
+                    espace client sécurisé.
                   </p>
                 </div>
 
@@ -82,7 +82,7 @@ export default async function RegisterPage({
                     next={next}
                     source="inscription"
                     cta="Creer mon compte avec Google"
-                    hint="Si le compte Google n’existe pas encore, Supabase crée un profil membre."
+                    hint="Si votre compte Google n’existe pas encore, un espace client sera créé."
                   />
                 </div>
 

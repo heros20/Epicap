@@ -61,8 +61,8 @@ export default async function FitTestPage() {
             <div className="mb-8 max-w-3xl">
               <h2 className="mb-3 text-2xl font-bold">APR et masques associés</h2>
               <p className="text-muted-foreground">
-                Références respiratoires présentes dans le projet pour contextualiser le besoin de
-                FIT TEST et d&apos;étanchéité.
+                Références respiratoires pouvant être associées à un besoin de FIT TEST et
+                d&apos;étanchéité.
               </p>
             </div>
 
