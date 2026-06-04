@@ -10,7 +10,8 @@ import {
 } from "@/lib/catalog/shared"
 import type { CatalogEntry } from "@/lib/catalog/data"
 import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
+import { AdminSubmitButton } from "@/components/dashboard/admin-submit-button"
+import { PendingLinkButton } from "@/components/dashboard/pending-link-button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -383,12 +384,16 @@ export function CatalogProductForm({
       ) : null}
 
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <Button variant="outline" asChild>
-          <Link href="/dashboard/catalogue">Retour au catalogue</Link>
-        </Button>
-        <Button type="submit" size="lg">
+        <PendingLinkButton
+          href="/dashboard/catalogue"
+          variant="outline"
+          pendingLabel="Retour..."
+        >
+          Retour au catalogue
+        </PendingLinkButton>
+        <AdminSubmitButton size="lg">
           {product ? "Enregistrer le produit" : "Creer le produit"}
-        </Button>
+        </AdminSubmitButton>
       </div>
     </form>
   )

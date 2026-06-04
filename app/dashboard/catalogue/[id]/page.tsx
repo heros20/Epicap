@@ -1,6 +1,8 @@
 import { notFound } from "next/navigation"
 
+import { AdminSubmitButton } from "@/components/dashboard/admin-submit-button"
 import { CatalogProductForm } from "@/components/dashboard/catalog-product-form"
+import { PendingLinkButton } from "@/components/dashboard/pending-link-button"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
@@ -81,6 +83,13 @@ export default async function DashboardCatalogueEditPage({
                 Voir la fiche publique
               </a>
             </Button>
+            <PendingLinkButton
+              href="/dashboard/catalogue"
+              variant="secondary"
+              pendingLabel="Retour..."
+            >
+              Retour catalogue
+            </PendingLinkButton>
           </div>
         </CardContent>
       </Card>
@@ -98,9 +107,9 @@ export default async function DashboardCatalogueEditPage({
           </div>
           <form action={deleteCatalogProductAction}>
             <input type="hidden" name="productId" value={product.id} />
-            <Button variant="destructive" type="submit">
+            <AdminSubmitButton variant="destructive" pendingLabel="Suppression...">
               Supprimer le produit
-            </Button>
+            </AdminSubmitButton>
           </form>
         </CardContent>
       </Card>

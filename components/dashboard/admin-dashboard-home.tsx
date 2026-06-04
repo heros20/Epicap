@@ -1,7 +1,6 @@
 "use client"
 
 import * as React from "react"
-import Link from "next/link"
 import { Area, AreaChart, CartesianGrid, Line, XAxis, YAxis } from "recharts"
 import {
   ArrowRight,
@@ -18,6 +17,7 @@ import {
 } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
+import { PendingLinkButton } from "@/components/dashboard/pending-link-button"
 import { Button } from "@/components/ui/button"
 import {
   Card,
@@ -410,20 +410,24 @@ export function AdminDashboardHome({
                 </p>
 
                 <div className="mt-6 flex flex-wrap gap-3">
-                  <Button asChild size="lg" className="rounded-full">
-                    <Link href="/dashboard/catalogue">
-                      Ouvrir le catalogue
-                      <ArrowRight className="size-4" />
-                    </Link>
-                  </Button>
-                  <Button
-                    asChild
+                  <PendingLinkButton
+                    href="/dashboard/catalogue"
+                    size="lg"
+                    className="rounded-md"
+                    pendingLabel="Ouverture..."
+                  >
+                    Ouvrir le catalogue
+                    <ArrowRight className="size-4" />
+                  </PendingLinkButton>
+                  <PendingLinkButton
+                    href="/dashboard/commandes"
                     variant="outline"
                     size="lg"
-                    className="rounded-full border-background/16 bg-background/6 text-background hover:bg-background/12 hover:text-background"
+                    className="rounded-md border-background/16 bg-background/6 text-background hover:bg-background/12 hover:text-background"
+                    pendingLabel="Chargement..."
                   >
-                    <Link href="/dashboard/commandes">Voir les commandes</Link>
-                  </Button>
+                    Voir les commandes
+                  </PendingLinkButton>
                 </div>
               </div>
 
@@ -688,15 +692,18 @@ export function AdminDashboardHome({
                 helper="Produits pouvant être proposés en location"
               />
               <div className="grid gap-3 pt-1">
-                <Button asChild className="rounded-full">
-                  <Link href="/dashboard/catalogue">
-                    Piloter le catalogue
-                    <ArrowRight className="size-4" />
-                  </Link>
-                </Button>
-                <Button asChild variant="outline" className="rounded-full">
-                    <Link href="/dashboard/catalogue/nouveau">Ajouter une référence</Link>
-                  </Button>
+                <PendingLinkButton href="/dashboard/catalogue" className="rounded-md">
+                  Piloter le catalogue
+                  <ArrowRight className="size-4" />
+                </PendingLinkButton>
+                <PendingLinkButton
+                  href="/dashboard/catalogue/nouveau"
+                  variant="outline"
+                  className="rounded-md"
+                  pendingLabel="Préparation..."
+                >
+                  Ajouter une référence
+                </PendingLinkButton>
                 </div>
               </CardContent>
             </Card>

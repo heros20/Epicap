@@ -14,6 +14,7 @@ import {
 } from "lucide-react"
 
 import type { CatalogEntry } from "@/lib/catalog/data"
+import { PendingLinkButton } from "@/components/dashboard/pending-link-button"
 import {
   buildCatalogProductHref,
   catalogCategoryOptions,
@@ -239,12 +240,14 @@ function ProductActions({
           Voir
         </Link>
       </Button>
-      <Button size={compact ? "sm" : "default"} asChild>
-        <Link href={getProductHref(product)}>
-          <PencilLine className="size-4" />
-          Modifier
-        </Link>
-      </Button>
+      <PendingLinkButton
+        href={getProductHref(product)}
+        size={compact ? "sm" : "default"}
+        pendingLabel="Ouverture..."
+      >
+        <PencilLine className="size-4" />
+        Modifier
+      </PendingLinkButton>
     </div>
   )
 }
@@ -569,9 +572,9 @@ export function CatalogAdminBrowser({
                 </div>
               </div>
 
-              <Button asChild>
-                <Link href="/dashboard/catalogue/nouveau">Ajouter un produit</Link>
-              </Button>
+              <PendingLinkButton href="/dashboard/catalogue/nouveau" pendingLabel="Préparation...">
+                Ajouter un produit
+              </PendingLinkButton>
             </div>
 
             <div className="grid gap-3 rounded-[1.35rem] border border-border/70 bg-muted/16 p-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(240px,0.9fr)]">

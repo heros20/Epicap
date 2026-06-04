@@ -11,6 +11,7 @@ import {
   Copy,
   Download,
   FileText,
+  Loader2,
   Minus,
   Phone,
   Plus,
@@ -646,8 +647,19 @@ function AddToCartSection({
 
       <div className="flex gap-3">
         {product.price > 0 && product.stockQuantity > 0 ? (
-          <Button size="lg" className="flex-1" onClick={onAddToCart}>
-            <ShoppingCart className="mr-2 size-4" />
+          <Button
+            size="lg"
+            className="flex-1"
+            onClick={onAddToCart}
+            disabled={isAdded}
+            aria-busy={isAdded}
+            data-pending={isAdded ? "true" : undefined}
+          >
+            {isAdded ? (
+              <Loader2 className="mr-2 size-4 animate-spin" />
+            ) : (
+              <ShoppingCart className="mr-2 size-4" />
+            )}
             {isAdded ? "Ajouté au panier" : "Ajouter au panier"}
           </Button>
         ) : null}

@@ -2,8 +2,8 @@ import { adminUpdateProfileAction } from "@/lib/auth/actions"
 import { getCompanySummaries, getTeamProfiles } from "@/lib/auth/dashboard"
 import { requireRole } from "@/lib/auth/server"
 import { getProfileDisplayName, ROLE_LABELS } from "@/lib/auth/types"
+import { AdminSubmitButton } from "@/components/dashboard/admin-submit-button"
 import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import {
   Table,
@@ -135,9 +135,9 @@ export default async function DashboardTeamPage({
                                 </option>
                               ))}
                             </select>
-                            <Button type="submit" variant="outline" className="sm:col-span-1">
+                            <AdminSubmitButton variant="outline" className="sm:col-span-1">
                               Enregistrer
-                            </Button>
+                            </AdminSubmitButton>
                           </form>
                         ) : (
                           <div className="text-sm text-muted-foreground">

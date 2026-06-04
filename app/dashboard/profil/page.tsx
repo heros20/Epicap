@@ -3,8 +3,8 @@ import type { ReactNode } from "react"
 import { updateMyProfileAction } from "@/lib/auth/actions"
 import { requireProfile } from "@/lib/auth/server"
 import { ROLE_LABELS } from "@/lib/auth/types"
+import { AdminSubmitButton } from "@/components/dashboard/admin-submit-button"
 import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -74,9 +74,9 @@ export default async function DashboardProfilePage({
               </label>
             </div>
             <div className="lg:col-span-2">
-              <Button type="submit" size="lg">
+              <AdminSubmitButton size="lg">
                 Enregistrer les modifications
-              </Button>
+              </AdminSubmitButton>
             </div>
           </form>
         </CardContent>
