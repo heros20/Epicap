@@ -26,19 +26,6 @@ interface QuotePageProps {
   }>
 }
 
-function getPreferredRequestType(service?: string) {
-  switch (service) {
-    case "location":
-      return "rental" as const
-    case "maintenance":
-      return "maintenance" as const
-    case "fit-test":
-      return "fit-test" as const
-    default:
-      return "mixed" as const
-  }
-}
-
 function getContextLabel(service?: string, productName?: string) {
   if (productName && service) {
     return `${productName} · ${service}`
@@ -68,7 +55,7 @@ export default async function QuotePage({ searchParams }: QuotePageProps) {
   const requestedProduct = params.product
     ? await getCatalogProductBySlug(params.product)
     : undefined
-  const preferredRequestType = getPreferredRequestType(params.service)
+  const preferredRequestType = "purchase"
   const includeCartByDefault = params.cart === "1"
   const contextLabel = getContextLabel(params.service, requestedProduct?.name)
 

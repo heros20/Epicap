@@ -48,6 +48,13 @@ function readMetadataValue(metadata: Json | null | undefined, key: string) {
   return typeof value === "string" ? value : null
 }
 
+function isSageQuoteRequest(metadata: Json | null | undefined) {
+  return (
+    readMetadataValue(metadata, "type") === "quote_request" &&
+    readMetadataValue(metadata, "processingMode") === "sage"
+  )
+}
+
 function toDateInputValue(value: string | null) {
   return value ? value.slice(0, 10) : ""
 }
@@ -123,8 +130,8 @@ export default async function DashboardQuotesPage({
         </CardHeader>
         <CardContent className="space-y-4 p-6">
           <p className="text-sm text-muted-foreground">
-            Les devis peuvent être traités depuis l&apos;admin : statut commercial,
-            échéance, détail produits et notes internes.
+            Les demandes de devis sont notifiées par e-mail à Epicap et restent visibles ici pour
+            le suivi. Le chiffrage final est traité dans Sage.
           </p>
           {error ? <MessageBox tone="error" message={error} /> : null}
           {success ? <MessageBox tone="success" message={success} /> : null}
@@ -151,6 +158,8 @@ export default async function DashboardQuotesPage({
 function AdminQuoteCard({ quote }: { quote: DashboardQuoteRecord }) {
   const customerType = readMetadataValue(quote.metadata, "customerType")
   const requestType = readMetadataValue(quote.metadata, "requestType")
+  const notificationEmail = readMetadataValue(quote.metadata, "notificationEmail")
+  const sageRequest = isSageQuoteRequest(quote.metadata)
 
   return (
     <Card className="border-border/70 bg-card/92">
@@ -159,7 +168,12 @@ function AdminQuoteCard({ quote }: { quote: DashboardQuoteRecord }) {
           <div className="space-y-2">
             <CardTitle>{quote.quote_number ?? "Sans numéro"}</CardTitle>
             <div className="flex flex-wrap gap-2">
-              <Badge variant="secondary">{QUOTE_STATUS_LABELS[quote.status]}</Badge>
+              <Badge variant="secondary">
+                {sageRequest && quote.status === "sent"
+                  ? "Demande transmise"
+                  : QUOTE_STATUS_LABELS[quote.status]}
+              </Badge>
+              {sageRequest ? <Badge variant="outline">Traitement Sage</Badge> : null}
               {customerType ? (
                 <Badge variant="outline">
                   {customerType === "individual" ? "Particulier" : "Entreprise"}
@@ -199,6 +213,19 @@ function AdminQuoteCard({ quote }: { quote: DashboardQuoteRecord }) {
                 ]}
               />
             </SectionCard>
+
+            {sageRequest ? (
+              <SectionCard title="Transmission Epicap">
+                <InfoGrid
+                  items={[
+                    ["Parcours", "Demande envoyée par e-mail"],
+                    ["Destinataire", notificationEmail ?? "kevin.bigoni@outlook.fr"],
+                    ["Traitement", "Chiffrage et suivi dans Sage"],
+                    ["Confirmation", "Demande présente dans le tableau de bord"],
+                  ]}
+                />
+              </SectionCard>
+            ) : null}
 
             <SectionCard title="Lignes du devis">
               {quote.quote_items?.length ? (

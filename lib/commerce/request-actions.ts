@@ -6,6 +6,7 @@ import { z } from "zod"
 import { getCurrentAuthState } from "@/lib/auth/server"
 import { getCatalogProductBySlug, getCatalogProducts } from "@/lib/catalog/data"
 import type { RequestActionState } from "@/lib/commerce/request-action-state"
+import { sendQuoteRequestEmail } from "@/lib/commerce/quote-request-email"
 import { getPricingSnapshot } from "@/lib/commerce/pricing"
 import {
   safeParseOrderRequestFormData,
@@ -185,7 +186,7 @@ async function callRequestRpc(
 
   if (error) {
     return {
-      error: toDisplayError(error.message, "La demande n'a pas pu etre enregistree."),
+      error: toDisplayError(error.message, "La demande n'a pas pu être enregistrée."),
       result: null,
     }
   }
@@ -193,7 +194,7 @@ async function callRequestRpc(
   const result = data?.[0] ?? null
   if (!result) {
     return {
-      error: "La demande n'a pas pu etre enregistree.",
+      error: "La demande n'a pas pu être enregistrée.",
       result: null,
     }
   }
@@ -213,7 +214,7 @@ export async function submitQuoteRequestAction(
   if (!parsed.success) {
     return {
       status: "error",
-      message: "Corrigez les champs du devis indiques ci-dessous.",
+      message: "Corrigez les champs du devis indiqués ci-dessous.",
       fieldErrors: toFieldErrors(parsed.error),
     }
   }
@@ -249,6 +250,8 @@ export async function submitQuoteRequestAction(
   )
   const metadata = {
     type: "quote_request",
+    processingMode: "sage",
+    notificationEmail: process.env.EPICAP_QUOTE_EMAIL?.trim() || "kevin.bigoni@outlook.fr",
     customerType: parsed.data.customerType,
     requestType: parsed.data.requestType,
     requestedAgency: parsed.data.requestedAgency || null,
@@ -310,18 +313,53 @@ export async function submitQuoteRequestAction(
     }
   }
 
+  try {
+    await sendQuoteRequestEmail({
+      reference: quoteResult.reference,
+      form: parsed.data,
+      customerLabel,
+      lines: resolvedLines,
+      pricing: {
+        subtotal: pricing.subtotal,
+        discountAmount: pricing.discountAmount,
+        shippingAmount: pricing.shippingAmount,
+        taxAmount: pricing.taxAmount,
+        total: pricing.total,
+        logisticsMode: pricing.logisticsMode,
+        hasQuoteOnlyItems: pricing.hasQuoteOnlyItems,
+      },
+    })
+  } catch (error) {
+    console.error("Quote request email delivery failed", error)
+
+    await track("Quote Request Email Failed", {
+      authenticated: Boolean(authState.user),
+      customer_type: parsed.data.customerType,
+      request_type: parsed.data.requestType,
+      reference: quoteResult.reference,
+    })
+
+    return {
+      status: "error",
+      message: `La demande ${quoteResult.reference} a bien été enregistrée dans le tableau de bord, mais la notification par e-mail n'a pas pu être transmise à Epicap. Vous pouvez réessayer après vérification de l'adresse d'envoi.`,
+      fieldErrors: {},
+      reference: quoteResult.reference,
+    }
+  }
+
   await track("Quote Request Submitted", {
     authenticated: Boolean(authState.user),
     customer_type: parsed.data.customerType,
     request_type: parsed.data.requestType,
     cart_items: resolvedLines.length,
     logistics_mode: pricing.logisticsMode,
+    notification_sent: true,
   })
 
   return {
     status: "success",
     message:
-      "Votre demande de devis a bien ete transmise. L'equipe Epicap vous recontactera pour finaliser l'etude.",
+      "Votre demande de devis a bien été transmise à Epicap. L'équipe la traitera dans Sage et vous recontactera pour finaliser l'étude.",
     reference: quoteResult.reference,
     subtotal: pricing.subtotal,
     discountAmount: pricing.discountAmount,
@@ -342,7 +380,7 @@ export async function submitOrderRequestAction(
   if (!parsed.success) {
     return {
       status: "error",
-      message: "Corrigez les champs de commande indiques ci-dessous.",
+      message: "Corrigez les champs de commande indiqués ci-dessous.",
       fieldErrors: toFieldErrors(parsed.error),
     }
   }
@@ -359,7 +397,7 @@ export async function submitOrderRequestAction(
       message: "Ajoutez au moins un article valide avant de transmettre la commande.",
       fieldErrors: {
         cartPayload:
-          "Votre panier est vide ou ne contient plus de references valides.",
+          "Votre panier est vide ou ne contient plus de références valides.",
       },
     }
   }
@@ -469,7 +507,7 @@ export async function submitOrderRequestAction(
   return {
     status: "success",
     message:
-      "Votre demande de commande a bien ete transmise. Un conseiller Epicap vous recontactera pour confirmer les disponibilites et la logistique.",
+      "Votre demande de commande a bien été transmise. Un conseiller Epicap vous recontactera pour confirmer les disponibilités et la logistique.",
     reference: orderResult.reference,
     subtotal: pricing.subtotal,
     discountAmount: pricing.discountAmount,

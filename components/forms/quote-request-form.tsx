@@ -23,6 +23,8 @@ import {
   type RequestFieldErrors,
 } from "@/lib/commerce/request-validation"
 import { useCart } from "@/lib/cart/use-cart"
+import { formatAgencyOptionLabel, formatAgencyOptionValue } from "@/lib/data/agencies"
+import { agencies } from "@/lib/data/navigation"
 import type { Product } from "@/lib/data/products"
 
 interface QuoteRequestFormProps {
@@ -35,7 +37,7 @@ interface QuoteRequestFormProps {
 
 export function QuoteRequestForm({
   requestedProduct,
-  preferredRequestType = "mixed",
+  preferredRequestType = "purchase",
   sourcePage,
   contextLabel,
   includeCartByDefault = false,
@@ -347,12 +349,28 @@ export function QuoteRequestForm({
                     <option value="mixed">Mixte</option>
                   </select>
                 </Field>
-                <Field label="Agence / zone" htmlFor="requestedAgency">
-                  <Input
+                <Field
+                  label="Agence Epicap"
+                  htmlFor="requestedAgency"
+                  hint="Choisissez l'agence la plus proche de votre besoin."
+                  error={activeFieldErrors.requestedAgency}
+                  required
+                >
+                  <select
                     id="requestedAgency"
                     name="requestedAgency"
-                    placeholder="Ile-de-France, Normandie, multi-sites..."
-                  />
+                    defaultValue=""
+                    aria-invalid={Boolean(activeFieldErrors.requestedAgency)}
+                    className="border-input bg-background h-10 w-full rounded-md border px-3 text-sm"
+                    required
+                  >
+                    <option value="">À sélectionner</option>
+                    {agencies.map((agency) => (
+                      <option key={agency.slug} value={formatAgencyOptionValue(agency)}>
+                        {formatAgencyOptionLabel(agency)}
+                      </option>
+                    ))}
+                  </select>
                 </Field>
                 <Field label="Délai souhaité" htmlFor="requestedDelay">
                   <Input

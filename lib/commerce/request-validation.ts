@@ -1,5 +1,8 @@
 import { z } from "zod"
 
+import { formatAgencyOptionValue } from "@/lib/data/agencies"
+import { agencies } from "@/lib/data/navigation"
+
 export type CustomerType = "company" | "individual"
 export type QuoteRequestType =
   | "purchase"
@@ -23,6 +26,9 @@ const orderPaymentMethodSchema = z.enum([
   "bank-transfer",
   "account-terms",
 ])
+const agencyOptionValues = new Set(
+  agencies.map((agency) => formatAgencyOptionValue(agency)),
+)
 
 const cartPayloadSchema = z
   .array(
@@ -73,7 +79,13 @@ const quoteRequestSchema = z
       .min(8, "Renseignez un numero de telephone joignable."),
     companyName: z.string().trim().optional().default(""),
     requestType: quoteRequestTypeSchema,
-    requestedAgency: z.string().trim().optional().default(""),
+    requestedAgency: z
+      .string()
+      .trim()
+      .min(1, "Choisissez une agence Epicap.")
+      .refine((value) => agencyOptionValues.has(value), {
+        message: "Choisissez une agence Epicap dans la liste.",
+      }),
     requestedDelay: z.string().trim().optional().default(""),
     message: z.string().trim().optional().default(""),
     productSlug: z.string().trim().optional().default(""),
