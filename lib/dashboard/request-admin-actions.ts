@@ -17,8 +17,6 @@ const orderStatusSchema = z.enum([
   "refunded",
 ])
 
-const paymentStatusSchema = z.enum(["pending", "paid", "failed", "refunded", "partial"])
-
 const quoteStatusSchema = z.enum([
   "draft",
   "sent",
@@ -32,17 +30,12 @@ const quoteStatusSchema = z.enum([
 const orderUpdateSchema = z.object({
   orderId: z.string().uuid("Commande invalide."),
   status: orderStatusSchema,
-  paymentStatus: paymentStatusSchema,
-  paymentMethod: z.string().trim().optional(),
-  shippingMethod: z.string().trim().optional(),
-  trackingNumber: z.string().trim().optional(),
   internalNotes: z.string().trim().optional(),
 })
 
 const quoteUpdateSchema = z.object({
   quoteId: z.string().uuid("Devis invalide."),
   status: quoteStatusSchema,
-  validUntil: z.string().trim().optional(),
   internalNotes: z.string().trim().optional(),
 })
 
@@ -57,11 +50,6 @@ function normalizeText(value: string | undefined) {
   return trimmed ? trimmed : null
 }
 
-function normalizeDate(value: string | undefined) {
-  const trimmed = value?.trim()
-  return trimmed ? trimmed : null
-}
-
 function revalidateDashboardRequests() {
   revalidatePath("/dashboard", "layout")
   revalidatePath("/dashboard/commandes")
@@ -72,10 +60,6 @@ export async function updateDashboardOrderAction(formData: FormData) {
   const parsed = orderUpdateSchema.safeParse({
     orderId: formData.get("orderId"),
     status: formData.get("status"),
-    paymentStatus: formData.get("paymentStatus"),
-    paymentMethod: formData.get("paymentMethod"),
-    shippingMethod: formData.get("shippingMethod"),
-    trackingNumber: formData.get("trackingNumber"),
     internalNotes: formData.get("internalNotes"),
   })
 
@@ -93,10 +77,6 @@ export async function updateDashboardOrderAction(formData: FormData) {
 
   const payload: Database["public"]["Tables"]["orders"]["Update"] = {
     status: parsed.data.status,
-    payment_status: parsed.data.paymentStatus,
-    payment_method: normalizeText(parsed.data.paymentMethod),
-    shipping_method: normalizeText(parsed.data.shippingMethod),
-    tracking_number: normalizeText(parsed.data.trackingNumber),
     internal_notes: normalizeText(parsed.data.internalNotes),
   }
 
@@ -117,7 +97,6 @@ export async function updateDashboardQuoteAction(formData: FormData) {
   const parsed = quoteUpdateSchema.safeParse({
     quoteId: formData.get("quoteId"),
     status: formData.get("status"),
-    validUntil: formData.get("validUntil"),
     internalNotes: formData.get("internalNotes"),
   })
 
@@ -135,7 +114,6 @@ export async function updateDashboardQuoteAction(formData: FormData) {
 
   const payload: Database["public"]["Tables"]["quotes"]["Update"] = {
     status: parsed.data.status,
-    valid_until: normalizeDate(parsed.data.validUntil),
     internal_notes: normalizeText(parsed.data.internalNotes),
   }
 

@@ -1,9 +1,17 @@
+"use client"
+
+import * as React from "react"
 import Image from "next/image"
 import Link from "next/link"
-import { CheckCircle2, Truck } from "lucide-react"
+import { CheckCircle2, Loader2, ShoppingCart, Truck } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
+import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
+import { ToastAction } from "@/components/ui/toast"
+import { toast } from "@/hooks/use-toast"
+import { safeTrack } from "@/lib/analytics/events"
+import { useCart } from "@/lib/cart/use-cart"
 import type { Product } from "@/lib/data/products"
 import { cn } from "@/lib/utils"
 
@@ -18,9 +26,34 @@ const priceFormatter = new Intl.NumberFormat("fr-FR", {
 })
 
 export function ProductCard({ product, className }: ProductCardProps) {
+  const { addItem } = useCart()
+  const [isAdded, setIsAdded] = React.useState(false)
   const categoryPath = product.subcategorySlug
     ? `${product.categorySlug}/${product.subcategorySlug}`
     : product.categorySlug
+  const productHref = `/boutique/${categoryPath}/${product.slug}`
+  const canAddToCart = product.price > 0 && product.stockQuantity > 0
+
+  const handleAddToCart = () => {
+    addItem(product, 1)
+    setIsAdded(true)
+    safeTrack("Product Add To Cart Clicked", {
+      product_id: product.id,
+      product_name: product.name,
+      quantity: 1,
+      source_page: "product-card",
+    })
+    window.setTimeout(() => setIsAdded(false), 1600)
+    toast({
+      title: "Produit ajoute au panier",
+      description: `1 x ${product.name}`,
+      action: (
+        <ToastAction altText="Voir le panier" asChild>
+          <Link href="/panier">Voir le panier</Link>
+        </ToastAction>
+      ),
+    })
+  }
 
   return (
     <Card
@@ -29,49 +62,53 @@ export function ProductCard({ product, className }: ProductCardProps) {
         className,
       )}
     >
-      <Link href={`/boutique/${categoryPath}/${product.slug}`} className="flex h-full flex-col">
-        <div className="relative aspect-square overflow-hidden bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.94),rgba(238,241,245,0.96))]">
-          {product.image ? (
-            <Image
-              src={product.image}
-              alt={product.name}
-              fill
-              className="object-contain p-4 transition-transform duration-500 group-hover:scale-105"
-            />
-          ) : (
-            <div className="absolute inset-0 bg-gradient-to-br from-muted to-muted/60" />
-          )}
-
-          <div className="absolute top-3 left-3 flex flex-col gap-2">
-            {product.isNew && <Badge className="shadow-sm">Nouveau</Badge>}
-            {product.badge && <Badge variant="secondary">{product.badge}</Badge>}
-            {product.isRentable && (
-              <Badge variant="outline" className="border-background/70 bg-background/92 backdrop-blur-sm">
-                <Truck className="mr-1 size-3" />
-                Location
-              </Badge>
+      <div className="flex h-full flex-col">
+        <Link href={productHref} className="block" aria-label={`Voir la fiche ${product.name}`}>
+          <div className="relative aspect-square overflow-hidden bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.94),rgba(238,241,245,0.96))]">
+            {product.image ? (
+              <Image
+                src={product.image}
+                alt={product.name}
+                fill
+                className="object-contain p-4 transition-transform duration-500 group-hover:scale-105"
+              />
+            ) : (
+              <div className="absolute inset-0 bg-gradient-to-br from-muted to-muted/60" />
             )}
-            {product.compareAtPrice && (
-              <Badge className="bg-foreground text-background">
-                -{Math.round((1 - product.price / product.compareAtPrice) * 100)}%
-              </Badge>
-            )}
-          </div>
 
-          <div className="absolute inset-x-0 bottom-0 translate-y-full p-3 transition-transform duration-300 group-hover:translate-y-0">
-            <div className="flex h-9 w-full items-center justify-center rounded-full bg-primary px-3 text-sm font-semibold text-primary-foreground shadow-[0_14px_28px_-20px_rgba(255,133,28,0.55)]">
-              Voir la fiche
+            <div className="absolute top-3 left-3 flex flex-col gap-2">
+              {product.isNew && <Badge className="shadow-sm">Nouveau</Badge>}
+              {product.badge && <Badge variant="secondary">{product.badge}</Badge>}
+              {product.isRentable && (
+                <Badge variant="outline" className="border-background/70 bg-background/92 backdrop-blur-sm">
+                  <Truck className="mr-1 size-3" />
+                  Location
+                </Badge>
+              )}
+              {product.compareAtPrice && (
+                <Badge className="bg-foreground text-background">
+                  -{Math.round((1 - product.price / product.compareAtPrice) * 100)}%
+                </Badge>
+              )}
             </div>
-          </div>
 
-          <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(255,133,28,0),rgba(15,16,18,0.06))] opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
-        </div>
+            <div className="absolute inset-x-0 bottom-0 translate-y-full p-3 transition-transform duration-300 group-hover:translate-y-0">
+              <div className="flex h-9 w-full items-center justify-center rounded-full bg-primary px-3 text-sm font-semibold text-primary-foreground shadow-[0_14px_28px_-20px_rgba(255,133,28,0.55)]">
+                Voir la fiche
+              </div>
+            </div>
+
+            <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(180deg,rgba(255,133,28,0),rgba(15,16,18,0.06))] opacity-0 transition-opacity duration-300 group-hover:opacity-100" />
+          </div>
+        </Link>
 
         <CardContent className="flex flex-1 flex-col p-5">
           <p className="mb-1 text-xs uppercase tracking-[0.18em] text-muted-foreground">{product.brand}</p>
-          <h3 className="mb-3 flex-1 text-sm font-medium transition-colors group-hover:text-primary">
-            {product.name}
-          </h3>
+          <Link href={productHref} className="mb-3 flex-1">
+            <h3 className="text-sm font-medium transition-colors group-hover:text-primary">
+              {product.name}
+            </h3>
+          </Link>
 
           <div className="mt-auto">
             {product.price > 0 ? (
@@ -105,9 +142,36 @@ export function ProductCard({ product, className }: ProductCardProps) {
                 <p className="text-xs text-warning">Sur commande</p>
               )}
             </div>
+
+            <div className="mt-4 grid gap-2">
+              {canAddToCart ? (
+                <Button
+                  type="button"
+                  size="sm"
+                  className="w-full"
+                  onClick={handleAddToCart}
+                  disabled={isAdded}
+                  aria-busy={isAdded}
+                  data-pending={isAdded ? "true" : undefined}
+                >
+                  {isAdded ? (
+                    <Loader2 className="size-4 animate-spin" />
+                  ) : (
+                    <ShoppingCart className="size-4" />
+                  )}
+                  {isAdded ? "Ajoute" : "Ajouter au panier"}
+                </Button>
+              ) : (
+                <Button asChild size="sm" variant="outline" className="w-full">
+                  <Link href={`/devis?product=${product.slug}&source=product-card`}>
+                    Demander un devis
+                  </Link>
+                </Button>
+              )}
+            </div>
           </div>
         </CardContent>
-      </Link>
+      </div>
     </Card>
   )
 }

@@ -63,6 +63,30 @@ export interface DashboardQuoteRecord extends Quote {
   quote_items?: DashboardQuoteItem[] | null
 }
 
+export const DASHBOARD_LIST_PAGE_SIZE = 10
+
+export type DashboardListSort = "recent" | "oldest"
+
+export interface DashboardListOptions {
+  page?: number
+  sort?: DashboardListSort
+  year?: number
+  status?: string
+}
+
+export interface DashboardListResult<T> {
+  items: T[]
+  totalCount: number
+  page: number
+  pageSize: number
+  pageCount: number
+  years: number[]
+  sort: DashboardListSort
+  year?: number
+  status?: string
+  statusCounts: Array<{ status: string; count: number }>
+}
+
 interface AdminOrderAnalyticsRow
   extends Pick<
     Order,
@@ -267,39 +291,175 @@ export async function getDashboardOverview(
 }
 
 export async function getOrdersForDashboard(profile: ProfileWithCompany, userId: string) {
+  const result = await getPaginatedOrdersForDashboard(profile, userId)
+  return result.items
+}
+
+export async function getPaginatedOrdersForDashboard(
+  profile: ProfileWithCompany,
+  userId: string,
+  options: DashboardListOptions = {},
+): Promise<DashboardListResult<DashboardOrderRecord>> {
   const supabase = await createClient()
+  const pageSize = DASHBOARD_LIST_PAGE_SIZE
+  const page = Math.max(1, options.page ?? 1)
+  const sort = options.sort === "oldest" ? "oldest" : "recent"
+  const from = (page - 1) * pageSize
+  const to = from + pageSize - 1
+  const yearsQuery = supabase
+    .from("orders")
+    .select("created_at")
+    .order("created_at", { ascending: false })
+    .limit(1000)
+  const statusCountsQuery = supabase.from("orders").select("status").limit(1000)
+
+  if (!isAdminRole(profile.role)) {
+    yearsQuery.eq("user_id", userId)
+    statusCountsQuery.eq("user_id", userId)
+  }
+
   const query = supabase
     .from("orders")
     .select(
       "id, order_number, user_id, company_id, company_name, contact_name, contact_email, status, payment_status, payment_method, subtotal, tax_amount, shipping_amount, discount_amount, total, currency, billing_address, shipping_address, shipping_method, tracking_number, notes, internal_notes, metadata, created_at, updated_at, order_items(id, name, sku, description, quantity, unit_price, total_price, is_rental, rental_days)",
+      { count: "exact" },
     )
-    .order("created_at", { ascending: false })
-    .limit(30)
+    .order("created_at", { ascending: sort === "oldest" })
+    .range(from, to)
 
   if (!isAdminRole(profile.role)) {
     query.eq("user_id", userId)
   }
 
-  const { data } = await query
-  return (data ?? []) as DashboardOrderRecord[]
+  if (options.year) {
+    query
+      .gte("created_at", `${options.year}-01-01T00:00:00.000Z`)
+      .lt("created_at", `${options.year + 1}-01-01T00:00:00.000Z`)
+    statusCountsQuery
+      .gte("created_at", `${options.year}-01-01T00:00:00.000Z`)
+      .lt("created_at", `${options.year + 1}-01-01T00:00:00.000Z`)
+  }
+
+  if (options.status) {
+    query.eq("status", options.status)
+  }
+
+  const [{ data, count }, yearsResponse, statusCountsResponse] = await Promise.all([
+    query,
+    yearsQuery,
+    statusCountsQuery,
+  ])
+  const totalCount = count ?? 0
+  const statusCountMap = new Map<string, number>()
+  for (const item of statusCountsResponse.data ?? []) {
+    statusCountMap.set(item.status, (statusCountMap.get(item.status) ?? 0) + 1)
+  }
+  const years = Array.from(
+    new Set(
+      (yearsResponse.data ?? [])
+        .map((item) => new Date(item.created_at).getFullYear())
+        .filter((year) => Number.isFinite(year)),
+    ),
+  )
+
+  return {
+    items: (data ?? []) as DashboardOrderRecord[],
+    totalCount,
+    page,
+    pageSize,
+    pageCount: Math.max(1, Math.ceil(totalCount / pageSize)),
+    years,
+    sort,
+    year: options.year,
+    status: options.status,
+    statusCounts: Array.from(statusCountMap, ([status, count]) => ({ status, count })),
+  }
 }
 
 export async function getQuotesForDashboard(profile: ProfileWithCompany, userId: string) {
+  const result = await getPaginatedQuotesForDashboard(profile, userId)
+  return result.items
+}
+
+export async function getPaginatedQuotesForDashboard(
+  profile: ProfileWithCompany,
+  userId: string,
+  options: DashboardListOptions = {},
+): Promise<DashboardListResult<DashboardQuoteRecord>> {
   const supabase = await createClient()
+  const pageSize = DASHBOARD_LIST_PAGE_SIZE
+  const page = Math.max(1, options.page ?? 1)
+  const sort = options.sort === "oldest" ? "oldest" : "recent"
+  const from = (page - 1) * pageSize
+  const to = from + pageSize - 1
+  const yearsQuery = supabase
+    .from("quotes")
+    .select("created_at")
+    .order("created_at", { ascending: false })
+    .limit(1000)
+  const statusCountsQuery = supabase.from("quotes").select("status").limit(1000)
+
+  if (!isAdminRole(profile.role)) {
+    yearsQuery.eq("user_id", userId)
+    statusCountsQuery.eq("user_id", userId)
+  }
+
   const query = supabase
     .from("quotes")
     .select(
       "id, quote_number, user_id, company_id, company_name, contact_name, contact_email, status, subtotal, tax_amount, discount_amount, total, currency, valid_until, notes, internal_notes, metadata, created_at, updated_at, quote_items(id, name, sku, description, quantity, unit_price, total_price, is_rental, rental_days)",
+      { count: "exact" },
     )
-    .order("created_at", { ascending: false })
-    .limit(30)
+    .order("created_at", { ascending: sort === "oldest" })
+    .range(from, to)
 
   if (!isAdminRole(profile.role)) {
     query.eq("user_id", userId)
   }
 
-  const { data } = await query
-  return (data ?? []) as DashboardQuoteRecord[]
+  if (options.year) {
+    query
+      .gte("created_at", `${options.year}-01-01T00:00:00.000Z`)
+      .lt("created_at", `${options.year + 1}-01-01T00:00:00.000Z`)
+    statusCountsQuery
+      .gte("created_at", `${options.year}-01-01T00:00:00.000Z`)
+      .lt("created_at", `${options.year + 1}-01-01T00:00:00.000Z`)
+  }
+
+  if (options.status) {
+    query.eq("status", options.status)
+  }
+
+  const [{ data, count }, yearsResponse, statusCountsResponse] = await Promise.all([
+    query,
+    yearsQuery,
+    statusCountsQuery,
+  ])
+  const totalCount = count ?? 0
+  const statusCountMap = new Map<string, number>()
+  for (const item of statusCountsResponse.data ?? []) {
+    statusCountMap.set(item.status, (statusCountMap.get(item.status) ?? 0) + 1)
+  }
+  const years = Array.from(
+    new Set(
+      (yearsResponse.data ?? [])
+        .map((item) => new Date(item.created_at).getFullYear())
+        .filter((year) => Number.isFinite(year)),
+    ),
+  )
+
+  return {
+    items: (data ?? []) as DashboardQuoteRecord[],
+    totalCount,
+    page,
+    pageSize,
+    pageCount: Math.max(1, Math.ceil(totalCount / pageSize)),
+    years,
+    sort,
+    year: options.year,
+    status: options.status,
+    statusCounts: Array.from(statusCountMap, ([status, count]) => ({ status, count })),
+  }
 }
 
 export async function getTeamProfiles() {

@@ -359,7 +359,7 @@ export async function submitQuoteRequestAction(
   return {
     status: "success",
     message:
-      "Votre demande de devis a bien été transmise à Epicap. L'équipe la traitera dans Sage et vous recontactera pour finaliser l'étude.",
+      "Votre demande de devis a bien été transmise à Epicap. L'équipe la traitera et vous recontactera pour finaliser l'étude.",
     reference: quoteResult.reference,
     subtotal: pricing.subtotal,
     discountAmount: pricing.discountAmount,

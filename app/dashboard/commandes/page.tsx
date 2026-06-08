@@ -1,7 +1,7 @@
 import { AdminSubmitButton } from "@/components/dashboard/admin-submit-button"
+import { RequestListControls } from "@/components/dashboard/request-list-controls"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import {
   Table,
@@ -13,12 +13,13 @@ import {
 } from "@/components/ui/table"
 import { Textarea } from "@/components/ui/textarea"
 import {
-  getOrdersForDashboard,
+  getPaginatedOrdersForDashboard,
+  type DashboardListSort,
   type DashboardOrderItem,
   type DashboardOrderRecord,
 } from "@/lib/auth/dashboard"
 import { requireProfile } from "@/lib/auth/server"
-import { ORDER_STATUS_LABELS, isAdminRole, type Order } from "@/lib/auth/types"
+import { ORDER_STATUS_LABELS, isAdminRole, type Order, type OrderStatus } from "@/lib/auth/types"
 import { updateDashboardOrderAction } from "@/lib/dashboard/request-admin-actions"
 import type { Json } from "@/types/supabase"
 
@@ -42,6 +43,20 @@ const paymentStatusLabels: Record<Order["payment_status"], string> = {
 
 function pickFirstValue(value: string | string[] | undefined) {
   return Array.isArray(value) ? value[0] : value
+}
+
+function parsePositiveInteger(value: string | string[] | undefined) {
+  const parsed = Number(pickFirstValue(value))
+  return Number.isInteger(parsed) && parsed > 0 ? parsed : undefined
+}
+
+function parseSort(value: string | string[] | undefined): DashboardListSort {
+  return pickFirstValue(value) === "oldest" ? "oldest" : "recent"
+}
+
+function parseOrderStatus(value: string | string[] | undefined): OrderStatus | undefined {
+  const status = pickFirstValue(value)
+  return status && status in ORDER_STATUS_LABELS ? (status as OrderStatus) : undefined
 }
 
 function asRecord(value: Json | null | undefined) {
@@ -82,8 +97,20 @@ export default async function DashboardOrdersPage({
   const params = await searchParams
   const error = pickFirstValue(params.error)
   const success = pickFirstValue(params.success)
+  const page = parsePositiveInteger(params.page) ?? 1
+  const sort = parseSort(params.sort)
+  const year = parsePositiveInteger(params.year)
+  const rawStatus = pickFirstValue(params.status)
+  const status = rawStatus === "all" ? undefined : parseOrderStatus(params.status) ?? "pending"
+  const statusQueryValue = rawStatus === "all" ? "all" : status
   const { user, profile } = await requireProfile("/dashboard/commandes")
-  const orders = await getOrdersForDashboard(profile, user.id)
+  const ordersList = await getPaginatedOrdersForDashboard(profile, user.id, {
+    page,
+    sort,
+    year,
+    status,
+  })
+  const orders = ordersList.items
   const adminMode = isAdminRole(profile.role)
 
   if (!adminMode) {
@@ -95,6 +122,20 @@ export default async function DashboardOrdersPage({
         <CardContent className="space-y-6 p-6">
           {error ? <MessageBox tone="error" message={error} /> : null}
           {success ? <MessageBox tone="success" message={success} /> : null}
+          <RequestListControls
+            basePath="/dashboard/commandes"
+            itemLabel="commande"
+            totalCount={ordersList.totalCount}
+            page={ordersList.page}
+            pageCount={ordersList.pageCount}
+            sort={ordersList.sort}
+            year={ordersList.year}
+            years={ordersList.years}
+            status={ordersList.status}
+            statusQueryValue={statusQueryValue}
+            statusCounts={ordersList.statusCounts}
+            statusLabels={ORDER_STATUS_LABELS}
+          />
           {orders.length === 0 ? (
             <EmptyState message="Aucune commande n'est encore disponible dans cet espace." />
           ) : (
@@ -152,6 +193,21 @@ export default async function DashboardOrdersPage({
           {success ? <MessageBox tone="success" message={success} /> : null}
         </CardContent>
       </Card>
+
+      <RequestListControls
+        basePath="/dashboard/commandes"
+        itemLabel="commande"
+        totalCount={ordersList.totalCount}
+        page={ordersList.page}
+        pageCount={ordersList.pageCount}
+        sort={ordersList.sort}
+        year={ordersList.year}
+        years={ordersList.years}
+        status={ordersList.status}
+        statusQueryValue={statusQueryValue}
+        statusCounts={ordersList.statusCounts}
+        statusLabels={ORDER_STATUS_LABELS}
+      />
 
       {orders.length === 0 ? (
         <Card className="border-border/70 bg-card/92">
@@ -247,10 +303,13 @@ function AdminOrderCard({ order }: { order: DashboardOrderRecord }) {
               </div>
             </SectionCard>
 
-            <SectionCard title="Mise à jour admin">
-              <form action={updateDashboardOrderAction} className="grid gap-4">
+            <SectionCard title="Suivi interne">
+              <form
+                action={updateDashboardOrderAction}
+                className="grid gap-4 rounded-[1rem] border border-border/70 bg-muted/20 p-4"
+              >
                 <input type="hidden" name="orderId" value={order.id} />
-                <AdminField label="Statut" htmlFor={`status-${order.id}`}>
+                <AdminField label="État de la commande" htmlFor={`status-${order.id}`}>
                   <select
                     id={`status-${order.id}`}
                     name="status"
@@ -264,54 +323,23 @@ function AdminOrderCard({ order }: { order: DashboardOrderRecord }) {
                     ))}
                   </select>
                 </AdminField>
-                <AdminField label="Paiement" htmlFor={`payment-status-${order.id}`}>
-                  <select
-                    id={`payment-status-${order.id}`}
-                    name="paymentStatus"
-                    defaultValue={order.payment_status}
-                    className="border-input bg-background h-10 w-full rounded-md border px-3 text-sm"
-                  >
-                    {Object.entries(paymentStatusLabels).map(([value, label]) => (
-                      <option key={value} value={value}>
-                        {label}
-                      </option>
-                    ))}
-                  </select>
-                </AdminField>
-                <AdminField label="Mode de règlement" htmlFor={`payment-method-${order.id}`}>
-                  <Input
-                    id={`payment-method-${order.id}`}
-                    name="paymentMethod"
-                    defaultValue={order.payment_method ?? ""}
-                    placeholder="Virement, compte client..."
-                  />
-                </AdminField>
-                <AdminField label="Mode de livraison" htmlFor={`shipping-method-${order.id}`}>
-                  <Input
-                    id={`shipping-method-${order.id}`}
-                    name="shippingMethod"
-                    defaultValue={order.shipping_method ?? ""}
-                    placeholder="Livraison standard, retrait agence..."
-                  />
-                </AdminField>
-                <AdminField label="Suivi transport" htmlFor={`tracking-${order.id}`}>
-                  <Input
-                    id={`tracking-${order.id}`}
-                    name="trackingNumber"
-                    defaultValue={order.tracking_number ?? ""}
-                    placeholder="Numéro de suivi"
-                  />
-                </AdminField>
-                <AdminField label="Notes internes" htmlFor={`internal-notes-${order.id}`}>
+                <p className="rounded-xl border border-border/70 bg-background px-3 py-2 text-sm text-muted-foreground">
+                  Paiement actuel :{" "}
+                  <span className="font-medium text-foreground">
+                    {paymentStatusLabels[order.payment_status]}
+                  </span>
+                  . Le règlement sera piloté par le parcours de paiement dédié.
+                </p>
+                <AdminField label="Note de suivi" htmlFor={`internal-notes-${order.id}`}>
                   <Textarea
                     id={`internal-notes-${order.id}`}
                     name="internalNotes"
                     defaultValue={order.internal_notes ?? ""}
-                    className="min-h-28"
-                    placeholder="Commentaire interne, relance, arbitrage commercial..."
+                    className="min-h-24"
+                    placeholder="Préparation, relance, point logistique..."
                   />
                 </AdminField>
-                <AdminSubmitButton>Enregistrer la commande</AdminSubmitButton>
+                <AdminSubmitButton>Mettre à jour</AdminSubmitButton>
               </form>
             </SectionCard>
           </div>

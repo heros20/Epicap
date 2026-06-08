@@ -41,7 +41,7 @@ const catalogProductSchema = z
   .object({
     productId: z.preprocess(emptyToUndefined, z.coerce.number().int().positive().optional()),
     name: z.string().trim().min(3, "Le titre du produit est requis."),
-    sku: z.string().trim().min(2, "La reference SKU est requise."),
+    sku: z.string().trim().min(2, "La référence produit est requise."),
     slug: z
       .string()
       .trim()
@@ -59,10 +59,6 @@ const catalogProductSchema = z
     ),
     stockQuantity: z.coerce.number().int().min(0, "Le stock doit être positif."),
     badge: z.preprocess(emptyToUndefined, z.string().trim().max(80).optional()),
-    sourceUrl: z.preprocess(
-      emptyToUndefined,
-      z.string().trim().url("URL source invalide.").optional(),
-    ),
     rentalPriceDaily: z.preprocess(emptyToUndefined, z.coerce.number().min(0).optional()),
     specsText: z.string().optional().default(""),
     inStock: z.boolean(),
@@ -364,7 +360,6 @@ export async function saveCatalogProductAction(formData: FormData) {
     compareAtPrice: formData.get("compareAtPrice"),
     stockQuantity: formData.get("stockQuantity"),
     badge: formData.get("badge"),
-    sourceUrl: formData.get("sourceUrl"),
     rentalPriceDaily: formData.get("rentalPriceDaily"),
     specsText: formData.get("specsText"),
     inStock: formData.get("inStock") === "on",
@@ -482,7 +477,7 @@ export async function saveCatalogProductAction(formData: FormData) {
       documents: nextDocuments as unknown as Json,
       stock_quantity: parsed.data.stockQuantity,
       related_product_ids: [],
-      source_url: parsed.data.sourceUrl ?? null,
+      source_url: previousProduct?.source_url ?? null,
     }
 
     const response = previousProduct

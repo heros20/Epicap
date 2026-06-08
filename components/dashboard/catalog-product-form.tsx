@@ -1,7 +1,7 @@
 import Image from "next/image"
 import Link from "next/link"
 import type { ReactNode } from "react"
-import { CircleDollarSign, PackageCheck, Truck } from "lucide-react"
+import { CircleDollarSign, ImagePlus, PackageCheck, Paperclip, Truck } from "lucide-react"
 
 import { saveCatalogProductAction } from "@/lib/catalog/actions"
 import {
@@ -12,6 +12,7 @@ import type { CatalogEntry } from "@/lib/catalog/data"
 import { Badge } from "@/components/ui/badge"
 import { AdminSubmitButton } from "@/components/dashboard/admin-submit-button"
 import { PendingLinkButton } from "@/components/dashboard/pending-link-button"
+import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -83,7 +84,7 @@ export function CatalogProductForm({
           <Field label="Marque" htmlFor="brand">
             <Input id="brand" name="brand" defaultValue={product?.brand ?? ""} required />
           </Field>
-          <Field label="SKU" htmlFor="sku">
+          <Field label="Référence produit" htmlFor="sku">
             <Input id="sku" name="sku" defaultValue={product?.sku ?? ""} required />
           </Field>
           <Field label="Slug" htmlFor="slug">
@@ -140,11 +141,6 @@ export function CatalogProductForm({
               />
             </Field>
           </div>
-          <div className="lg:col-span-2">
-            <Field label="Source Epicap ou constructeur" htmlFor="sourceUrl">
-              <Input id="sourceUrl" name="sourceUrl" defaultValue={product?.sourceUrl ?? ""} />
-            </Field>
-          </div>
         </CardContent>
       </Card>
 
@@ -160,11 +156,11 @@ export function CatalogProductForm({
                   Canal vente
                 </p>
                 <p className="mt-2 text-sm text-muted-foreground">
-                  Prix achat, stock et badge marketing visibles sur la fiche publique.
+                  Prix affiché sur le site, stock et éventuelle étiquette commerciale.
                 </p>
               </div>
               <div className="grid gap-5 sm:grid-cols-2">
-                <Field label="Prix HT" htmlFor="price">
+                <Field label="Prix de vente HT" htmlFor="price">
                   <Input
                     id="price"
                     name="price"
@@ -175,7 +171,11 @@ export function CatalogProductForm({
                     required
                   />
                 </Field>
-                <Field label="Prix compare" htmlFor="compareAtPrice">
+                <Field
+                  label="Ancien prix barré (optionnel)"
+                  htmlFor="compareAtPrice"
+                  description="À remplir seulement pour afficher une réduction ou un prix barré."
+                >
                   <Input
                     id="compareAtPrice"
                     name="compareAtPrice"
@@ -196,7 +196,11 @@ export function CatalogProductForm({
                     required
                   />
                 </Field>
-                <Field label="Badge" htmlFor="badge">
+                <Field
+                  label="Étiquette affichée sur le produit (optionnel)"
+                  htmlFor="badge"
+                  description='Exemples : "Promo", "Best-seller", "Stock limité".'
+                >
                   <Input id="badge" name="badge" defaultValue={product?.badge ?? ""} />
                 </Field>
               </div>
@@ -282,7 +286,13 @@ export function CatalogProductForm({
               htmlFor="coverImage"
               description="La nouvelle photo principale passe en tete de galerie."
             >
-              <Input id="coverImage" name="coverImage" type="file" accept="image/*" />
+              <FileUploadButton
+                id="coverImage"
+                name="coverImage"
+                accept="image/*"
+                label="Choisir une photo"
+                icon={<ImagePlus className="size-4" />}
+              />
             </Field>
 
             <Field
@@ -290,20 +300,28 @@ export function CatalogProductForm({
               htmlFor="galleryImages"
               description="Ajoutez plusieurs images pour la fiche produit."
             >
-              <Input id="galleryImages" name="galleryImages" type="file" accept="image/*" multiple />
+              <FileUploadButton
+                id="galleryImages"
+                name="galleryImages"
+                accept="image/*"
+                multiple
+                label="Ajouter des photos"
+                icon={<ImagePlus className="size-4" />}
+              />
             </Field>
 
             <Field
-              label="Pieces jointes"
+              label="Pièces jointes"
               htmlFor="documentFiles"
               description="PDF, DOCX, XLSX, CSV, ZIP ou autres documents utiles."
             >
-              <Input
+              <FileUploadButton
                 id="documentFiles"
                 name="documentFiles"
-                type="file"
                 accept=".pdf,.doc,.docx,.xls,.xlsx,.csv,.zip,.txt,image/*"
                 multiple
+                label="Ajouter des pièces jointes"
+                icon={<Paperclip className="size-4" />}
               />
             </Field>
           </div>
@@ -396,6 +414,44 @@ export function CatalogProductForm({
         </AdminSubmitButton>
       </div>
     </form>
+  )
+}
+
+function FileUploadButton({
+  id,
+  name,
+  accept,
+  multiple,
+  label,
+  icon,
+}: {
+  id: string
+  name: string
+  accept: string
+  multiple?: boolean
+  label: string
+  icon: ReactNode
+}) {
+  return (
+    <div className="flex flex-wrap items-center gap-3">
+      <Input
+        id={id}
+        name={name}
+        type="file"
+        accept={accept}
+        multiple={multiple}
+        className="sr-only"
+      />
+      <Button asChild type="button" size="sm" variant="outline">
+        <label htmlFor={id} className="cursor-pointer">
+          {icon}
+          {label}
+        </label>
+      </Button>
+      <span className="text-xs text-muted-foreground">
+        {multiple ? "Plusieurs fichiers possibles." : "Un seul fichier."}
+      </span>
+    </div>
   )
 }
 

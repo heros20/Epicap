@@ -1,7 +1,7 @@
 import { AdminSubmitButton } from "@/components/dashboard/admin-submit-button"
+import { RequestListControls } from "@/components/dashboard/request-list-controls"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import {
   Table,
@@ -13,12 +13,13 @@ import {
 } from "@/components/ui/table"
 import { Textarea } from "@/components/ui/textarea"
 import {
-  getQuotesForDashboard,
+  getPaginatedQuotesForDashboard,
+  type DashboardListSort,
   type DashboardQuoteItem,
   type DashboardQuoteRecord,
 } from "@/lib/auth/dashboard"
 import { requireProfile } from "@/lib/auth/server"
-import { QUOTE_STATUS_LABELS, isAdminRole } from "@/lib/auth/types"
+import { QUOTE_STATUS_LABELS, isAdminRole, type QuoteStatus } from "@/lib/auth/types"
 import { updateDashboardQuoteAction } from "@/lib/dashboard/request-admin-actions"
 import type { Json } from "@/types/supabase"
 
@@ -34,6 +35,20 @@ const dateFormatter = new Intl.DateTimeFormat("fr-FR", {
 
 function pickFirstValue(value: string | string[] | undefined) {
   return Array.isArray(value) ? value[0] : value
+}
+
+function parsePositiveInteger(value: string | string[] | undefined) {
+  const parsed = Number(pickFirstValue(value))
+  return Number.isInteger(parsed) && parsed > 0 ? parsed : undefined
+}
+
+function parseSort(value: string | string[] | undefined): DashboardListSort {
+  return pickFirstValue(value) === "oldest" ? "oldest" : "recent"
+}
+
+function parseQuoteStatus(value: string | string[] | undefined): QuoteStatus | undefined {
+  const status = pickFirstValue(value)
+  return status && status in QUOTE_STATUS_LABELS ? (status as QuoteStatus) : undefined
 }
 
 function asRecord(value: Json | null | undefined) {
@@ -55,10 +70,6 @@ function isSageQuoteRequest(metadata: Json | null | undefined) {
   )
 }
 
-function toDateInputValue(value: string | null) {
-  return value ? value.slice(0, 10) : ""
-}
-
 export default async function DashboardQuotesPage({
   searchParams,
 }: {
@@ -67,8 +78,18 @@ export default async function DashboardQuotesPage({
   const params = await searchParams
   const error = pickFirstValue(params.error)
   const success = pickFirstValue(params.success)
+  const page = parsePositiveInteger(params.page) ?? 1
+  const sort = parseSort(params.sort)
+  const year = parsePositiveInteger(params.year)
+  const status = parseQuoteStatus(params.status)
   const { user, profile } = await requireProfile("/dashboard/devis")
-  const quotes = await getQuotesForDashboard(profile, user.id)
+  const quotesList = await getPaginatedQuotesForDashboard(profile, user.id, {
+    page,
+    sort,
+    year,
+    status,
+  })
+  const quotes = quotesList.items
   const adminMode = isAdminRole(profile.role)
 
   if (!adminMode) {
@@ -80,6 +101,19 @@ export default async function DashboardQuotesPage({
         <CardContent className="space-y-6 p-6">
           {error ? <MessageBox tone="error" message={error} /> : null}
           {success ? <MessageBox tone="success" message={success} /> : null}
+          <RequestListControls
+            basePath="/dashboard/devis"
+            itemLabel="devis"
+            totalCount={quotesList.totalCount}
+            page={quotesList.page}
+            pageCount={quotesList.pageCount}
+            sort={quotesList.sort}
+            year={quotesList.year}
+            years={quotesList.years}
+            status={quotesList.status}
+            statusCounts={quotesList.statusCounts}
+            statusLabels={QUOTE_STATUS_LABELS}
+          />
           {quotes.length === 0 ? (
             <EmptyState message="Aucun devis n'est encore disponible dans cet espace." />
           ) : (
@@ -131,12 +165,26 @@ export default async function DashboardQuotesPage({
         <CardContent className="space-y-4 p-6">
           <p className="text-sm text-muted-foreground">
             Les demandes de devis sont notifiées par e-mail à Epicap et restent visibles ici pour
-            le suivi. Le chiffrage final est traité dans Sage.
+            le suivi. Le chiffrage final est traité par l&apos;équipe Epicap.
           </p>
           {error ? <MessageBox tone="error" message={error} /> : null}
           {success ? <MessageBox tone="success" message={success} /> : null}
         </CardContent>
       </Card>
+
+      <RequestListControls
+        basePath="/dashboard/devis"
+        itemLabel="devis"
+        totalCount={quotesList.totalCount}
+        page={quotesList.page}
+        pageCount={quotesList.pageCount}
+        sort={quotesList.sort}
+        year={quotesList.year}
+        years={quotesList.years}
+        status={quotesList.status}
+        statusCounts={quotesList.statusCounts}
+        statusLabels={QUOTE_STATUS_LABELS}
+      />
 
       {quotes.length === 0 ? (
         <Card className="border-border/70 bg-card/92">
@@ -173,7 +221,7 @@ function AdminQuoteCard({ quote }: { quote: DashboardQuoteRecord }) {
                   ? "Demande transmise"
                   : QUOTE_STATUS_LABELS[quote.status]}
               </Badge>
-              {sageRequest ? <Badge variant="outline">Traitement Sage</Badge> : null}
+              {sageRequest ? <Badge variant="outline">Traitement interne</Badge> : null}
               {customerType ? (
                 <Badge variant="outline">
                   {customerType === "individual" ? "Particulier" : "Entreprise"}
@@ -220,7 +268,7 @@ function AdminQuoteCard({ quote }: { quote: DashboardQuoteRecord }) {
                   items={[
                     ["Parcours", "Demande envoyée par e-mail"],
                     ["Destinataire", notificationEmail ?? "kevin.bigoni@outlook.fr"],
-                    ["Traitement", "Chiffrage et suivi dans Sage"],
+                    ["Traitement", "Chiffrage et suivi interne"],
                     ["Confirmation", "Demande présente dans le tableau de bord"],
                   ]}
                 />
@@ -247,10 +295,13 @@ function AdminQuoteCard({ quote }: { quote: DashboardQuoteRecord }) {
           </div>
 
           <div className="space-y-6">
-            <SectionCard title="Mise à jour admin">
-              <form action={updateDashboardQuoteAction} className="grid gap-4">
+            <SectionCard title="Suivi interne">
+              <form
+                action={updateDashboardQuoteAction}
+                className="grid gap-4 rounded-[1rem] border border-border/70 bg-muted/20 p-4"
+              >
                 <input type="hidden" name="quoteId" value={quote.id} />
-                <AdminField label="Statut" htmlFor={`status-${quote.id}`}>
+                <AdminField label="État du devis" htmlFor={`status-${quote.id}`}>
                   <select
                     id={`status-${quote.id}`}
                     name="status"
@@ -264,24 +315,16 @@ function AdminQuoteCard({ quote }: { quote: DashboardQuoteRecord }) {
                     ))}
                   </select>
                 </AdminField>
-                <AdminField label="Valide jusqu'au" htmlFor={`valid-until-${quote.id}`}>
-                  <Input
-                    id={`valid-until-${quote.id}`}
-                    name="validUntil"
-                    type="date"
-                    defaultValue={toDateInputValue(quote.valid_until)}
-                  />
-                </AdminField>
-                <AdminField label="Notes internes" htmlFor={`internal-notes-${quote.id}`}>
+                <AdminField label="Note de suivi" htmlFor={`internal-notes-${quote.id}`}>
                   <Textarea
                     id={`internal-notes-${quote.id}`}
                     name="internalNotes"
                     defaultValue={quote.internal_notes ?? ""}
-                    className="min-h-28"
-                    placeholder="Commentaire interne, relance, positionnement commercial..."
+                    className="min-h-24"
+                    placeholder="Relance, précision client, prochaine action..."
                   />
                 </AdminField>
-                <AdminSubmitButton>Enregistrer le devis</AdminSubmitButton>
+                <AdminSubmitButton>Mettre à jour</AdminSubmitButton>
               </form>
             </SectionCard>
           </div>

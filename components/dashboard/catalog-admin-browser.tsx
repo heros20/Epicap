@@ -498,7 +498,7 @@ export function CatalogAdminBrowser({
                       type="search"
                       value={query}
                       onChange={(event) => setQuery(event.target.value)}
-                      placeholder="Nom, SKU, slug, marque, catégorie ou document"
+                      placeholder="Nom, référence produit, slug, marque, catégorie ou document"
                       className="h-11 pl-10 pr-12"
                       aria-describedby="catalog-admin-search-help"
                     />
@@ -514,7 +514,7 @@ export function CatalogAdminBrowser({
                     ) : null}
                   </div>
                   <p id="catalog-admin-search-help" className="mt-2 text-xs text-muted-foreground">
-                    Astuce : une recherche par SKU ou slug remonte la bonne fiche en tête.
+                    Astuce : une recherche par référence produit ou slug remonte la bonne fiche en tête.
                   </p>
                 </div>
 
@@ -753,7 +753,7 @@ export function CatalogAdminBrowser({
           <CardContent className="space-y-3 p-6 text-center">
             <p className="text-base font-medium">Aucun article ne correspond à la recherche.</p>
             <p className="text-sm text-muted-foreground">
-              Essayez un autre nom, une référence SKU, un slug ou réinitialisez le filtre.
+              Essayez un autre nom, une référence produit, un slug ou réinitialisez le filtre.
             </p>
             <div className="flex justify-center">
               <Button

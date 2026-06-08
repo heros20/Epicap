@@ -37,6 +37,7 @@ interface SendQuoteRequestEmailOptions {
 
 const defaultRecipient = "kevin.bigoni@outlook.fr"
 const defaultFrom = "Epicap <onboarding@resend.dev>"
+const resendTestDomain = "@resend.dev"
 
 const requestTypeLabels: Record<QuoteRequestInput["requestType"], string> = {
   purchase: "Achat",
@@ -137,7 +138,7 @@ function buildQuoteRequestEmailHtml(options: SendQuoteRequestEmailOptions) {
             </p>
             <p style="margin:0 0 8px;font-size:12px;letter-spacing:0.12em;text-transform:uppercase;color:#ffbf86;">Nouvelle demande de devis</p>
             <h1 style="margin:0;font-size:25px;line-height:1.25;color:#ffffff;">${escapeHtml(reference)}</h1>
-            <p style="margin:10px 0 0;color:#f7f8fa;font-size:14px;">Demande à traiter dans Sage. La trace est aussi disponible dans le tableau de bord Epicap.</p>
+            <p style="margin:10px 0 0;color:#f7f8fa;font-size:14px;">Demande à traiter par l'équipe Epicap. La trace est aussi disponible dans le tableau de bord Epicap.</p>
           </div>
 
           <div style="padding:24px;">
@@ -208,7 +209,7 @@ function buildQuoteRequestEmailText(options: SendQuoteRequestEmailOptions) {
 
   return [
     `Nouvelle demande de devis ${reference}`,
-    "Demande à traiter dans Sage. La trace est aussi disponible dans le tableau de bord Epicap.",
+    "Demande à traiter par l'équipe Epicap. La trace est aussi disponible dans le tableau de bord Epicap.",
     "",
     `Profil: ${customerTypeLabels[form.customerType]}`,
     `Société: ${formatValue(customerLabel)}`,
@@ -241,9 +242,10 @@ export async function sendQuoteRequestEmail(
   const recipient = process.env.EPICAP_QUOTE_EMAIL?.trim() || defaultRecipient
   const from = process.env.RESEND_FROM_EMAIL?.trim() || defaultFrom
   const apiKey = process.env.RESEND_API_KEY?.trim()
+  const isProduction = process.env.NODE_ENV === "production"
 
   if (!apiKey) {
-    if (process.env.NODE_ENV === "production") {
+    if (isProduction) {
       throw new Error("L'envoi des demandes de devis par e-mail n'est pas encore configuré.")
     }
 
@@ -255,6 +257,12 @@ export async function sendQuoteRequestEmail(
       provider: "development",
       messageId: null,
     }
+  }
+
+  if (isProduction && from.toLowerCase().includes(resendTestDomain)) {
+    throw new Error(
+      "RESEND_FROM_EMAIL doit utiliser un domaine verifie en production, pas onboarding@resend.dev.",
+    )
   }
 
   const response = await fetch("https://api.resend.com/emails", {
