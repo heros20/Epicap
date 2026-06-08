@@ -40,7 +40,36 @@ interface PageProps {
     rentable?: string
     minPrice?: string
     maxPrice?: string
+    page?: string
   }>
+}
+
+const PAGE_SIZE = 24
+
+function getCurrentPage(value: string | undefined) {
+  const page = Number(value)
+  return Number.isInteger(page) && page > 0 ? page : 1
+}
+
+function getPageHref(
+  categorySlug: string,
+  params: Awaited<PageProps["searchParams"]>,
+  page: number,
+) {
+  const nextParams = new URLSearchParams()
+
+  for (const [key, value] of Object.entries(params)) {
+    if (value && key !== "page") {
+      nextParams.set(key, value)
+    }
+  }
+
+  if (page > 1) {
+    nextParams.set("page", String(page))
+  }
+
+  const queryString = nextParams.toString()
+  return `/boutique/${categorySlug}${queryString ? `?${queryString}` : ""}`
 }
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
@@ -119,6 +148,9 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
 
   categoryProducts = sortCatalogProducts(categoryProducts, resolvedSearchParams.sort)
 
+  const currentPage = getCurrentPage(resolvedSearchParams.page)
+  const visibleProducts = categoryProducts.slice(0, currentPage * PAGE_SIZE)
+  const hasMoreProducts = visibleProducts.length < categoryProducts.length
   const maxPrice = Math.max(...allProducts.map((product) => product.price), 5000)
   const filterResetHref = selectedSubcategory
     ? `/boutique/${categorySlug}?subcategory=${selectedSubcategory.slug}`
@@ -265,10 +297,25 @@ export default async function CategoryPage({ params, searchParams }: PageProps) 
                 />
 
                 {categoryProducts.length > 0 ? (
-                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 lg:gap-6">
-                    {categoryProducts.map((product) => (
-                      <ProductCard key={product.id} product={product} />
-                    ))}
+                  <div className="space-y-8">
+                    <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 lg:gap-6">
+                      {visibleProducts.map((product) => (
+                        <ProductCard key={product.id} product={product} />
+                      ))}
+                    </div>
+
+                    {hasMoreProducts ? (
+                      <div className="flex justify-center">
+                        <Button asChild variant="outline" className="rounded-full">
+                          <Link
+                            href={getPageHref(categorySlug, resolvedSearchParams, currentPage + 1)}
+                            scroll={false}
+                          >
+                            Afficher {Math.min(PAGE_SIZE, categoryProducts.length - visibleProducts.length)} produit(s) de plus
+                          </Link>
+                        </Button>
+                      </div>
+                    ) : null}
                   </div>
                 ) : (
                   <div className="py-12 text-center">

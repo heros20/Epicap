@@ -8,9 +8,10 @@ import { ProductCard } from "@/components/products/product-card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { getCatalogProductsByCategory } from "@/lib/catalog/data"
+import { getCatalogProductBySlug, getCatalogProductHref } from "@/lib/catalog/data"
 import { companyInfo, serviceDetails } from "@/lib/data/company"
 import { agencies } from "@/lib/data/navigation"
+import type { Product } from "@/lib/data/products"
 
 export const metadata: Metadata = {
   title: "Maintenance des systèmes respiratoires",
@@ -18,8 +19,40 @@ export const metadata: Metadata = {
     "Maintenance Epicap des systèmes respiratoires 3M, SCOTT et KASCO via le réseau national d'agences.",
 }
 
+const maintenancePointProductSlugs = [
+  "maintenance-annuelle-complete-systeme-scott-proflow-masque-vision-2",
+  "maintenance-annuelle-sur-systeme-kasco-t5m3-masque-zenith",
+  "maintenance-annuelle-phantom-vision-scott",
+  "maintenance-annuelle-systeme-scott-proflow-masque-promask",
+] as const
+
+const maintainedMaskProductSlugs = [
+  "appareil-de-protection-respiratoire-filtrant-a-ventilation-assistee-phantom-vision-taille-m",
+  "masque-panoramique-promask-scott-noir-taille-m-l",
+  "masque-complet-vision-2-scott-taille-m-l",
+  "kit-a-filtration-ventilee-kasco-t5-tm3p-avec-masque-zenith",
+  "masque-vision-3",
+  "masque-optifit-en-taillem-pour-systeme-cubair",
+] as const
+
+function compactProducts(products: Array<Product | undefined>) {
+  return products.filter((product): product is Product => Boolean(product))
+}
+
+function getProductHref(product: Product) {
+  return getCatalogProductHref(product)
+}
+
 export default async function MaintenancePage() {
-  const serviceProducts = (await getCatalogProductsByCategory("equipements-de-protection-respiratoire")).slice(0, 4)
+  const [maintenancePointProducts, serviceProducts] = await Promise.all([
+    Promise.all(maintenancePointProductSlugs.map((slug) => getCatalogProductBySlug(slug))),
+    Promise.all(maintainedMaskProductSlugs.map((slug) => getCatalogProductBySlug(slug))),
+  ])
+  const maintenanceCards = serviceDetails.maintenance.points.map((point, index) => ({
+    point,
+    product: maintenancePointProducts[index],
+  }))
+  const maintainedMaskProducts = compactProducts(serviceProducts)
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -43,16 +76,39 @@ export default async function MaintenancePage() {
         <section className="py-10 lg:py-14">
           <div className="container mx-auto px-4">
             <div className="grid gap-6 lg:grid-cols-2">
-              {serviceDetails.maintenance.points.map((point) => (
-                <Card key={point} className="p-0">
-                  <CardContent className="flex gap-4 p-6">
-                    <div className="flex size-11 flex-shrink-0 items-center justify-center rounded-xl bg-primary/12">
-                      <Wrench className="size-5 text-primary" />
-                    </div>
-                    <p className="text-sm leading-relaxed text-muted-foreground">{point}</p>
-                  </CardContent>
-                </Card>
-              ))}
+              {maintenanceCards.map(({ point, product }) => {
+                const cardContent = (
+                  <Card className="h-full p-0 transition-all duration-300 hover:-translate-y-1 hover:border-primary/35 hover:shadow-[0_26px_62px_-34px_rgba(255,133,28,0.28)]">
+                    <CardContent className="flex h-full gap-4 p-6">
+                      <div className="flex size-11 flex-shrink-0 items-center justify-center rounded-xl bg-primary/12">
+                        <Wrench className="size-5 text-primary" />
+                      </div>
+                      <div className="flex min-w-0 flex-col justify-center gap-3">
+                        <p className="text-sm leading-relaxed text-muted-foreground">{point}</p>
+                        {product && (
+                          <span className="inline-flex items-center gap-2 text-xs font-semibold text-primary">
+                            Voir la maintenance
+                            <ArrowRight className="size-3.5" />
+                          </span>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )
+
+                return product ? (
+                  <Link
+                    key={point}
+                    href={getProductHref(product)}
+                    className="group block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                    aria-label={`Voir la maintenance ${product.name}`}
+                  >
+                    {cardContent}
+                  </Link>
+                ) : (
+                  <div key={point}>{cardContent}</div>
+                )
+              })}
             </div>
           </div>
         </section>
@@ -68,7 +124,7 @@ export default async function MaintenancePage() {
             </div>
 
             <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 xl:grid-cols-4">
-              {serviceProducts.map((product) => (
+              {maintainedMaskProducts.map((product) => (
                 <ProductCard key={product.id} product={product} />
               ))}
             </div>

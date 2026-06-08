@@ -65,12 +65,12 @@ export const serviceDetails = {
     highlights: ["EPIROLL", "EPICAB", "EPIAIR", "AQUARIUS", "BULKAIR"],
   },
   maintenance: {
-    title: "Maintenance des systèmes respiratoires 3M, SCOTT et KASCO",
+    title: "Maintenance des systèmes respiratoires 3M et KASCO",
     eyebrow: "Respiratoire",
     description:
       "Epicap assure la maintenance des systèmes respiratoires utilisés sur les chantiers amiante avec un maillage d'agences et une documentation dédiée.",
     intro:
-      "Epicap assure la maintenance des systèmes respiratoires 3M, SCOTT et KASCO pour les zones Nord, Normandie, Île-de-France, Est, Sud-Est, Bretagne et Rhône-Alpes.",
+      "Epicap assure la maintenance des systèmes respiratoires 3M et KASCO pour les zones Nord, Normandie, Île-de-France, Est, Sud-Est, Bretagne et Rhône-Alpes.",
     points: [
       "Prise en charge des appareils de ventilation assistée et des systèmes à adduction d'air.",
       "Attestation 3M / SCOTT et agrément KASCO disponibles avec le tarif de maintenance.",

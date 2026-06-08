@@ -19,6 +19,7 @@ export function SortSelect({ currentSort }: { currentSort?: string }) {
   const handleValueChange = React.useCallback(
     (value: string) => {
       const params = new URLSearchParams(searchParams.toString())
+      params.delete("page")
 
       if (value === "featured") {
         params.delete("sort")

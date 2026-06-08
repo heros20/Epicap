@@ -74,6 +74,7 @@ export function ProductFilters({
 
   const applyFilters = React.useCallback(() => {
     const params = new URLSearchParams(searchParams.toString())
+    params.delete("page")
     
     if (selectedBrands.length > 0) {
       params.set("brands", selectedBrands.join(","))

@@ -20,7 +20,7 @@ export function Footer() {
               <FeatureItem
                 icon={<Wrench className="size-5 text-primary" />}
                 title="Maintenance respiratoire"
-                description="3M, SCOTT et KASCO"
+                description="3M et KASCO"
               />
               <FeatureItem
                 icon={<Shield className="size-5 text-primary" />}

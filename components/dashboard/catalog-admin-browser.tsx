@@ -59,6 +59,8 @@ const sortOptions: Array<{ value: CatalogSort; label: string }> = [
   { value: "category", label: "Catégorie / famille" },
 ]
 
+const PAGE_SIZE = 24
+
 function isCatalogScope(value: string): value is CatalogScope {
   return scopeOptions.some((option) => option.value === value)
 }
@@ -359,6 +361,7 @@ export function CatalogAdminBrowser({
   const [selectedCategory, setSelectedCategory] = React.useState("all")
   const [selectedSubcategory, setSelectedSubcategory] = React.useState("all")
   const [selectedSort, setSelectedSort] = React.useState<CatalogSort>("updated")
+  const [visibleCount, setVisibleCount] = React.useState(PAGE_SIZE)
 
   const deferredQuery = React.useDeferredValue(query)
   const normalizedQuery = deferredQuery.trim().toLowerCase()
@@ -375,67 +378,78 @@ export function CatalogAdminBrowser({
     return products.some((product) => product.subcategorySlug === subcategory.slug)
   })
 
-  const filteredProducts = products
-    .map((product, index) => ({
-      product,
-      index,
-      score: getSearchScore(product, normalizedQuery),
-    }))
-    .filter(({ product, score }) => {
-      if (!matchesCategory(product, selectedCategory)) {
-        return false
-      }
+  const filteredProducts = React.useMemo(
+    () =>
+      products
+        .map((product, index) => ({
+          product,
+          index,
+          score: getSearchScore(product, normalizedQuery),
+        }))
+        .filter(({ product, score }) => {
+          if (!matchesCategory(product, selectedCategory)) {
+            return false
+          }
 
-      if (!matchesSubcategory(product, selectedSubcategory)) {
-        return false
-      }
+          if (!matchesSubcategory(product, selectedSubcategory)) {
+            return false
+          }
 
-      if (!matchesScope(product, scope)) {
-        return false
-      }
+          if (!matchesScope(product, scope)) {
+            return false
+          }
 
-      return normalizedQuery.length === 0 || score > 0
-    })
-    .sort((left, right) => {
-      if (normalizedQuery.length > 0 && right.score !== left.score) {
-        return right.score - left.score
-      }
+          return normalizedQuery.length === 0 || score > 0
+        })
+        .sort((left, right) => {
+          if (normalizedQuery.length > 0 && right.score !== left.score) {
+            return right.score - left.score
+          }
 
-       if (selectedSort === "name") {
-        return left.product.name.localeCompare(right.product.name, "fr")
-      }
+          if (selectedSort === "name") {
+            return left.product.name.localeCompare(right.product.name, "fr")
+          }
 
-      if (selectedSort === "category") {
-        const categoryDelta = left.product.categoryName.localeCompare(
-          right.product.categoryName,
-          "fr",
-        )
+          if (selectedSort === "category") {
+            const categoryDelta = left.product.categoryName.localeCompare(
+              right.product.categoryName,
+              "fr",
+            )
 
-        if (categoryDelta !== 0) {
-          return categoryDelta
-        }
+            if (categoryDelta !== 0) {
+              return categoryDelta
+            }
 
-        const subcategoryDelta = (left.product.subcategoryName ?? "").localeCompare(
-          right.product.subcategoryName ?? "",
-          "fr",
-        )
+            const subcategoryDelta = (left.product.subcategoryName ?? "").localeCompare(
+              right.product.subcategoryName ?? "",
+              "fr",
+            )
 
-        if (subcategoryDelta !== 0) {
-          return subcategoryDelta
-        }
+            if (subcategoryDelta !== 0) {
+              return subcategoryDelta
+            }
 
-        return left.product.name.localeCompare(right.product.name, "fr")
-      }
+            return left.product.name.localeCompare(right.product.name, "fr")
+          }
 
-      const updatedDelta = getProductTimestamp(right.product) - getProductTimestamp(left.product)
+          const updatedDelta = getProductTimestamp(right.product) - getProductTimestamp(left.product)
 
-      if (updatedDelta !== 0) {
-        return updatedDelta
-      }
+          if (updatedDelta !== 0) {
+            return updatedDelta
+          }
 
-      return left.index - right.index
-    })
-    .map(({ product }) => product)
+          return left.index - right.index
+        })
+        .map(({ product }) => product),
+    [normalizedQuery, products, scope, selectedCategory, selectedSort, selectedSubcategory],
+  )
+
+  React.useEffect(() => {
+    setVisibleCount(PAGE_SIZE)
+  }, [normalizedQuery, scope, selectedCategory, selectedSubcategory, selectedSort])
+
+  const visibleProducts = filteredProducts.slice(0, visibleCount)
+  const hasMoreProducts = visibleProducts.length < filteredProducts.length
 
   const scopeCounts = {
     all: products.length,
@@ -777,66 +791,24 @@ export function CatalogAdminBrowser({
         </Card>
       ) : (
         <>
-          <div className="grid gap-4 xl:hidden">
-            {filteredProducts.map((product) => (
-              <article
-                key={product.id}
-                className="rounded-[1.5rem] border border-border/70 bg-card/92 p-5 shadow-[0_20px_60px_-48px_rgba(23,19,18,0.38)]"
-              >
-                <div className="flex items-start gap-4">
-                  <div className="size-20 overflow-hidden rounded-[1.1rem] border border-border/70 bg-muted/20">
-                    {product.image ? (
-                      <Image
-                        src={product.image}
-                        alt={product.name}
-                        width={80}
-                        height={80}
-                        className="size-full object-cover"
-                      />
-                    ) : null}
-                  </div>
-
-                  <div className="min-w-0 flex-1 space-y-3">
-                    <div>
-                      <Link
-                        href={getProductHref(product)}
-                        className="inline-flex items-center gap-2 text-base font-semibold text-foreground transition hover:text-primary"
-                      >
-                        {product.name}
-                        <PencilLine className="size-4" />
-                      </Link>
-                      <p className="truncate text-sm text-muted-foreground">
-                        {product.brand} - Ref. {product.sku}
-                      </p>
-                      <p className="truncate text-xs text-muted-foreground">
-                        {product.slug}
-                      </p>
-                    </div>
-
-                    <ProductBadges product={product} />
-
-                    <div className="grid gap-2 text-sm text-muted-foreground">
-                      <p>{product.categoryName}</p>
-                      <p>
-                        MAJ{" "}
-                        {product.updatedAt ? dateFormatter.format(new Date(product.updatedAt)) : "-"}
-                      </p>
-                    </div>
-
-                    <ProductPriceBreakdown product={product} />
-
-                    <ProductActions product={product} />
-                  </div>
-                </div>
-              </article>
-            ))}
-          </div>
-
-          <div className="hidden gap-4 xl:grid">
-            {filteredProducts.map((product) => (
+          <div className="grid gap-4">
+            {visibleProducts.map((product) => (
               <DesktopProductRow key={product.id} product={product} />
             ))}
           </div>
+
+          {hasMoreProducts ? (
+            <div className="flex justify-center">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => setVisibleCount((current) => current + PAGE_SIZE)}
+              >
+                Charger {Math.min(PAGE_SIZE, filteredProducts.length - visibleProducts.length)} fiche(s)
+                de plus
+              </Button>
+            </div>
+          ) : null}
         </>
       )}
     </div>

@@ -1,6 +1,7 @@
 import Link from "next/link"
 import { Metadata } from "next"
-import { ArrowRight, CheckCircle2, Phone, Truck } from "lucide-react"
+import Image from "next/image"
+import { ArrowRight, CheckCircle2, Phone } from "lucide-react"
 
 import { Footer } from "@/components/layout/footer"
 import { Header } from "@/components/layout/header"
@@ -8,7 +9,12 @@ import { ProductCard } from "@/components/products/product-card"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { getCatalogProductBySlug, getRentableCatalogProducts } from "@/lib/catalog/data"
+import {
+  getCatalogProductBySlug,
+  getCatalogProductHref,
+  getRentableCatalogProducts,
+} from "@/lib/catalog/data"
+import type { Product } from "@/lib/data/products"
 import { companyInfo, serviceDetails } from "@/lib/data/company"
 
 export const metadata: Metadata = {
@@ -21,13 +27,36 @@ interface PageProps {
   searchParams: Promise<{ product?: string }>
 }
 
+const locationPointProductSlugs = [
+  "roulotte-de-decontamination-epiroll-5-compartiments",
+  "location-sas-personnel-5-compartiments-conforme-ed6307",
+  "unite-de-chauffage-et-filtration-automatique-aquarius-160",
+  "controleur-de-depression-bulkair-pm-1-voie-gsm-integre",
+] as const
+
+function getLocationProductHref(product: Product) {
+  return getCatalogProductHref(product)
+}
+
+function getRandomProducts(products: Product[], count: number) {
+  return [...products].sort(() => Math.random() - 0.5).slice(0, count)
+}
+
 export default async function LocationPage({ searchParams }: PageProps) {
   const params = await searchParams
   const requestedProduct = params.product ? await getCatalogProductBySlug(params.product) : undefined
-  const rentableProducts = await getRentableCatalogProducts(4)
+  const [allRentableProducts, locationPointProducts] = await Promise.all([
+    getRentableCatalogProducts(),
+    Promise.all(locationPointProductSlugs.map((slug) => getCatalogProductBySlug(slug))),
+  ])
+  const rentableProducts = getRandomProducts(allRentableProducts, 4)
   const quoteHref = requestedProduct
     ? `/devis?service=location&product=${requestedProduct.slug}&source=location`
     : "/devis?service=location&source=location"
+  const locationCards = serviceDetails.location.points.map((point, index) => ({
+    point,
+    product: locationPointProducts[index],
+  }))
 
   return (
     <div className="flex min-h-screen flex-col">
@@ -60,16 +89,49 @@ export default async function LocationPage({ searchParams }: PageProps) {
             )}
 
             <div className="grid gap-6 lg:grid-cols-2">
-              {serviceDetails.location.points.map((point) => (
-                <Card key={point} className="p-0">
-                  <CardContent className="flex gap-4 p-6">
-                    <div className="flex size-11 flex-shrink-0 items-center justify-center rounded-xl bg-primary/12">
-                      <Truck className="size-5 text-primary" />
-                    </div>
-                    <p className="text-sm leading-relaxed text-muted-foreground">{point}</p>
-                  </CardContent>
-                </Card>
-              ))}
+              {locationCards.map(({ point, product }) => {
+                const cardContent = (
+                  <Card className="h-full overflow-hidden p-0 transition-all duration-300 hover:-translate-y-1 hover:border-primary/35 hover:shadow-[0_26px_62px_-34px_rgba(255,133,28,0.28)]">
+                    <CardContent className="grid h-full grid-cols-[7.5rem_1fr] gap-4 p-0 sm:grid-cols-[9rem_1fr]">
+                      <div className="relative min-h-32 bg-[radial-gradient(circle_at_top,rgba(255,255,255,0.96),rgba(238,241,245,0.96))]">
+                        {product?.image ? (
+                          <Image
+                            src={product.image}
+                            alt={product.name}
+                            fill
+                            sizes="(min-width: 1024px) 144px, 120px"
+                            className="object-contain p-3 transition-transform duration-500 group-hover:scale-105"
+                          />
+                        ) : (
+                          <div className="absolute inset-0 bg-gradient-to-br from-muted to-muted/60" />
+                        )}
+                      </div>
+                      <div className="flex min-w-0 flex-col justify-center gap-3 py-5 pr-5">
+                        <p className="text-sm leading-relaxed text-muted-foreground">{point}</p>
+                        {product && (
+                          <span className="inline-flex items-center gap-2 text-xs font-semibold text-primary">
+                            Voir la location
+                            <ArrowRight className="size-3.5" />
+                          </span>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
+                )
+
+                return product ? (
+                  <Link
+                    key={point}
+                    href={getLocationProductHref(product)}
+                    className="group block focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                    aria-label={`Voir la location ${product.name}`}
+                  >
+                    {cardContent}
+                  </Link>
+                ) : (
+                  <div key={point}>{cardContent}</div>
+                )
+              })}
             </div>
           </div>
         </section>

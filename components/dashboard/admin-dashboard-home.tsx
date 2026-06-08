@@ -18,6 +18,7 @@ import {
 
 import { Badge } from "@/components/ui/badge"
 import { PendingLinkButton } from "@/components/dashboard/pending-link-button"
+import { SentryIssuesCard } from "@/components/dashboard/sentry-issues-card"
 import { Button } from "@/components/ui/button"
 import {
   Card,
@@ -707,6 +708,8 @@ export function AdminDashboardHome({
                 </div>
               </CardContent>
             </Card>
+
+          <SentryIssuesCard />
 
           <Card className="border-border/70 bg-card/92">
             <CardHeader className="border-b border-border/70">

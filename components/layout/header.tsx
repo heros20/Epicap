@@ -37,7 +37,7 @@ import {
 import { safeTrack } from "@/lib/analytics/events"
 import { useCart } from "@/lib/cart/use-cart"
 import { companyInfo } from "@/lib/data/company"
-import { categories, services } from "@/lib/data/navigation"
+import { agencies, categories, services } from "@/lib/data/navigation"
 import { cn } from "@/lib/utils"
 
 export function Header() {
@@ -82,7 +82,7 @@ export function Header() {
                 className="flex items-center gap-1.5 text-background/80 transition-colors hover:text-primary"
               >
                 <MapPin className="size-3.5" />
-                <span>{categories.length} gammes et un réseau national d&apos;agences</span>
+                <span>{agencies.length} agences en France</span>
               </Link>
               <Link
                 href="/location"

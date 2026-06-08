@@ -90,8 +90,12 @@ export function AuthProvider({
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(() => {
-      void refreshAuthState(true)
+    } = supabase.auth.onAuthStateChange((event) => {
+      if (event === "INITIAL_SESSION" || event === "TOKEN_REFRESHED") {
+        return
+      }
+
+      void refreshAuthState(event === "SIGNED_IN" || event === "SIGNED_OUT" || event === "USER_UPDATED")
     })
 
     return () => {
