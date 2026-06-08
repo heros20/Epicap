@@ -231,15 +231,12 @@ export async function getCatalogBrands() {
   )
 }
 
-export async function getFeaturedCatalogProducts(limit = 12) {
+export async function getFeaturedCatalogProducts(limit?: number) {
   const products = await getCatalogEntriesCached()
   const featuredProducts = products.filter((product) => product.isFeatured)
+  const sourceProducts = featuredProducts.length > 0 ? featuredProducts : products
 
-  if (featuredProducts.length > 0) {
-    return featuredProducts.slice(0, limit)
-  }
-
-  return products.slice(0, limit)
+  return typeof limit === "number" ? sourceProducts.slice(0, limit) : sourceProducts
 }
 
 export async function getRentableCatalogProducts(limit?: number) {

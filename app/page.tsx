@@ -16,7 +16,7 @@ import {
 import { HeaderSearchBox } from "@/components/layout/header-search-box"
 import { Footer } from "@/components/layout/footer"
 import { Header } from "@/components/layout/header"
-import { ProductCard } from "@/components/products/product-card"
+import { RandomFeaturedProducts } from "@/components/products/random-featured-products"
 import { JsonLd } from "@/components/seo/json-ld"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -113,7 +113,7 @@ function getRepresentativeCategoryImage(
 
 export default async function HomePage() {
   const catalogProducts = await getCatalogProducts()
-  const featuredProducts = await getFeaturedCatalogProducts(4)
+  const featuredProducts = await getFeaturedCatalogProducts()
   const rentableProducts = catalogProducts.filter((product) => product.isRentable).slice(0, 3)
   const inStockProducts = catalogProducts.filter((product) => product.inStock).slice(0, 3)
   const heroProducts = featuredProducts.slice(0, 3)
@@ -312,11 +312,7 @@ export default async function HomePage() {
                     href="/boutique"
                     cta="Voir plus"
                   />
-                  <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
-                    {featuredProducts.map((product) => (
-                      <ProductCard key={product.id} product={product} />
-                    ))}
-                  </div>
+                  <RandomFeaturedProducts products={featuredProducts} limit={4} />
                 </div>
 
                 <aside className="rounded-lg border border-border/70 bg-[linear-gradient(180deg,#111317,#1b1f25)] p-5 text-background">
