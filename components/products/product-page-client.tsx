@@ -20,6 +20,7 @@ import {
   Truck,
 } from "lucide-react"
 
+import { CartRecommendationsToast } from "@/components/cart/cart-recommendations-toast"
 import { Footer } from "@/components/layout/footer"
 import { Header } from "@/components/layout/header"
 import { ProductCard } from "@/components/products/product-card"
@@ -36,9 +37,9 @@ import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Table, TableBody, TableCell, TableRow } from "@/components/ui/table"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { ToastAction } from "@/components/ui/toast"
 import { toast } from "@/hooks/use-toast"
 import { safeTrack } from "@/lib/analytics/events"
+import { getCartRecommendations } from "@/lib/cart/cart-recommendations"
 import { companyInfo } from "@/lib/data/company"
 import { useCart } from "@/lib/cart/use-cart"
 import type { Category } from "@/lib/data/navigation"
@@ -100,12 +101,13 @@ export function ProductPageClient({
     window.setTimeout(() => setIsAdded(false), 2000)
     toast({
       title: "Produit ajouté au panier",
-      description: `${quantity} x ${product.name}`,
-      action: (
-        <ToastAction altText="Voir le panier" asChild>
-          <Link href="/panier">Voir le panier</Link>
-        </ToastAction>
+      description: (
+        <CartRecommendationsToast
+          addedLine={`${quantity} x ${product.name}`}
+          recommendations={getCartRecommendations(product)}
+        />
       ),
+      className: "items-start",
     })
   }
 

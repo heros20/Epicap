@@ -5,12 +5,13 @@ import Image from "next/image"
 import Link from "next/link"
 import { CheckCircle2, Loader2, ShoppingCart, Truck } from "lucide-react"
 
+import { CartRecommendationsToast } from "@/components/cart/cart-recommendations-toast"
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
-import { ToastAction } from "@/components/ui/toast"
 import { toast } from "@/hooks/use-toast"
 import { safeTrack } from "@/lib/analytics/events"
+import { getCartRecommendations } from "@/lib/cart/cart-recommendations"
 import { useCart } from "@/lib/cart/use-cart"
 import type { Product } from "@/lib/data/products"
 import { cn } from "@/lib/utils"
@@ -45,13 +46,14 @@ export function ProductCard({ product, className }: ProductCardProps) {
     })
     window.setTimeout(() => setIsAdded(false), 1600)
     toast({
-      title: "Produit ajoute au panier",
-      description: `1 x ${product.name}`,
-      action: (
-        <ToastAction altText="Voir le panier" asChild>
-          <Link href="/panier">Voir le panier</Link>
-        </ToastAction>
+      title: "Produit ajouté au panier",
+      description: (
+        <CartRecommendationsToast
+          addedLine={`1 x ${product.name}`}
+          recommendations={getCartRecommendations(product)}
+        />
       ),
+      className: "items-start",
     })
   }
 
