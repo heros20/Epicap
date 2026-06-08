@@ -5,11 +5,11 @@ import Link from "next/link"
 import { Check, Plus } from "lucide-react"
 
 import { Button } from "@/components/ui/button"
-import { useCart } from "@/lib/cart/use-cart"
 import {
   type CartRecommendation,
   getProductHref,
 } from "@/lib/cart/cart-recommendations"
+import type { Product } from "@/lib/data/products"
 
 const priceFormatter = new Intl.NumberFormat("fr-FR", {
   style: "currency",
@@ -19,15 +19,16 @@ const priceFormatter = new Intl.NumberFormat("fr-FR", {
 export function CartRecommendationsToast({
   addedLine,
   recommendations,
+  onAddProduct,
 }: {
   addedLine: string
   recommendations: CartRecommendation[]
+  onAddProduct: (product: Product, quantity?: number) => void
 }) {
-  const { addItem } = useCart()
   const [addedProductIds, setAddedProductIds] = React.useState<number[]>([])
 
   const handleAddRecommendation = (recommendation: CartRecommendation) => {
-    addItem(recommendation.product, 1)
+    onAddProduct(recommendation.product, 1)
     setAddedProductIds((current) =>
       current.includes(recommendation.product.id)
         ? current

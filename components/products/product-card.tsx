@@ -51,6 +51,7 @@ export function ProductCard({ product, className }: ProductCardProps) {
         <CartRecommendationsToast
           addedLine={`1 x ${product.name}`}
           recommendations={getCartRecommendations(product)}
+          onAddProduct={addItem}
         />
       ),
       className: "items-start",

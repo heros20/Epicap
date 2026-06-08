@@ -105,6 +105,7 @@ export function ProductPageClient({
         <CartRecommendationsToast
           addedLine={`${quantity} x ${product.name}`}
           recommendations={getCartRecommendations(product)}
+          onAddProduct={addItem}
         />
       ),
       className: "items-start",
