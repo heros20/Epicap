@@ -49,12 +49,14 @@ export function Header() {
     const expandAt = 4
 
     const handleScroll = () => {
+      const scrollY = window.scrollY
+
       setIsScrolled((current) => {
-        if (!current && window.scrollY > collapseAt) {
+        if (!current && scrollY > collapseAt) {
           return true
         }
 
-        if (current && window.scrollY <= expandAt) {
+        if (current && scrollY <= expandAt) {
           return false
         }
 
@@ -76,7 +78,7 @@ export function Header() {
   return (
     <header
       className={cn(
-        "sticky top-0 z-50 w-full border-b border-border/70 transition-all duration-300",
+        "sticky top-0 z-50 w-full border-b border-border/70 transition-all duration-300 [overflow-anchor:none]",
         isScrolled
           ? "bg-background/84 shadow-[0_18px_38px_-34px_rgba(15,16,18,0.24)] backdrop-blur-xl"
           : "bg-background/96",
