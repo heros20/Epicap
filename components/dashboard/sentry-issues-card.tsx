@@ -74,7 +74,7 @@ export function SentryIssuesCard() {
         <div className="flex items-start justify-between gap-4">
           <div>
             <CardTitle>Erreurs & bugs Sentry</CardTitle>
-            <CardDescription>Issues non resolues remontees par le monitoring applicatif.</CardDescription>
+            <CardDescription>Issues non résolues remontées par le monitoring applicatif.</CardDescription>
           </div>
           <Button
             type="button"
@@ -83,7 +83,7 @@ export function SentryIssuesCard() {
             className="shrink-0"
             onClick={() => void loadIssues()}
             disabled={isLoading}
-            aria-label="Rafraichir les issues Sentry"
+            aria-label="Rafraîchir les issues Sentry"
           >
             <RefreshCw className={isLoading ? "size-4 animate-spin" : "size-4"} />
           </Button>
@@ -127,7 +127,7 @@ export function SentryIssuesCard() {
                 <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
                   <span>{issueCountLabel(issue)}</span>
                   <span>{issue.userCount.toLocaleString("fr-FR")} utilisateur(s)</span>
-                  <span>Derniere vue: {formatDate(issue.lastSeen)}</span>
+                  <span>Dernière vue : {formatDate(issue.lastSeen)}</span>
                 </div>
               </a>
             ))}
@@ -135,7 +135,7 @@ export function SentryIssuesCard() {
         ) : (
           <div className="flex gap-3 rounded-xl border border-emerald-300/35 bg-emerald-50 p-4 text-sm text-emerald-950">
             <ShieldAlert className="mt-0.5 size-4 shrink-0" />
-            <p>Aucune issue non resolue remontee par Sentry.</p>
+            <p>Aucune issue non résolue remontée par Sentry.</p>
           </div>
         )}
 

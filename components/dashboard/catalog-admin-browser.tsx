@@ -293,7 +293,7 @@ function DesktopProductRow({ product }: { product: CatalogEntry }) {
                 <PencilLine className="mt-0.5 size-3.5 shrink-0 text-primary/80" />
               </div>
               <p className="mt-2 text-sm text-muted-foreground">
-                {product.brand} - Ref. {product.sku}
+                {product.brand} - Réf. {product.sku}
               </p>
               <p className="mt-1 break-all text-xs text-muted-foreground">{product.slug}</p>
                 <p className="mt-4 text-xs font-medium uppercase tracking-[0.18em] text-primary/80">
@@ -311,8 +311,8 @@ function DesktopProductRow({ product }: { product: CatalogEntry }) {
             <p className="mt-2 text-sm font-medium">{getCommercialMode(product)}</p>
             <p className="mt-1 text-sm text-muted-foreground">
               {product.documents.length > 0
-                ? `${product.documents.length} document(s) rattache(s)`
-                : "Aucun document rattache"}
+                ? `${product.documents.length} document(s) rattaché(s)`
+                : "Aucun document rattaché"}
             </p>
             <div className="mt-3">
               <ProductBadges product={product} />
@@ -738,7 +738,7 @@ export function CatalogAdminBrowser({
                     <div>
                       <p className="truncate text-base font-semibold">{product.name}</p>
                       <p className="truncate text-sm text-muted-foreground">
-                        {product.brand} - Ref. {product.sku}
+                        {product.brand} - Réf. {product.sku}
                       </p>
                       <p className="truncate text-xs text-muted-foreground">
                         {product.categoryName}

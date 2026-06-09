@@ -48,24 +48,24 @@ export function CatalogProductForm({
             helper={
               product?.isRentable
                 ? "La fiche affiche un prix achat et un tarif journalier."
-                : "La fiche est configuree en offre vente uniquement."
+                : "La fiche est configurée en offre vente uniquement."
             }
             tone="sale"
           />
           <OverviewTile
             icon={<PackageCheck className="size-4 text-primary" />}
             title="Publication"
-            value={product?.isActive ?? true ? "Publie" : "Brouillon"}
+            value={product?.isActive ?? true ? "Publié" : "Brouillon"}
             helper={
               product?.inStock ?? true
-                ? "Le produit est marque comme disponible."
+                ? "Le produit est marqué comme disponible."
                 : "Le produit reste visible mais non disponible."
             }
             tone="neutral"
           />
           <OverviewTile
             icon={<Truck className="size-4 text-emerald-700" />}
-            title="Medias"
+            title="Médias"
             value={`${product?.images.length ?? 0} image(s)`}
             helper={`${product?.documents.length ?? 0} document(s) rattaché(s) à la fiche.`}
             tone="rental"
@@ -75,7 +75,7 @@ export function CatalogProductForm({
 
       <Card className="border-border/70 bg-card/92">
         <CardHeader className="border-b border-border/70">
-          <CardTitle>Identite produit</CardTitle>
+          <CardTitle>Identité produit</CardTitle>
         </CardHeader>
         <CardContent className="grid gap-5 p-6 lg:grid-cols-2">
           <Field label="Titre" htmlFor="name">
@@ -104,7 +104,7 @@ export function CatalogProductForm({
               ))}
             </select>
           </Field>
-          <Field label="Sous-categorie" htmlFor="subcategorySlug">
+          <Field label="Sous-catégorie" htmlFor="subcategorySlug">
             <select
               id="subcategorySlug"
               name="subcategorySlug"
@@ -254,7 +254,7 @@ export function CatalogProductForm({
             <ToggleTile
               name="isActive"
               defaultChecked={product?.isActive ?? true}
-              label="Publie sur le site"
+              label="Publié sur le site"
               description="Visible dans le catalogue public."
             />
             <ToggleTile
@@ -410,7 +410,7 @@ export function CatalogProductForm({
           Retour au catalogue
         </PendingLinkButton>
         <AdminSubmitButton size="lg">
-          {product ? "Enregistrer le produit" : "Creer le produit"}
+          {product ? "Enregistrer le produit" : "Créer le produit"}
         </AdminSubmitButton>
       </div>
     </form>

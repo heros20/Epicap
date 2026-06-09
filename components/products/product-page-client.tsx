@@ -446,6 +446,7 @@ export function ProductPageClient({
               <Button size="lg" variant="secondary" asChild>
                 <Link
                   href={quoteRequestHref}
+                  data-analytics-manual="true"
                   onClick={() =>
                     safeTrack("Quote CTA Clicked", {
                       source_page: "product-footer",
@@ -465,6 +466,7 @@ export function ProductPageClient({
               >
                 <a
                   href={`tel:${companyInfo.phone.replace(/\s+/g, "")}`}
+                  data-analytics-manual="true"
                   onClick={() =>
                     safeTrack("Phone Clicked", {
                       source_page: "product-footer",
@@ -669,6 +671,7 @@ function AddToCartSection({
         <Button size="lg" variant={product.price > 0 && product.stockQuantity > 0 ? "outline" : "default"} asChild className={product.price <= 0 || product.stockQuantity === 0 ? "flex-1" : undefined}>
           <Link
             href={quoteRequestHref}
+            data-analytics-manual="true"
             onClick={() =>
               safeTrack("Quote CTA Clicked", {
                 source_page: "product-main",

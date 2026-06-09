@@ -106,7 +106,7 @@ export async function getSentryIssues(): Promise<SentryIssuesResult> {
         configured: true,
         issues: [],
         sentryUrl,
-        error: `Sentry a refuse la lecture des issues (${response.status}).`,
+        error: `Sentry a refusé la lecture des issues (${response.status}).`,
       }
     }
 

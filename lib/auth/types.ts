@@ -102,6 +102,13 @@ export const DASHBOARD_NAV_ITEMS = [
     roles: ["admin", "super_admin"] as AppRole[],
   },
   {
+    href: "/dashboard/analytics",
+    label: "Analytics",
+    description: "Suivi PostHog des visites et actions commerciales.",
+    group: "pilotage" as DashboardNavGroup,
+    roles: ["admin", "super_admin"] as AppRole[],
+  },
+  {
     href: "/dashboard/equipe",
     label: "Équipe",
     description: "Gestion des membres et des rôles.",

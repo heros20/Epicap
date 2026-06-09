@@ -31,7 +31,7 @@ export default async function DashboardCatalogueNewPage({
         </CardHeader>
         <CardContent className="p-6">
           <p className="max-w-3xl text-sm leading-7 text-background/74">
-            Creez une reference depuis le cockpit Epicap, puis reglez clairement sa logique
+            Créez une référence depuis le cockpit Epicap, puis réglez clairement sa logique
             commerciale : vente seule ou vente + location, avec publication, médias et documents
             reliés à la même fiche.
           </p>

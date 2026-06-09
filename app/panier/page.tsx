@@ -358,6 +358,7 @@ export default function CartPage() {
                       <Button asChild variant="ghost" className="h-auto rounded-full px-0 text-primary">
                         <a
                           href={`tel:${companyInfo.phone.replace(/\s+/g, "")}`}
+                          data-analytics-manual="true"
                           onClick={() => safeTrack("Phone Clicked", { source_page: "cart" })}
                         >
                           <Phone className="mr-2 size-4" />

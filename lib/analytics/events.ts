@@ -2,6 +2,8 @@
 
 import { track } from "@vercel/analytics"
 
+import { capturePostHogEvent } from "@/lib/analytics/posthog-client"
+
 type AnalyticsValue = string | number | boolean | null
 
 export function safeTrack(
@@ -18,7 +20,13 @@ export function safeTrack(
         )
       : undefined
 
-    track(name, nextProperties)
+    try {
+      track(name, nextProperties)
+    } catch {
+      // Ignore Vercel Analytics failures.
+    }
+
+    capturePostHogEvent(name, nextProperties)
   } catch {
     // Analytics must never block the user flow.
   }

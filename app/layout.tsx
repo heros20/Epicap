@@ -1,7 +1,9 @@
 import type { Metadata, Viewport } from "next"
 import { Analytics } from "@vercel/analytics/next"
+import { Suspense } from "react"
 import { Geist_Mono, Manrope, Space_Grotesk } from "next/font/google"
 
+import { PostHogPageview } from "@/components/analytics/posthog-pageview"
 import { AuthProvider } from "@/components/auth/auth-provider"
 import { Toaster } from "@/components/ui/toaster"
 import { CartProvider } from "@/lib/cart/cart-provider"
@@ -99,6 +101,9 @@ export default async function RootLayout({
         </AuthProvider>
         <Toaster />
         <Analytics />
+        <Suspense fallback={null}>
+          <PostHogPageview />
+        </Suspense>
       </body>
     </html>
   )

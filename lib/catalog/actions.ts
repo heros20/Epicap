@@ -55,7 +55,7 @@ const catalogProductSchema = z
     price: z.coerce.number().min(0, "Le prix doit être positif."),
     compareAtPrice: z.preprocess(
       emptyOrZeroToUndefined,
-      z.coerce.number().positive("Le prix compare doit etre superieur a zero.").optional(),
+      z.coerce.number().positive("Le prix comparé doit être supérieur à zéro.").optional(),
     ),
     stockQuantity: z.coerce.number().int().min(0, "Le stock doit être positif."),
     badge: z.preprocess(emptyToUndefined, z.string().trim().max(80).optional()),
@@ -82,7 +82,7 @@ const catalogProductSchema = z
     (value) => value.compareAtPrice === undefined || value.compareAtPrice > value.price,
     {
       path: ["compareAtPrice"],
-      message: "Le prix compare doit etre superieur au prix HT.",
+      message: "Le prix comparé doit être supérieur au prix HT.",
     },
   )
 
@@ -560,5 +560,5 @@ export async function deleteCatalogProductAction(formData: FormData) {
 
   await removeStoragePaths(supabase, collectProductPaths(product))
   revalidateCatalogPages(product)
-  redirect(buildRedirect("/dashboard/catalogue", "success", "Produit supprime."))
+  redirect(buildRedirect("/dashboard/catalogue", "success", "Produit supprimé."))
 }

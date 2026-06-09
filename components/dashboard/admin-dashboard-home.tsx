@@ -155,7 +155,7 @@ function getActivityFeed(analytics: AdminDashboardAnalytics) {
   const orders = analytics.orders.map((order) => ({
     id: order.id,
     kind: "order" as const,
-    reference: order.orderNumber ?? "Commande sans numero",
+    reference: order.orderNumber ?? "Commande sans numéro",
     contact: order.companyName ?? order.contactName ?? "Compte Epicap",
     status: ORDER_STATUS_LABELS[order.status],
     amount: order.total,
@@ -165,7 +165,7 @@ function getActivityFeed(analytics: AdminDashboardAnalytics) {
   const quotes = analytics.quotes.map((quote) => ({
     id: quote.id,
     kind: "quote" as const,
-    reference: quote.quoteNumber ?? "Devis sans numero",
+    reference: quote.quoteNumber ?? "Devis sans numéro",
     contact: quote.companyName ?? quote.contactName ?? "Compte Epicap",
     status: QUOTE_STATUS_LABELS[quote.status],
     amount: quote.total,
@@ -443,7 +443,7 @@ export function AdminDashboardHome({
                   icon={<ShoppingBag className="size-4" />}
                   label="Catalogue actif"
                   value={numberFormatter.format(analytics.catalog.activeProducts)}
-                  helper={`${numberFormatter.format(analytics.catalog.rentableProducts)} refs location`}
+                  helper={`${numberFormatter.format(analytics.catalog.rentableProducts)} réf. location`}
                 />
                 <HeroChip
                   icon={<Clock3 className="size-4" />}
@@ -466,7 +466,7 @@ export function AdminDashboardHome({
           <CardContent className="space-y-4 p-6">
             <MetricRow
               icon={<ReceiptText className="size-4 text-primary" />}
-              label="Commandes dans la periode"
+              label="Commandes dans la période"
               value={numberFormatter.format(view.selectedOrderCount)}
               helper={`${numberFormatter.format(view.pendingOrders)} en cours, ${numberFormatter.format(view.fulfilledOrders)} expédiées ou livrées`}
             />
@@ -486,7 +486,7 @@ export function AdminDashboardHome({
               icon={<TrendingUp className="size-4 text-primary" />}
               label="Ticket moyen"
               value={currencyFormatter.format(view.avgTicket)}
-              helper="Moyenne du panier confirme sur la periode choisie"
+              helper="Moyenne du panier confirmé sur la période choisie"
             />
             <MetricRow
               icon={<Truck className="size-4 text-primary" />}

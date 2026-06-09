@@ -61,7 +61,7 @@ export default async function DashboardHomePage() {
     alerts.push({
       tone: "warning",
       title: "Compte sans société rattachée",
-      detail: "Completez votre profil pour fiabiliser le contexte B2B et les futurs parcours commande/devis.",
+      detail: "Complétez votre profil pour fiabiliser le contexte B2B et les futurs parcours commande/devis.",
     })
   }
 
@@ -77,7 +77,7 @@ export default async function DashboardHomePage() {
     alerts.push({
       tone: "warning",
       title: `${overview.activeQuoteCount} devis actif(s)`,
-      detail: "Des devis sont encore ouverts et meritent un suivi commercial.",
+      detail: "Des devis sont encore ouverts et méritent un suivi commercial.",
     })
   }
 
@@ -85,7 +85,7 @@ export default async function DashboardHomePage() {
     alerts.push({
       tone: "ok",
       title: "Aucune alerte majeure",
-      detail: "La configuration actuelle est saine pour continuer le deploiement du back-office Epicap.",
+      detail: "La configuration actuelle est saine pour continuer le déploiement du back-office Epicap.",
     })
   }
 
@@ -99,7 +99,7 @@ export default async function DashboardHomePage() {
     {
       label: "Mes devis",
       value: String(overview.quoteCount),
-      helper: "Demandes envoyees ou en attente de retour.",
+      helper: "Demandes envoyées ou en attente de retour.",
       accent: overview.activeQuoteCount > 0 ? ("warning" as const) : ("default" as const),
     },
     {
@@ -111,7 +111,7 @@ export default async function DashboardHomePage() {
     {
       label: "Commandes en cours",
       value: String(overview.pendingOrderCount),
-      helper: "Flux encore en attente ou en preparation.",
+      helper: "Flux encore en attente ou en préparation.",
       accent: overview.pendingOrderCount > 0 ? ("warning" as const) : ("default" as const),
     },
   ]
@@ -129,8 +129,8 @@ export default async function DashboardHomePage() {
     },
     {
       label: "Rattachement",
-      value: profile.company?.name ?? profile.company_name ?? "A renseigner",
-      helper: "Contexte societaire",
+      value: profile.company?.name ?? profile.company_name ?? "À renseigner",
+      helper: "Contexte sociétaire",
     },
   ]
 
@@ -273,12 +273,12 @@ export default async function DashboardHomePage() {
 
         <Card className="border-border/70 bg-card/92">
           <CardHeader className="border-b border-border/70">
-            <CardTitle>Etat du compte</CardTitle>
+            <CardTitle>État du compte</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4 p-6">
             <StateRow label="Rôle" value={ROLE_LABELS[profile.role]} />
             <StateRow
-              label="Portee"
+              label="Portée"
               value="Vue personnelle"
             />
             <StateRow
@@ -309,7 +309,7 @@ export default async function DashboardHomePage() {
           emptyMessage="Aucune commande n’a encore été enregistrée."
           rows={overview.recentOrders.map((order) => ({
             id: order.id,
-            title: order.order_number ?? "Commande sans numero",
+            title: order.order_number ?? "Commande sans numéro",
             subtitle: order.company_name ?? order.contact_name ?? "Compte Epicap",
             meta: ORDER_STATUS_LABELS[order.status],
             amount: currencyFormatter.format(order.total),
@@ -318,14 +318,14 @@ export default async function DashboardHomePage() {
         />
 
         <ActivityCard
-          title="Devis recents"
+          title="Devis récents"
           icon={<FileText className="size-5 text-primary" />}
           ctaHref="/dashboard/devis"
           ctaLabel="Voir les devis"
           emptyMessage="Aucun devis n’a encore été saisi."
           rows={overview.recentQuotes.map((quote) => ({
             id: quote.id,
-            title: quote.quote_number ?? "Devis sans numero",
+            title: quote.quote_number ?? "Devis sans numéro",
             subtitle: quote.company_name ?? quote.contact_name ?? "Compte Epicap",
             meta: QUOTE_STATUS_LABELS[quote.status],
             amount: currencyFormatter.format(quote.total),

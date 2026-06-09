@@ -45,11 +45,25 @@ export function Header() {
   const { itemCount } = useCart()
 
   React.useEffect(() => {
+    const collapseAt = 56
+    const expandAt = 4
+
     const handleScroll = () => {
-      setIsScrolled(window.scrollY > 10)
+      setIsScrolled((current) => {
+        if (!current && window.scrollY > collapseAt) {
+          return true
+        }
+
+        if (current && window.scrollY <= expandAt) {
+          return false
+        }
+
+        return current
+      })
     }
 
-    window.addEventListener("scroll", handleScroll)
+    handleScroll()
+    window.addEventListener("scroll", handleScroll, { passive: true })
 
     return () => window.removeEventListener("scroll", handleScroll)
   }, [])
@@ -95,6 +109,7 @@ export function Header() {
             <div className="ml-auto flex items-center gap-4">
               <a
                 href={`tel:${companyInfo.phone.replace(/\s+/g, "")}`}
+                data-analytics-manual="true"
                 onClick={() => safeTrack("Phone Clicked", { source_page: "header-topbar" })}
                 className="flex items-center gap-1.5 font-medium transition-colors hover:text-primary"
               >
@@ -152,6 +167,7 @@ export function Header() {
               <Button asChild className="hidden rounded-full px-5 shadow-sm lg:flex">
                 <Link
                   href="/devis?source=header"
+                  data-analytics-manual="true"
                   onClick={() => safeTrack("Quote CTA Clicked", { source_page: "header" })}
                 >
                   Demander un devis
@@ -375,6 +391,7 @@ function MobileNav() {
         <Button asChild className="w-full rounded-full">
           <Link
             href="/devis?source=mobile-header"
+            data-analytics-manual="true"
             onClick={() => safeTrack("Quote CTA Clicked", { source_page: "mobile-header" })}
           >
             Demander un devis
@@ -383,6 +400,7 @@ function MobileNav() {
         <Button variant="outline" asChild className="w-full rounded-full">
           <a
             href={`tel:${companyInfo.phone.replace(/\s+/g, "")}`}
+            data-analytics-manual="true"
             onClick={() => safeTrack("Phone Clicked", { source_page: "mobile-header" })}
           >
             <Phone className="mr-2 size-4" />
