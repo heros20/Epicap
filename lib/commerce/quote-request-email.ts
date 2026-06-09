@@ -1,4 +1,10 @@
 import type { QuoteRequestInput } from "@/lib/commerce/request-validation"
+import {
+  formatDepartmentOptionLabel,
+  getAgencyForDepartmentCode,
+  getAgencyLabelForDepartmentCode,
+  getDepartmentByCode,
+} from "@/lib/data/agency-departments"
 
 interface QuoteEmailLine {
   sku: string
@@ -23,6 +29,7 @@ interface QuoteEmailPricing {
 
 export interface QuoteEmailDelivery {
   recipient: string
+  recipients: string[]
   provider: "resend" | "development"
   messageId: string | null
 }
@@ -35,9 +42,10 @@ interface SendQuoteRequestEmailOptions {
   pricing: QuoteEmailPricing
 }
 
-const defaultRecipient = "kevin.bigoni@outlook.fr"
+const defaultRecipient = "herosqwerty@gmail.com"
 const defaultFrom = "Epicap <onboarding@resend.dev>"
 const resendTestDomain = "@resend.dev"
+const fallbackValues = new Set(["", "Non renseigné", "À confirmer", "À préciser"])
 
 const requestTypeLabels: Record<QuoteRequestInput["requestType"], string> = {
   purchase: "Achat",
@@ -73,6 +81,11 @@ function formatValue(value: string | number | null | undefined, fallback = "Non 
   return normalized.length > 0 ? normalized : fallback
 }
 
+function hasDisplayValue(value: string | number | null | undefined) {
+  const normalized = formatValue(value).trim()
+  return !fallbackValues.has(normalized)
+}
+
 function buildInfoRow(label: string, value: string | number | null | undefined) {
   return `
     <tr>
@@ -80,6 +93,27 @@ function buildInfoRow(label: string, value: string | number | null | undefined) 
       <td style="padding:8px 0;color:#0f172a;font-size:14px;font-weight:600;">${escapeHtml(formatValue(value))}</td>
     </tr>
   `
+}
+
+function buildOptionalInfoRow(label: string, value: string | number | null | undefined) {
+  return hasDisplayValue(value) ? buildInfoRow(label, value) : ""
+}
+
+function buildTextLine(label: string, value: string | number | null | undefined) {
+  return hasDisplayValue(value) ? `${label}: ${formatValue(value)}` : null
+}
+
+function compactTextLines(lines: Array<string | null>) {
+  return lines.filter((line): line is string => Boolean(line))
+}
+
+function getEmailRecipients(primaryRecipient: string, requestedDepartment: string) {
+  const selectedAgency = getAgencyForDepartmentCode(requestedDepartment)
+  const recipients = [primaryRecipient, selectedAgency?.email]
+    .filter((email): email is string => Boolean(email?.trim()))
+    .map((email) => email.trim())
+
+  return Array.from(new Set(recipients))
 }
 
 function buildLineRows(lines: QuoteEmailLine[]) {
@@ -126,6 +160,13 @@ function buildLineRows(lines: QuoteEmailLine[]) {
 
 function buildQuoteRequestEmailHtml(options: SendQuoteRequestEmailOptions) {
   const { reference, form, customerLabel, lines, pricing } = options
+  const requestedDepartment = getDepartmentByCode(form.requestedDepartment)
+  const requestedAgencyLabel = getAgencyLabelForDepartmentCode(form.requestedDepartment)
+  const messageBlock = hasDisplayValue(form.message)
+    ? `<div style="margin:0 0 24px;padding:14px 16px;border:1px solid #e2e8f0;border-radius:8px;background:#f8fafc;color:#0f172a;font-size:14px;line-height:1.6;white-space:pre-wrap;">${escapeHtml(
+        formatValue(form.message),
+      )}</div>`
+    : ""
 
   return `
     <div style="margin:0;padding:0;background:#f7f8fa;font-family:Arial,Helvetica,sans-serif;">
@@ -145,24 +186,22 @@ function buildQuoteRequestEmailHtml(options: SendQuoteRequestEmailOptions) {
             <h2 style="margin:0 0 12px;font-size:18px;color:#0f1012;border-left:4px solid #ff851c;padding-left:10px;">Coordonnées client</h2>
             <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-collapse:collapse;margin-bottom:24px;">
               ${buildInfoRow("Profil", customerTypeLabels[form.customerType])}
-              ${buildInfoRow("Société", customerLabel)}
+              ${buildOptionalInfoRow("Société", form.customerType === "company" ? customerLabel : null)}
               ${buildInfoRow("Contact", form.contactName)}
               ${buildInfoRow("E-mail", form.contactEmail)}
               ${buildInfoRow("Téléphone", form.contactPhone)}
-              ${buildInfoRow("Agence Epicap", form.requestedAgency)}
-              ${buildInfoRow("Délai souhaité", form.requestedDelay)}
+              ${buildInfoRow("Département", requestedDepartment ? formatDepartmentOptionLabel(requestedDepartment) : form.requestedDepartment)}
+              ${buildInfoRow("Agence Epicap", requestedAgencyLabel)}
             </table>
 
             <h2 style="margin:0 0 12px;font-size:18px;color:#0f1012;border-left:4px solid #ff851c;padding-left:10px;">Besoin</h2>
             <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-collapse:collapse;margin-bottom:16px;">
               ${buildInfoRow("Type de demande", requestTypeLabels[form.requestType])}
-              ${buildInfoRow("Durée de location", form.rentalDays ? `${form.rentalDays} jour(s)` : null)}
-              ${buildInfoRow("Origine", form.contextLabel || form.sourcePage)}
-              ${buildInfoRow("Produit catalogue", form.productSlug)}
+              ${buildOptionalInfoRow("Durée de location", form.rentalDays ? `${form.rentalDays} jour(s)` : null)}
+              ${buildOptionalInfoRow("Origine", form.contextLabel || form.sourcePage)}
+              ${buildOptionalInfoRow("Produit catalogue", form.productSlug)}
             </table>
-            <div style="margin:0 0 24px;padding:14px 16px;border:1px solid #e2e8f0;border-radius:8px;background:#f8fafc;color:#0f172a;font-size:14px;line-height:1.6;white-space:pre-wrap;">${escapeHtml(
-              formatValue(form.message, "Aucun commentaire client transmis."),
-            )}</div>
+            ${messageBlock}
 
             <h2 style="margin:0 0 12px;font-size:18px;color:#0f1012;border-left:4px solid #ff851c;padding-left:10px;">Articles joints</h2>
             <table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="border-collapse:collapse;border:1px solid #e8ebef;border-radius:8px;overflow:hidden;margin-bottom:24px;">
@@ -195,6 +234,24 @@ function buildQuoteRequestEmailHtml(options: SendQuoteRequestEmailOptions) {
 
 function buildQuoteRequestEmailText(options: SendQuoteRequestEmailOptions) {
   const { reference, form, customerLabel, lines, pricing } = options
+  const requestedDepartment = getDepartmentByCode(form.requestedDepartment)
+  const requestedAgencyLabel = getAgencyLabelForDepartmentCode(form.requestedDepartment)
+  const customerLines = compactTextLines([
+    `Profil: ${customerTypeLabels[form.customerType]}`,
+    buildTextLine("Société", form.customerType === "company" ? customerLabel : null),
+    `Contact: ${form.contactName}`,
+    `E-mail: ${form.contactEmail}`,
+    `Téléphone: ${form.contactPhone}`,
+    `Type: ${requestTypeLabels[form.requestType]}`,
+    `Département: ${requestedDepartment ? formatDepartmentOptionLabel(requestedDepartment) : form.requestedDepartment}`,
+    `Agence Epicap: ${requestedAgencyLabel}`,
+    buildTextLine("Durée de location", form.rentalDays ? `${form.rentalDays} jour(s)` : null),
+    buildTextLine("Origine", form.contextLabel || form.sourcePage),
+    buildTextLine("Produit catalogue", form.productSlug),
+  ])
+  const messageLines = hasDisplayValue(form.message)
+    ? ["", "Message client:", formatValue(form.message)]
+    : []
   const itemLines =
     lines.length > 0
       ? lines
@@ -211,18 +268,8 @@ function buildQuoteRequestEmailText(options: SendQuoteRequestEmailOptions) {
     `Nouvelle demande de devis ${reference}`,
     "Demande à traiter par l'équipe Epicap. La trace est aussi disponible dans le tableau de bord Epicap.",
     "",
-    `Profil: ${customerTypeLabels[form.customerType]}`,
-    `Société: ${formatValue(customerLabel)}`,
-    `Contact: ${form.contactName}`,
-    `E-mail: ${form.contactEmail}`,
-    `Téléphone: ${form.contactPhone}`,
-    `Type: ${requestTypeLabels[form.requestType]}`,
-    `Agence Epicap: ${formatValue(form.requestedAgency)}`,
-    `Délai souhaité: ${formatValue(form.requestedDelay)}`,
-    `Durée de location: ${form.rentalDays ? `${form.rentalDays} jour(s)` : "Non renseigné"}`,
-    "",
-    "Message client:",
-    formatValue(form.message, "Aucun commentaire client transmis."),
+    ...customerLines,
+    ...messageLines,
     "",
     "Articles:",
     itemLines,
@@ -240,28 +287,19 @@ export async function sendQuoteRequestEmail(
   options: SendQuoteRequestEmailOptions,
 ): Promise<QuoteEmailDelivery> {
   const recipient = process.env.EPICAP_QUOTE_EMAIL?.trim() || defaultRecipient
+  const recipients = getEmailRecipients(recipient, options.form.requestedDepartment)
   const from = process.env.RESEND_FROM_EMAIL?.trim() || defaultFrom
   const apiKey = process.env.RESEND_API_KEY?.trim()
-  const isProduction = process.env.NODE_ENV === "production"
 
   if (!apiKey) {
-    if (isProduction) {
-      throw new Error("L'envoi des demandes de devis par e-mail n'est pas encore configuré.")
-    }
-
-    console.info(
-      `[quote-email] RESEND_API_KEY absent. Email ${options.reference} non envoyé à ${recipient}.`,
+    throw new Error(
+      `RESEND_API_KEY est absent. Email ${options.reference} non envoyé à ${recipients.join(", ")}.`,
     )
-    return {
-      recipient,
-      provider: "development",
-      messageId: null,
-    }
   }
 
-  if (isProduction && from.toLowerCase().includes(resendTestDomain)) {
+  if (process.env.NODE_ENV === "production" && from.toLowerCase().includes(resendTestDomain)) {
     throw new Error(
-      "RESEND_FROM_EMAIL doit utiliser un domaine verifie en production, pas onboarding@resend.dev.",
+      "RESEND_FROM_EMAIL doit utiliser un domaine vérifié en production, pas onboarding@resend.dev.",
     )
   }
 
@@ -273,7 +311,7 @@ export async function sendQuoteRequestEmail(
     },
     body: JSON.stringify({
       from,
-      to: [recipient],
+      to: recipients,
       reply_to: options.form.contactEmail,
       subject: `Demande de devis Epicap ${options.reference} - ${options.customerLabel}`,
       html: buildQuoteRequestEmailHtml(options),
@@ -284,7 +322,7 @@ export async function sendQuoteRequestEmail(
   if (!response.ok) {
     const errorBody = await response.text()
     throw new Error(
-      `Le service d'envoi a refusé la demande de devis (${response.status}): ${errorBody}`,
+      `Le service d’envoi a refusé la demande de devis (${response.status}) : ${errorBody}`,
     )
   }
 
@@ -292,6 +330,7 @@ export async function sendQuoteRequestEmail(
 
   return {
     recipient,
+    recipients,
     provider: "resend",
     messageId: payload.id ?? null,
   }

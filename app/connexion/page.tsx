@@ -1,5 +1,6 @@
 import type { ReactNode } from "react"
 import Link from "next/link"
+import { redirect } from "next/navigation"
 import { KeyRound, ShieldCheck, UserCog } from "lucide-react"
 
 import { GoogleAuthButton } from "@/components/auth/google-auth-button"
@@ -11,6 +12,7 @@ import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { signInAction } from "@/lib/auth/actions"
+import { getCurrentAuthState } from "@/lib/auth/server"
 import { normalizeRedirectPath } from "@/lib/auth/types"
 
 function pickFirstValue(value: string | string[] | undefined) {
@@ -26,6 +28,11 @@ export default async function LoginPage({
   const error = pickFirstValue(params.error)
   const success = pickFirstValue(params.success)
   const next = normalizeRedirectPath(pickFirstValue(params.next))
+  const authState = await getCurrentAuthState()
+
+  if (authState.user) {
+    redirect(next || "/dashboard")
+  }
 
   return (
     <div className="flex min-h-screen flex-col">

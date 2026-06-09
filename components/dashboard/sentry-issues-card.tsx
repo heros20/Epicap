@@ -1,7 +1,7 @@
 "use client"
 
 import * as React from "react"
-import { AlertTriangle, ExternalLink, RefreshCw, ShieldAlert } from "lucide-react"
+import { AlertTriangle, CheckCircle2, ExternalLink, RefreshCw, ShieldAlert } from "lucide-react"
 
 import { Badge } from "@/components/ui/badge"
 import { Button } from "@/components/ui/button"
@@ -32,6 +32,8 @@ function issueCountLabel(issue: SentryIssue) {
 export function SentryIssuesCard() {
   const [data, setData] = React.useState<SentryIssuesResult | null>(null)
   const [isLoading, setIsLoading] = React.useState(true)
+  const [resolvingIssueId, setResolvingIssueId] = React.useState<string | null>(null)
+  const [actionError, setActionError] = React.useState<string | null>(null)
 
   const loadIssues = React.useCallback(async () => {
     setIsLoading(true)
@@ -64,6 +66,36 @@ export function SentryIssuesCard() {
   React.useEffect(() => {
     void loadIssues()
   }, [loadIssues])
+
+  const resolveIssue = React.useCallback(
+    async (issueId: string) => {
+      setResolvingIssueId(issueId)
+      setActionError(null)
+
+      try {
+        const response = await fetch("/api/admin/sentry/issues", {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ issueId }),
+        })
+        const payload = (await response.json()) as { ok?: boolean; error?: string }
+
+        if (!response.ok || !payload.ok) {
+          setActionError(payload.error ?? "Sentry a refusé la résolution de l'issue.")
+          return
+        }
+
+        await loadIssues()
+      } catch {
+        setActionError("Résolution Sentry momentanément indisponible.")
+      } finally {
+        setResolvingIssueId(null)
+      }
+    },
+    [loadIssues],
+  )
 
   const issues = data?.issues ?? []
   const hasIssues = issues.length > 0
@@ -101,13 +133,16 @@ export function SentryIssuesCard() {
           </div>
         ) : hasIssues ? (
           <div className="space-y-3">
+            {actionError ? (
+              <div className="flex gap-3 rounded-xl border border-amber-300/35 bg-amber-50 p-4 text-sm text-amber-950">
+                <AlertTriangle className="mt-0.5 size-4 shrink-0" />
+                <p>{actionError}</p>
+              </div>
+            ) : null}
             {issues.map((issue) => (
-              <a
+              <div
                 key={issue.id}
-                href={issue.permalink}
-                target="_blank"
-                rel="noreferrer"
-                className="block rounded-xl border border-border/70 bg-muted/25 p-4 transition-colors hover:border-primary/35 hover:bg-primary/5"
+                className="rounded-xl border border-border/70 bg-muted/25 p-4 transition-colors hover:border-primary/35 hover:bg-primary/5"
               >
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
@@ -122,14 +157,40 @@ export function SentryIssuesCard() {
                       <p className="mt-1 truncate text-xs text-muted-foreground">{issue.culprit}</p>
                     ) : null}
                   </div>
-                  <ExternalLink className="mt-1 size-4 shrink-0 text-muted-foreground" />
+                  <Button asChild variant="ghost" size="icon" className="mt-0.5 shrink-0">
+                    <a
+                      href={issue.permalink}
+                      target="_blank"
+                      rel="noreferrer"
+                      aria-label="Ouvrir l'issue dans Sentry"
+                    >
+                      <ExternalLink className="size-4 text-muted-foreground" />
+                    </a>
+                  </Button>
                 </div>
-                <div className="mt-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
-                  <span>{issueCountLabel(issue)}</span>
-                  <span>{issue.userCount.toLocaleString("fr-FR")} utilisateur(s)</span>
-                  <span>Dernière vue : {formatDate(issue.lastSeen)}</span>
+                <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
+                  <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
+                    <span>{issueCountLabel(issue)}</span>
+                    <span>{issue.userCount.toLocaleString("fr-FR")} utilisateur(s)</span>
+                    <span>Dernière vue : {formatDate(issue.lastSeen)}</span>
+                  </div>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="rounded-md"
+                    onClick={() => void resolveIssue(issue.id)}
+                    disabled={resolvingIssueId === issue.id}
+                  >
+                    {resolvingIssueId === issue.id ? (
+                      <RefreshCw className="size-4 animate-spin" />
+                    ) : (
+                      <CheckCircle2 className="size-4" />
+                    )}
+                    Marquer comme résolu
+                  </Button>
                 </div>
-              </a>
+              </div>
             ))}
           </div>
         ) : (

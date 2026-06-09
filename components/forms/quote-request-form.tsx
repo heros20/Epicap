@@ -23,8 +23,11 @@ import {
   type RequestFieldErrors,
 } from "@/lib/commerce/request-validation"
 import { useCart } from "@/lib/cart/use-cart"
-import { formatAgencyOptionLabel, formatAgencyOptionValue } from "@/lib/data/agencies"
-import { agencies } from "@/lib/data/navigation"
+import {
+  departmentOptions,
+  formatDepartmentOptionLabel,
+  getAgencyForDepartmentCode,
+} from "@/lib/data/agency-departments"
 import type { Product } from "@/lib/data/products"
 
 interface QuoteRequestFormProps {
@@ -51,16 +54,18 @@ export function QuoteRequestForm({
   const [requestType, setRequestType] = React.useState<QuoteRequestType>(
     preferredRequestType,
   )
+  const [requestedDepartment, setRequestedDepartment] = React.useState("")
   const [includeCart, setIncludeCart] = React.useState(includeCartByDefault)
   const [clientFieldErrors, setClientFieldErrors] = React.useState<RequestFieldErrors>({})
   const [state, formAction, pending] = useActionState(
     submitQuoteRequestAction,
     initialRequestActionState,
   )
+  const canAttachCart = requestType === "purchase" || requestType === "mixed"
 
   const cartPayload = React.useMemo(
     () =>
-      includeCart
+      canAttachCart && includeCart
         ? JSON.stringify(
             items.map((item) => ({
               productId: item.product.id,
@@ -68,7 +73,7 @@ export function QuoteRequestForm({
             })),
           )
         : "",
-    [includeCart, items],
+    [canAttachCart, includeCart, items],
   )
 
   const defaultCompanyName = profile?.company?.name ?? profile?.company_name ?? ""
@@ -81,7 +86,8 @@ export function QuoteRequestForm({
     Object.keys(clientFieldErrors).length > 0
       ? clientFieldErrors
       : state.fieldErrors ?? {}
-  const hasCatalogContext = Boolean(requestedProduct) || (includeCart && items.length > 0)
+  const hasCatalogContext =
+    Boolean(requestedProduct) || (canAttachCart && includeCart && items.length > 0)
   const requestTypeLabel =
     requestType === "purchase"
       ? "Achat"
@@ -92,6 +98,17 @@ export function QuoteRequestForm({
           : requestType === "fit-test"
             ? "FIT TEST"
             : "Mixte"
+  const selectedAgency = requestedDepartment
+    ? getAgencyForDepartmentCode(requestedDepartment)
+    : undefined
+
+  const getProductHref = React.useCallback((product: Product) => {
+    const categoryPath = product.subcategorySlug
+      ? `${product.categorySlug}/${product.subcategorySlug}`
+      : product.categorySlug
+
+    return `/boutique/${categoryPath}/${product.slug}`
+  }, [])
 
   React.useEffect(() => {
     safeTrack("Quote Form Viewed", {
@@ -99,18 +116,29 @@ export function QuoteRequestForm({
       context_label: contextLabel || undefined,
       request_type: requestType,
       customer_type: customerType,
+      requested_department: requestedDepartment || undefined,
+      requested_agency: selectedAgency?.slug,
       with_product: Boolean(requestedProduct),
-      with_cart: includeCart && items.length > 0,
+      with_cart: canAttachCart && includeCart && items.length > 0,
     })
   }, [
+    canAttachCart,
     contextLabel,
     customerType,
     includeCart,
     items.length,
     requestType,
+    requestedDepartment,
     requestedProduct,
+    selectedAgency?.slug,
     sourcePage,
   ])
+
+  React.useEffect(() => {
+    if (!canAttachCart && includeCart) {
+      setIncludeCart(false)
+    }
+  }, [canAttachCart, includeCart])
 
   const handleSubmit = React.useCallback((event: React.FormEvent<HTMLFormElement>) => {
     const validation = safeParseQuoteRequestFormData(new FormData(event.currentTarget))
@@ -225,255 +253,274 @@ export function QuoteRequestForm({
               <input type="hidden" name="productSlug" value={requestedProduct?.slug ?? ""} />
               <input type="hidden" name="cartPayload" value={cartPayload} />
 
-              <div className="grid gap-4 md:grid-cols-2">
-                <Field
-                  label="Profil d'achat"
-                  htmlFor="customerType"
-                  className="md:col-span-2"
-                  hint="Entreprise pour une société, Particulier pour un achat en nom propre."
-                  error={activeFieldErrors.customerType}
-                >
-                  <select
-                    id="customerType"
-                    name="customerType"
-                    value={customerType}
-                    onChange={(event) => setCustomerType(event.target.value as CustomerType)}
-                    className="border-input bg-background h-10 w-full rounded-md border px-3 text-sm"
-                  >
-                    <option value="company">Entreprise</option>
-                    <option value="individual">Particulier</option>
-                  </select>
-                </Field>
-                <Field
-                  label="Nom du contact"
-                  htmlFor="contactName"
-                  error={activeFieldErrors.contactName}
-                  required
-                >
-                  <Input
-                    id="contactName"
-                    name="contactName"
-                    defaultValue={defaultContactName}
-                    aria-invalid={Boolean(activeFieldErrors.contactName)}
-                    placeholder={
-                      customerType === "company" ? "Responsable chantier" : "Nom et prénom"
-                    }
-                    required
-                  />
-                </Field>
-                {customerType === "company" ? (
+              <FormSection
+                title="Profil"
+                description="Identifiez le cadre de la demande avant de renseigner les coordonnées."
+              >
+                <div className="grid gap-4 lg:grid-cols-[0.85fr_1.15fr]">
                   <Field
-                    label="Société"
-                    htmlFor="companyName"
-                    hint="Obligatoire pour une demande entreprise."
-                    error={activeFieldErrors.companyName}
+                    label="Profil d'achat"
+                    htmlFor="customerType"
+                    error={activeFieldErrors.customerType}
+                  >
+                    <select
+                      id="customerType"
+                      name="customerType"
+                      value={customerType}
+                      onChange={(event) => setCustomerType(event.target.value as CustomerType)}
+                      className="border-input bg-background h-11 w-full rounded-md border px-3 text-sm"
+                    >
+                      <option value="company">Entreprise</option>
+                      <option value="individual">Particulier</option>
+                    </select>
+                  </Field>
+                  {customerType === "company" ? (
+                    <Field
+                      label="Société"
+                      htmlFor="companyName"
+                      error={activeFieldErrors.companyName}
+                      required
+                    >
+                      <Input
+                        id="companyName"
+                        name="companyName"
+                        defaultValue={defaultCompanyName}
+                        aria-invalid={Boolean(activeFieldErrors.companyName)}
+                        placeholder="Nom de la société"
+                        required
+                      />
+                    </Field>
+                  ) : (
+                    <div className="flex items-center rounded-xl border border-border/70 bg-muted/20 px-4 py-3 text-sm text-muted-foreground">
+                      Cette demande sera enregistrée comme particulier.
+                    </div>
+                  )}
+                </div>
+              </FormSection>
+
+              <FormSection
+                title="Coordonnées"
+                description="Ces informations servent à vous recontacter au sujet de la demande."
+              >
+                <div className="grid gap-4 md:grid-cols-2">
+                  <Field
+                    label="Nom du contact"
+                    htmlFor="contactName"
+                    error={activeFieldErrors.contactName}
                     required
                   >
                     <Input
-                      id="companyName"
-                      name="companyName"
-                      defaultValue={defaultCompanyName}
-                      aria-invalid={Boolean(activeFieldErrors.companyName)}
-                      placeholder="Nom de la société"
+                      id="contactName"
+                      name="contactName"
+                      defaultValue={defaultContactName}
+                      aria-invalid={Boolean(activeFieldErrors.contactName)}
+                      placeholder={
+                        customerType === "company" ? "Responsable chantier" : "Nom et prénom"
+                      }
                       required
                     />
                   </Field>
-                ) : (
                   <Field
-                    label="Statut"
-                    htmlFor="customerType-individual"
-                    hint="Aucune société n'est requise pour un particulier."
+                    label="Email"
+                    htmlFor="contactEmail"
+                    error={activeFieldErrors.contactEmail}
+                    required
                   >
-                    <div
-                      id="customerType-individual"
-                      className="rounded-xl border border-border/70 bg-muted/20 px-4 py-3 text-sm text-muted-foreground"
-                    >
-                    Cette demande sera enregistrée comme particulier.
-                    </div>
+                    <Input
+                      id="contactEmail"
+                      name="contactEmail"
+                      type="email"
+                      defaultValue={defaultEmail}
+                      aria-invalid={Boolean(activeFieldErrors.contactEmail)}
+                      placeholder="contact@exemple.fr"
+                      required
+                    />
                   </Field>
-                )}
-                <Field
-                  label="Email"
-                  htmlFor="contactEmail"
-                  error={activeFieldErrors.contactEmail}
-                  required
-                >
-                  <Input
-                    id="contactEmail"
-                    name="contactEmail"
-                    type="email"
-                    defaultValue={defaultEmail}
-                    aria-invalid={Boolean(activeFieldErrors.contactEmail)}
-                    placeholder="contact@exemple.fr"
-                    required
-                  />
-                </Field>
-                <Field
-                  label="Téléphone"
-                  htmlFor="contactPhone"
-                  error={activeFieldErrors.contactPhone}
-                  required
-                >
-                  <Input
-                    id="contactPhone"
-                    name="contactPhone"
-                    type="tel"
-                    defaultValue={defaultPhone}
-                    aria-invalid={Boolean(activeFieldErrors.contactPhone)}
-                    placeholder="+33 6 12 34 56 78"
-                    required
-                  />
-                </Field>
-              </div>
-
-              <div className="grid gap-4 md:grid-cols-2">
-                <Field
-                  label="Type de demande"
-                  htmlFor="requestType"
-                  error={activeFieldErrors.requestType}
-                  required
-                >
-                  <select
-                    id="requestType"
-                    name="requestType"
-                    value={requestType}
-                    onChange={(event) =>
-                      setRequestType(event.target.value as QuoteRequestType)
-                    }
-                    className="border-input bg-background h-10 w-full rounded-md border px-3 text-sm"
-                  >
-                    <option value="purchase">Achat</option>
-                    <option value="rental">Location</option>
-                    <option value="maintenance">Maintenance</option>
-                    <option value="fit-test">FIT TEST</option>
-                    <option value="mixed">Mixte</option>
-                  </select>
-                </Field>
-                <Field
-                  label="Agence Epicap"
-                  htmlFor="requestedAgency"
-                  hint="Choisissez l'agence la plus proche de votre besoin."
-                  error={activeFieldErrors.requestedAgency}
-                  required
-                >
-                  <select
-                    id="requestedAgency"
-                    name="requestedAgency"
-                    defaultValue=""
-                    aria-invalid={Boolean(activeFieldErrors.requestedAgency)}
-                    className="border-input bg-background h-10 w-full rounded-md border px-3 text-sm"
+                  <Field
+                    label="Téléphone"
+                    htmlFor="contactPhone"
+                    error={activeFieldErrors.contactPhone}
                     required
                   >
-                    <option value="">À sélectionner</option>
-                    {agencies.map((agency) => (
-                      <option key={agency.slug} value={formatAgencyOptionValue(agency)}>
-                        {formatAgencyOptionLabel(agency)}
-                      </option>
-                    ))}
-                  </select>
-                </Field>
-                <Field label="Délai souhaité" htmlFor="requestedDelay">
-                  <Input
-                    id="requestedDelay"
-                    name="requestedDelay"
-                    placeholder="48h, semaine prochaine, urgent..."
-                  />
-                </Field>
-                <Field
-                  label="Durée location (jours)"
-                  htmlFor="rentalDays"
-                  hint={
-                    requestType === "rental"
-                      ? "Obligatoire pour une demande de location."
-                      : "Laissez vide si la demande ne concerne pas une location."
-                  }
-                  error={activeFieldErrors.rentalDays}
-                  required={requestType === "rental"}
-                >
-                  <Input
-                    id="rentalDays"
-                    name="rentalDays"
-                    type="number"
-                    min={1}
-                    max={365}
-                    aria-invalid={Boolean(activeFieldErrors.rentalDays)}
-                    placeholder={requestType === "rental" ? "Nombre de jours" : "Optionnel"}
-                    required={requestType === "rental"}
-                  />
-                </Field>
-              </div>
+                    <Input
+                      id="contactPhone"
+                      name="contactPhone"
+                      type="tel"
+                      defaultValue={defaultPhone}
+                      aria-invalid={Boolean(activeFieldErrors.contactPhone)}
+                      placeholder="+33 6 12 34 56 78"
+                      required
+                    />
+                  </Field>
+                </div>
+              </FormSection>
 
-              {requestedProduct ? (
-                <div className="rounded-[1.2rem] border border-border/70 bg-muted/20 p-4">
-                  <div className="flex items-center gap-3">
-                    <Package2 className="size-5 text-primary" />
-                    <div>
-                      <p className="text-sm font-semibold">{requestedProduct.name}</p>
-                      <p className="text-sm text-muted-foreground">
-                      Produit préchargé depuis le catalogue.
-                      </p>
-                    </div>
-                  </div>
-                  <div className="mt-4 max-w-[180px]">
+              <FormSection
+                title="Demande"
+                description="Choisissez le type de besoin et le département du chantier."
+              >
+                <div className="grid gap-4 md:grid-cols-2">
+                  <Field
+                    label="Type de demande"
+                    htmlFor="requestType"
+                    error={activeFieldErrors.requestType}
+                    required
+                  >
+                    <select
+                      id="requestType"
+                      name="requestType"
+                      value={requestType}
+                      onChange={(event) =>
+                        setRequestType(event.target.value as QuoteRequestType)
+                      }
+                      className="border-input bg-background h-11 w-full rounded-md border px-3 text-sm"
+                    >
+                      <option value="purchase">Achat</option>
+                      <option value="rental">Location</option>
+                      <option value="maintenance">Maintenance</option>
+                      <option value="fit-test">FIT TEST</option>
+                      <option value="mixed">Mixte</option>
+                    </select>
+                  </Field>
+                  <Field
+                    label="Département du chantier"
+                    htmlFor="requestedDepartment"
+                    error={activeFieldErrors.requestedDepartment}
+                    required
+                  >
+                    <select
+                      id="requestedDepartment"
+                      name="requestedDepartment"
+                      value={requestedDepartment}
+                      onChange={(event) => setRequestedDepartment(event.target.value)}
+                      aria-invalid={Boolean(activeFieldErrors.requestedDepartment)}
+                      className="border-input bg-background h-11 w-full rounded-md border px-3 text-sm"
+                      required
+                    >
+                      <option value="">Choisir un département</option>
+                      {departmentOptions.map((department) => (
+                        <option key={department.code} value={department.code}>
+                          {formatDepartmentOptionLabel(department)}
+                        </option>
+                      ))}
+                    </select>
+                  </Field>
+                  {requestType === "rental" || requestType === "mixed" ? (
                     <Field
-                      label="Quantité"
-                      htmlFor="productQuantity"
-                      compact
-                      error={activeFieldErrors.productQuantity}
+                      label="Durée location (jours)"
+                      htmlFor="rentalDays"
+                      hint={
+                        requestType === "rental"
+                          ? "Obligatoire pour une demande de location."
+                          : "À renseigner si une partie de la demande concerne une location."
+                      }
+                      error={activeFieldErrors.rentalDays}
+                      required={requestType === "rental"}
                     >
                       <Input
-                        id="productQuantity"
-                        name="productQuantity"
+                        id="rentalDays"
+                        name="rentalDays"
                         type="number"
                         min={1}
-                        max={999}
-                        aria-invalid={Boolean(activeFieldErrors.productQuantity)}
-                        defaultValue={1}
+                        max={365}
+                        aria-invalid={Boolean(activeFieldErrors.rentalDays)}
+                        placeholder={requestType === "rental" ? "Nombre de jours" : "Optionnel"}
+                        required={requestType === "rental"}
                       />
                     </Field>
-                  </div>
+                  ) : null}
                 </div>
-              ) : null}
 
-              <div className="rounded-[1.2rem] border border-border/70 bg-muted/20 p-4">
-                <label className="flex items-start gap-3">
-                  <input
-                    type="checkbox"
-                    checked={includeCart}
-                    onChange={(event) => setIncludeCart(event.target.checked)}
-                    className="mt-1 size-4 rounded border-border"
-                  />
-                  <div>
-                    <p className="text-sm font-semibold">Joindre le panier actuel</p>
-                    <p className="mt-1 text-sm leading-6 text-muted-foreground">
-                      {items.length > 0
-                        ? `${items.length} ligne(s) du panier peuvent être ajoutées à la demande.`
-                        : "Aucun article n'est actuellement présent dans le panier local."}
+                {selectedAgency ? (
+                  <div className="rounded-xl border border-primary/20 bg-primary/6 px-4 py-3 text-sm">
+                    <p className="font-semibold text-foreground">
+                      Agence concernée : {selectedAgency.name} - {selectedAgency.city}
+                    </p>
+                    <p className="mt-1 text-muted-foreground">
+                      {selectedAgency.address}, {selectedAgency.postalCode} {selectedAgency.city}
+                    </p>
+                    <p className="mt-1 text-muted-foreground">
+                      {selectedAgency.phone} · {selectedAgency.email}
                     </p>
                   </div>
-                </label>
-              </div>
+                ) : null}
 
-              <Field
-                label="Contexte chantier et besoin"
-                htmlFor="message"
-                hint={
+                {requestedProduct ? (
+                  <div className="rounded-xl border border-border/70 bg-muted/20 p-4">
+                    <div className="flex items-center gap-3">
+                      <Package2 className="size-5 text-primary" />
+                      <div>
+                        <p className="text-sm font-semibold">{requestedProduct.name}</p>
+                        <p className="text-sm text-muted-foreground">
+                          Produit préchargé depuis le catalogue.
+                        </p>
+                      </div>
+                    </div>
+                    <div className="mt-4 max-w-[180px]">
+                      <Field
+                        label="Quantité"
+                        htmlFor="productQuantity"
+                        compact
+                        error={activeFieldErrors.productQuantity}
+                      >
+                        <Input
+                          id="productQuantity"
+                          name="productQuantity"
+                          type="number"
+                          min={1}
+                          max={999}
+                          aria-invalid={Boolean(activeFieldErrors.productQuantity)}
+                          defaultValue={1}
+                        />
+                      </Field>
+                    </div>
+                  </div>
+                ) : null}
+
+                {canAttachCart ? (
+                  <label className="flex items-start gap-3 rounded-xl border border-border/70 bg-muted/20 p-4 transition-colors hover:border-primary/30 hover:bg-primary/6">
+                    <input
+                      type="checkbox"
+                      checked={includeCart}
+                      onChange={(event) => setIncludeCart(event.target.checked)}
+                      className="mt-1 size-4 rounded border-border"
+                    />
+                    <span>
+                      <span className="block text-sm font-semibold">Joindre le panier actuel</span>
+                      <span className="mt-1 block text-sm leading-6 text-muted-foreground">
+                        {items.length > 0
+                          ? `${items.length} ligne(s) du panier peuvent être ajoutées à la demande.`
+                          : "Aucun article n'est actuellement présent dans le panier local."}
+                      </span>
+                    </span>
+                  </label>
+                ) : null}
+              </FormSection>
+
+              <FormSection
+                title="Besoin"
+                description={
                   hasCatalogContext
-                    ? "Optionnel si le produit ou le panier suffit. Si vous ajoutez un commentaire, soyez précis."
-                    : "Obligatoire si aucun produit ni panier n'est joint à la demande."
+                    ? "Ajoutez un commentaire seulement si le produit ou le panier ne suffit pas."
+                    : "Décrivez le besoin pour permettre une première analyse."
                 }
-                error={activeFieldErrors.message}
-                required={!hasCatalogContext}
               >
-                <Textarea
-                  id="message"
-                  name="message"
-                  aria-invalid={Boolean(activeFieldErrors.message)}
-                  placeholder="Nature du chantier, quantités, délais, besoin d'achat ou de location, contraintes d'accès, maintenance ou FIT TEST..."
-                  className="min-h-36"
+                <Field
+                  label="Contexte chantier et besoin"
+                  htmlFor="message"
+                  error={activeFieldErrors.message}
                   required={!hasCatalogContext}
-                />
-              </Field>
+                >
+                  <Textarea
+                    id="message"
+                    name="message"
+                    aria-invalid={Boolean(activeFieldErrors.message)}
+                    placeholder="Nature du chantier, quantités, besoin d'achat ou de location, contraintes d'accès, maintenance ou FIT TEST..."
+                    className="min-h-36"
+                    required={!hasCatalogContext}
+                  />
+                </Field>
+              </FormSection>
 
               <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
                 <div className="text-sm text-muted-foreground">
@@ -515,6 +562,43 @@ export function QuoteRequestForm({
             </CardContent>
           </Card>
 
+          {canAttachCart && includeCart && items.length > 0 ? (
+            <Card className="p-0">
+              <CardContent className="space-y-4 p-6">
+                <div className="flex items-center gap-3">
+                  <div className="flex size-11 items-center justify-center rounded-2xl bg-primary/12">
+                    <Package2 className="size-5 text-primary" />
+                  </div>
+                  <div>
+                    <p className="text-base font-semibold">Articles joints</p>
+                    <p className="text-sm text-muted-foreground">
+                      Extraits du panier local au moment de l&apos;envoi.
+                    </p>
+                  </div>
+                </div>
+                <div className="space-y-3">
+                  {items.slice(0, 5).map((item) => (
+                    <Link
+                      key={item.product.id}
+                      href={getProductHref(item.product)}
+                      className="block rounded-xl border border-border/70 bg-muted/20 px-4 py-3 text-sm transition-colors hover:border-primary/30 hover:bg-primary/6"
+                    >
+                      <p className="font-medium">{item.product.name}</p>
+                      <p className="mt-1 text-muted-foreground">
+                        {item.product.brand} - x{item.quantity}
+                      </p>
+                    </Link>
+                  ))}
+                </div>
+                {items.length > 5 ? (
+                  <p className="text-sm text-muted-foreground">
+                    + {items.length - 5} autre(s) ligne(s) dans la demande.
+                  </p>
+                ) : null}
+              </CardContent>
+            </Card>
+          ) : null}
+
           <Card className="p-0">
             <CardContent className="space-y-4 p-6">
               <div className="flex items-center gap-3">
@@ -550,46 +634,10 @@ export function QuoteRequestForm({
               />
               <InfoRow
                 label="Panier joint"
-                value={includeCart && items.length > 0 ? "Oui" : "Non"}
+                value={canAttachCart && includeCart && items.length > 0 ? "Oui" : "Non"}
               />
             </CardContent>
           </Card>
-
-          {includeCart && items.length > 0 ? (
-            <Card className="p-0">
-              <CardContent className="space-y-4 p-6">
-                <div className="flex items-center gap-3">
-                  <div className="flex size-11 items-center justify-center rounded-2xl bg-primary/12">
-                    <Package2 className="size-5 text-primary" />
-                  </div>
-                  <div>
-                    <p className="text-base font-semibold">Articles joints</p>
-                    <p className="text-sm text-muted-foreground">
-                      Extraits du panier local au moment de l&apos;envoi.
-                    </p>
-                  </div>
-                </div>
-                <div className="space-y-3">
-                  {items.slice(0, 5).map((item) => (
-                    <div
-                      key={item.product.id}
-                      className="rounded-xl border border-border/70 bg-muted/20 px-4 py-3 text-sm"
-                    >
-                      <p className="font-medium">{item.product.name}</p>
-                      <p className="mt-1 text-muted-foreground">
-                        {item.product.brand} - x{item.quantity}
-                      </p>
-                    </div>
-                  ))}
-                </div>
-                {items.length > 5 ? (
-                  <p className="text-sm text-muted-foreground">
-                    + {items.length - 5} autre(s) ligne(s) dans la demande.
-                  </p>
-                ) : null}
-              </CardContent>
-            </Card>
-          ) : null}
 
           <Card className="border-primary/20 bg-primary/6 p-0">
             <CardContent className="space-y-3 p-6">
@@ -601,9 +649,17 @@ export function QuoteRequestForm({
                 Chaque demande reçoit une référence pour faciliter le suivi et les échanges avec
                 notre équipe.
               </p>
-              <Button asChild variant="outline" className="w-full">
-                <Link href="/connexion">Se connecter pour suivre ses demandes</Link>
-              </Button>
+              {user ? (
+                <Button asChild variant="outline" className="w-full">
+                  <Link href="/dashboard/devis">Voir mes demandes</Link>
+                </Button>
+              ) : (
+                <Button asChild variant="outline" className="w-full">
+                  <Link href="/connexion?next=/dashboard/devis">
+                    Se connecter pour suivre ses demandes
+                  </Link>
+                </Button>
+              )}
             </CardContent>
           </Card>
         </div>
@@ -623,7 +679,7 @@ function Field({
   required = false,
 }: {
   label: string
-  htmlFor: string
+  htmlFor?: string
   children: React.ReactNode
   compact?: boolean
   className?: string
@@ -647,9 +703,31 @@ function Field({
   )
 }
 
+function FormSection({
+  title,
+  description,
+  children,
+}: {
+  title: string
+  description?: string
+  children: React.ReactNode
+}) {
+  return (
+    <section className="border-t border-border/70 pt-6 first:border-t-0 first:pt-0">
+      <div className="mb-4">
+        <h3 className="text-sm font-semibold uppercase text-foreground">{title}</h3>
+        {description ? (
+          <p className="mt-1.5 text-sm leading-6 text-muted-foreground">{description}</p>
+        ) : null}
+      </div>
+      <div className="space-y-4">{children}</div>
+    </section>
+  )
+}
+
 function SubmitButton({ pending }: { pending: boolean }) {
   return (
-    <Button type="submit" size="lg" disabled={pending}>
+    <Button type="submit" size="lg" disabled={pending} className="w-full sm:w-auto">
       {pending ? "Transmission..." : "Transmettre la demande"}
     </Button>
   )

@@ -14,6 +14,11 @@ import {
   toFieldErrors,
   type QuoteRequestInput,
 } from "@/lib/commerce/request-validation"
+import {
+  formatDepartmentOptionLabel,
+  getAgencyLabelForDepartmentCode,
+  getDepartmentByCode,
+} from "@/lib/data/agency-departments"
 import type { Product } from "@/lib/data/products"
 
 type RequestRpcResult = {
@@ -231,6 +236,8 @@ export async function submitQuoteRequestAction(
     parsed.data.customerType === "individual"
       ? "Particulier"
       : parsed.data.companyName.trim()
+  const requestedDepartment = getDepartmentByCode(parsed.data.requestedDepartment)
+  const requestedAgencyLabel = getAgencyLabelForDepartmentCode(parsed.data.requestedDepartment)
   const discountRate =
     parsed.data.customerType === "company"
       ? getAuthenticatedDiscountRate(authState.profile)
@@ -251,11 +258,13 @@ export async function submitQuoteRequestAction(
   const metadata = {
     type: "quote_request",
     processingMode: "sage",
-    notificationEmail: process.env.EPICAP_QUOTE_EMAIL?.trim() || "kevin.bigoni@outlook.fr",
+    notificationEmail: process.env.EPICAP_QUOTE_EMAIL?.trim() || "herosqwerty@gmail.com",
     customerType: parsed.data.customerType,
     requestType: parsed.data.requestType,
-    requestedAgency: parsed.data.requestedAgency || null,
-    requestedDelay: parsed.data.requestedDelay || null,
+    requestedDepartment: requestedDepartment
+      ? formatDepartmentOptionLabel(requestedDepartment)
+      : parsed.data.requestedDepartment,
+    requestedAgency: requestedAgencyLabel || null,
     contactPhone: parsed.data.contactPhone,
     sourcePage: parsed.data.sourcePage || null,
     contextLabel: parsed.data.contextLabel || null,

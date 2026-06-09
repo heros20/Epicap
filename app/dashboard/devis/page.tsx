@@ -267,7 +267,7 @@ function AdminQuoteCard({ quote }: { quote: DashboardQuoteRecord }) {
                 <InfoGrid
                   items={[
                     ["Parcours", "Demande envoyée par e-mail"],
-                    ["Destinataire", notificationEmail ?? "kevin.bigoni@outlook.fr"],
+                    ["Destinataire", notificationEmail ?? "herosqwerty@gmail.com"],
                     ["Traitement", "Chiffrage et suivi interne"],
                     ["Confirmation", "Demande présente dans le tableau de bord"],
                   ]}

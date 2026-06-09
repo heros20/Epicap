@@ -272,11 +272,9 @@ export function OrderRequestForm() {
                   ) : (
                     <Field
                       label="Statut"
-                      htmlFor="customerType-individual"
                       hint="Aucune société ni SIRET n'est requis pour un particulier."
                     >
                       <div
-                        id="customerType-individual"
                         className="rounded-xl border border-border/70 bg-muted/20 px-4 py-3 text-sm text-muted-foreground"
                       >
                         Cette commande sera enregistrée comme particulier.
@@ -586,7 +584,7 @@ function Field({
   required = false,
 }: {
   label: string
-  htmlFor: string
+  htmlFor?: string
   children: React.ReactNode
   className?: string
   hint?: string

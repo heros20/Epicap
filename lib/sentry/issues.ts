@@ -49,6 +49,16 @@ export type SentryIssuesResult =
       error: string
     }
 
+export type SentryResolveResult =
+  | {
+      ok: true
+      error: null
+    }
+  | {
+      ok: false
+      error: string
+    }
+
 const DEFAULT_SENTRY_API_URL = "https://sentry.io"
 
 function getSentryConfig() {
@@ -67,6 +77,10 @@ function getSentryConfig() {
     project,
     authToken,
   }
+}
+
+function getSentryUrl(config: NonNullable<ReturnType<typeof getSentryConfig>>) {
+  return `${config.apiUrl}/organizations/${config.org}/issues/?project=${config.project}`
 }
 
 export async function getSentryIssues(): Promise<SentryIssuesResult> {
@@ -90,7 +104,7 @@ export async function getSentryIssues(): Promise<SentryIssuesResult> {
   url.searchParams.set("query", "is:unresolved")
   url.searchParams.set("statsPeriod", "24h")
 
-  const sentryUrl = `${config.apiUrl}/organizations/${config.org}/issues/?project=${config.project}`
+  const sentryUrl = getSentryUrl(config)
 
   try {
     const response = await fetch(url, {
@@ -136,6 +150,64 @@ export async function getSentryIssues(): Promise<SentryIssuesResult> {
       issues: [],
       sentryUrl,
       error: "Lecture Sentry momentanement indisponible.",
+    }
+  }
+}
+
+export async function resolveSentryIssue(issueId: string): Promise<SentryResolveResult> {
+  const config = getSentryConfig()
+  const normalizedIssueId = issueId.trim()
+
+  if (!config) {
+    return {
+      ok: false,
+      error: "Configurez SENTRY_ORG, SENTRY_PROJECT et SENTRY_AUTH_TOKEN pour résoudre les bugs Sentry.",
+    }
+  }
+
+  if (!/^\d+$/.test(normalizedIssueId)) {
+    return {
+      ok: false,
+      error: "Issue Sentry invalide.",
+    }
+  }
+
+  const url = new URL(
+    `/api/0/organizations/${encodeURIComponent(config.org)}/issues/${encodeURIComponent(
+      normalizedIssueId,
+    )}/`,
+    config.apiUrl,
+  )
+
+  try {
+    const response = await fetch(url, {
+      method: "PUT",
+      headers: {
+        Authorization: `Bearer ${config.authToken}`,
+        Accept: "application/json",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        status: "resolved",
+      }),
+      cache: "no-store",
+    })
+
+    if (!response.ok) {
+      return {
+        ok: false,
+        error: `Sentry a refusé la résolution de l'issue (${response.status}).`,
+      }
+    }
+
+    return {
+      ok: true,
+      error: null,
+    }
+  } catch {
+    return {
+      ok: false,
+      error: "Résolution Sentry momentanément indisponible.",
     }
   }
 }

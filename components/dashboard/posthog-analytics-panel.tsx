@@ -58,12 +58,19 @@ function RankingList({
   description,
   empty,
   rows,
+  collapsible = false,
 }: {
   title: string
   description: string
   empty: string
   rows: Array<{ label: string; value: number }>
+  collapsible?: boolean
 }) {
+  const [isExpanded, setIsExpanded] = React.useState(false)
+  const visibleLimit = 5
+  const hasHiddenRows = collapsible && rows.length > visibleLimit
+  const visibleRows = hasHiddenRows && !isExpanded ? rows.slice(0, visibleLimit) : rows
+
   return (
     <Card className="border-border/70 bg-card/92">
       <CardHeader className="border-b border-border/70">
@@ -72,20 +79,32 @@ function RankingList({
       </CardHeader>
       <CardContent className="space-y-3 p-5">
         {rows.length > 0 ? (
-          rows.map((row, index) => (
-            <div
-              key={`${row.label}-${index}`}
-              className="flex items-center justify-between gap-4 rounded-xl border border-border/70 bg-muted/20 px-4 py-3"
-            >
-              <div className="min-w-0">
-                <Badge variant="outline">#{index + 1}</Badge>
-                <p className="mt-2 truncate text-sm font-medium" title={row.label}>
-                  {row.label}
-                </p>
+          <>
+            {visibleRows.map((row, index) => (
+              <div
+                key={`${row.label}-${index}`}
+                className="flex items-center justify-between gap-4 rounded-xl border border-border/70 bg-muted/20 px-4 py-3"
+              >
+                <div className="min-w-0">
+                  <Badge variant="outline">#{index + 1}</Badge>
+                  <p className="mt-2 truncate text-sm font-medium" title={row.label}>
+                    {row.label}
+                  </p>
+                </div>
+                <p className="shrink-0 text-sm font-semibold">{numberFormatter.format(row.value)}</p>
               </div>
-              <p className="shrink-0 text-sm font-semibold">{numberFormatter.format(row.value)}</p>
-            </div>
-          ))
+            ))}
+            {hasHiddenRows ? (
+              <Button
+                type="button"
+                variant="outline"
+                className="w-full rounded-xl"
+                onClick={() => setIsExpanded((current) => !current)}
+              >
+                {isExpanded ? "Voir moins" : `Voir plus (${rows.length - visibleLimit})`}
+              </Button>
+            ) : null}
+          </>
         ) : (
           <p className="rounded-xl border border-dashed border-border/70 bg-muted/20 p-4 text-sm text-muted-foreground">
             {empty}
@@ -238,24 +257,28 @@ export function PostHogAnalyticsPanel() {
           description="Pages qui attirent le plus de trafic sur la période."
           empty="Aucune page vue sur la période."
           rows={data?.topPages ?? []}
+          collapsible
         />
         <RankingList
           title="Produits les plus consultés"
           description="Fiches catalogue qui intéressent le plus les visiteurs."
           empty="Aucune fiche produit vue sur la période."
           rows={data?.topProducts ?? []}
+          collapsible
         />
         <RankingList
           title="Actions commerciales"
           description="Signaux utiles pour panier, devis, téléphone et checkout."
           empty="Aucune action commerciale suivie sur la période."
           rows={data?.commercialActions ?? []}
+          collapsible
         />
         <RankingList
           title="Tous les événements suivis"
           description="Vue technique traduite des événements PostHog les plus fréquents."
           empty="Aucun événement PostHog sur la période."
           rows={data?.topEvents ?? []}
+          collapsible
         />
       </div>
     </div>
