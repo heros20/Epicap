@@ -2,6 +2,7 @@ import Image from "next/image"
 import Link from "next/link"
 import {
   ArrowRight,
+  BookOpen,
   Building2,
   CheckCircle2,
   ClipboardCheck,
@@ -180,11 +181,17 @@ export default async function HomePage() {
                     </div>
                   </div>
 
-                  <div className="mt-6 flex flex-col gap-3 sm:flex-row">
+                  <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:flex-wrap">
                     <Button asChild size="lg" className="rounded-md px-5">
                       <Link href="/boutique">
                         <ShoppingCart className="size-4" />
                         Parcourir le catalogue
+                      </Link>
+                    </Button>
+                    <Button asChild variant="outline" size="lg" className="rounded-md px-5">
+                      <Link href="/catalogues">
+                        <BookOpen className="size-4" />
+                        Consulter les catalogues
                       </Link>
                     </Button>
                     <Button asChild variant="outline" size="lg" className="rounded-md px-5">

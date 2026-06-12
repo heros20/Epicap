@@ -3,12 +3,12 @@
 import * as React from "react"
 import Link from "next/link"
 import {
+  BookOpen,
   ChevronDown,
   ClipboardCheck,
   MapPin,
   Menu,
   Phone,
-  Search,
   ShoppingCart,
   Truck,
   Wrench,
@@ -149,8 +149,8 @@ export function Header() {
 
             <div className="flex items-center gap-2 lg:gap-3">
               <Button asChild variant="ghost" size="icon" className="rounded-full lg:hidden">
-                <Link href="/boutique" aria-label="Rechercher dans le catalogue">
-                  <Search className="size-5" />
+                <Link href="/catalogues" aria-label="Consulter les catalogues">
+                  <BookOpen className="size-5" />
                 </Link>
               </Button>
 
@@ -293,6 +293,14 @@ export function Header() {
                   </Link>
                 </NavigationMenuLink>
               </NavigationMenuItem>
+
+              <NavigationMenuItem className="h-full">
+                <NavigationMenuLink asChild>
+                  <Link href="/catalogues" className={desktopNavItemClassName}>
+                    Catalogues
+                  </Link>
+                </NavigationMenuLink>
+              </NavigationMenuItem>
             </NavigationMenuList>
           </NavigationMenu>
         </div>
@@ -383,6 +391,18 @@ function MobileNav() {
             <div>
               <span className="block text-sm font-medium">Nos agences</span>
               <span className="text-xs text-muted-foreground">Réseau national Epicap</span>
+            </div>
+          </Link>
+          <Link
+            href="/catalogues"
+            className="mt-1 flex items-center gap-3 rounded-xl p-3 transition-colors hover:bg-accent"
+          >
+            <div className="flex size-9 items-center justify-center rounded-xl bg-primary/15">
+              <BookOpen className="size-4 text-primary" />
+            </div>
+            <div>
+              <span className="block text-sm font-medium">Catalogues</span>
+              <span className="text-xs text-muted-foreground">Produits et location en ligne</span>
             </div>
           </Link>
         </div>
