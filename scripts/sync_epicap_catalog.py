@@ -99,7 +99,7 @@ def clean_html_text(value: str) -> str:
     value = re.sub(r"<style.*?</style>", " ", value, flags=re.S | re.I)
     value = re.sub(r"<[^>]+>", " ", value)
     value = unescape(value)
-    value = value.replace("\xa0", " ")
+    value = value.replace("\xa0", " ").replace("\ufeff", "")
     value = " ".join(value.split())
     return value.strip()
 
@@ -113,7 +113,7 @@ def clean_rich_text(value: str) -> str:
     value = re.sub(r"<li[^>]*>", "- ", value, flags=re.I)
     value = re.sub(r"</li>", "\n", value, flags=re.I)
     value = re.sub(r"<[^>]+>", " ", value)
-    value = unescape(value).replace("\xa0", " ")
+    value = unescape(value).replace("\xa0", " ").replace("\ufeff", "")
     value = re.sub(r"[ \t\r\f\v]+", " ", value)
     value = re.sub(r" *\n *", "\n", value)
     value = re.sub(r"\n{3,}", "\n\n", value)
